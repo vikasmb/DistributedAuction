@@ -5,7 +5,7 @@ import javax.faces.context.FacesContext;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.util.JSON;
-
+//AuctionClient
 public class AuctionClient {
     private String category;
     
