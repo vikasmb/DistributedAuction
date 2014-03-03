@@ -21,7 +21,7 @@ public class AuctionClient {
 	public void search() {
 		System.out.println("category set to"+category);
 		DBClient client=DBClient.getInstance();
-		BasicDBObject jsonAddr=client.getClusterAddress("serviceIndex", "indexCollection", category);
+		BasicDBObject jsonAddr=client.getClusterAddress(category);
 		//JSON.parse(jsonAddr);
 		 FacesContext context = FacesContext.getCurrentInstance();  
          
