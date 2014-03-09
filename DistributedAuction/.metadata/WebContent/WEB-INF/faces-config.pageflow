@@ -1,2 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<pageflow:Pageflow xmlns:pageflow="http://www.sybase.com/suade/pageflow" id="pf13931224604910" configfile="/DistributedAuction/WebContent/WEB-INF/faces-config.xml"/>
+<pageflow:Pageflow xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:pageflow="http://www.sybase.com/suade/pageflow" id="pf13931224604910" configfile="/DistributedAuction/WebContent/WEB-INF/faces-config.xml">
+  <nodes xsi:type="pageflow:PFPage" name="index.xhtml" id="pf13943397957010" referenceLink="//@navigationRule.0/@fromViewId|" outlinks="pf13943397957011" path="/index.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="Register.xhtml" id="pf13943397957012" referenceLink="//@navigationRule.0/@navigationCase.0/@toViewId|" inlinks="pf13943397957011" path="/Register.xhtml"/>
+  <links id="pf13943397957011" target="pf13943397957012" source="pf13943397957010" outcome="register"/>
+</pageflow:Pageflow>

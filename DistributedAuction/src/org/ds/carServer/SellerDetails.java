@@ -1,10 +1,17 @@
 package org.ds.carServer;
+import javax.faces.bean.ManagedBean;
+import javax.faces.bean.SessionScoped;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
+import javax.xml.bind.annotation.XmlRootElement;
+
 import com.mongodb.BasicDBObject;
 
 //encapsulation and abstraction of seller details
+@XmlRootElement
+@ManagedBean
+@SessionScoped
 public class SellerDetails {
 	
 	/**
@@ -25,15 +32,16 @@ public class SellerDetails {
 	 * setters
 	 */
 	
-	private void setSellerName(String name) {
+	public void setSellerName(String name) {
+		System.out.println("Set seller name to"+name);
 		this.sellerName = name;
 	}
 	
-	private void setRemote(Boolean isRemote){
+	public void setRemote(Boolean isRemote){
 		this.remote = isRemote;
 	}
 	
-	private void setCallback(String callbackIP){
+	public void setCallback(String callbackIP){
 		this.callback = callbackIP;
 	}
 	
@@ -53,6 +61,9 @@ public class SellerDetails {
 		return callback;
 	}
 	
+	public SellerDetails(){
+		super();
+	}
 	/**
 	 * Constructor
 	 * @param inputData
