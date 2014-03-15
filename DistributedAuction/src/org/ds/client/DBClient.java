@@ -32,7 +32,7 @@ public class DBClient {
 	 */
 	private DBClient() {
 		try {
-			mongoClient = new MongoClient(Arrays.asList(new ServerAddress("10.0.0.50", 27017)));
+			mongoClient = new MongoClient(Arrays.asList(new ServerAddress("10.0.0.20", 27017)));
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

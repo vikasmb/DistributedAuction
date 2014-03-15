@@ -11,6 +11,7 @@ import javax.ws.rs.core.Response;
 
 
 import org.ds.carServer.SellerDetails;
+import org.ds.carServer.SellerStore;
 
 @Path("SellerService")
 public class SellerService {
@@ -20,15 +21,12 @@ public class SellerService {
 	    public Response register(SellerDetails sellerObj) {
 	    	
 	    	System.out.println("Received Seller with name"+sellerObj.getSellerName());
-	    	try {
-				//Runtime.getRuntime().exec("gedit");
-	    		Process p = new ProcessBuilder("gedit").start();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			String result = "Error saving seller details!";
+	    	SellerStore sellerStore = new SellerStore();
+			Boolean success = sellerStore.handleSellerRegistration(sellerObj);	
+			if(success) {
+				result = "Seller details saved!";
 			}
-	    	String result="Seller id 100 created";
-	    	System.out.println("Returning after creating seller with id 100");
 	        return Response.status(200).entity(result).build();
 	    }
 }
