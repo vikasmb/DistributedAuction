@@ -1,5 +1,8 @@
 package org.ds.client;
 
+import java.io.File;
+import java.io.IOException;
+
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
@@ -8,6 +11,7 @@ import javax.faces.context.FacesContext;
 import javax.ws.rs.core.MediaType;
 
 import org.ds.carServer.SellerDetails;
+import org.ds.resources.SellerService;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.util.JSON;
