@@ -17,7 +17,7 @@ public class WinnerDetails {
 		return this.productID;
 	}
 	
-	public WinnerDetails(Double winPrice, String sellerID, String productID){
+	public WinnerDetails(String sellerID, String productID){
 		this.sellerID = sellerID;
 		this.productID = productID;
 	}

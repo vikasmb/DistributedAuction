@@ -85,16 +85,45 @@ public class AuctionServer {
 		TreeMap<Double, List<LocalSellerDetails>> prices = getSortedListAndMinPrices();
 		TreeMap<Double, List<WinnerDetails>> winners = new TreeMap<Double, List<WinnerDetails>>();
 		
-		int winnersNum = 0;
-		int lastWinPrice = Integer.MAX_VALUE;
+		List<WinnerDetails> winnersDetails = null;
+		List<LocalSellerDetails> sellersDetails = null;
 		
-		Set<Double> minPrices = prices.keySet();
-		WinnerDetails winnerDetails = null;
-		List<LocalSellerDetails> sellerDetails = null;
-		for(Double minPrice:minPrices){
+		
+		if(prices.size() == 1 && prices.get(prices.firstKey()).size() == 1){
+			//special case when there is only seller for this particular service
+			//If this happens, that person can claim the list price
+			sellersDetails = prices.get(prices.firstKey()); 
+			Double price = sellersDetails.get(0).getListPrice();
+			winnersDetails = getWinnersDetails(sellersDetails);
+			winners.put(price, winnersDetails);
+		} else {
+			int winnersNum = 0;
+			Set<Double> minPrices = prices.keySet();
+			for(Double price:minPrices){
+				if(winnersDetails != null){
+					winners.put(price, winnersDetails);
+				}
+				
+				if(winnersNum >= minWinners) {
+					break;
+				} else {
+					sellersDetails = prices.get(price);
+					winnersDetails = getWinnersDetails(sellersDetails);
+					winnersNum += winnersDetails.size();
+				}
+			}
 		}
 		
 		return true;
+	}
+	
+	private List<WinnerDetails> getWinnersDetails(List<LocalSellerDetails> sellersDetails) {
+		 List<WinnerDetails> winnersDetails = new ArrayList<WinnerDetails>();
+		 for(int i = 0; i < sellersDetails.size(); i++) {
+			 LocalSellerDetails sellerDetails = sellersDetails.get(i);
+			 winnersDetails.add(new WinnerDetails(sellerDetails.getSellerID() ,sellerDetails.getProductID()));
+		 }
+		 return winnersDetails;
 	}
 	
 	private TreeMap<Double, List<LocalSellerDetails>> getSortedListAndMinPrices(){
