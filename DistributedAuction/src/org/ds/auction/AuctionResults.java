@@ -38,9 +38,9 @@ public class AuctionResults {
 		Set<Entry<Double, List<String>>> bidsEntrySet = bids.entrySet();
 		for(Entry<Double, List<String>> entry: bidsEntrySet){
 			Double key = entry.getKey();
-			List<String> bidder = entry.getValue();
+			List<String> bidders = entry.getValue();
 			if(otherBids.containsKey(key)) {
-				if(!equalLists(otherBids.get(key), bidder)) {
+				if(!equalLists(otherBids.get(key), bidders)) {
 					return false;
 				}
 			} else {

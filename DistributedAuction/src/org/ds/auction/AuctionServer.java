@@ -149,9 +149,11 @@ public class AuctionServer {
 		for(int i = 0; i < pricesByHour.size(); i++){
 			BasicDBObject currentHourPriceDetails = (BasicDBObject)pricesByHour.get(i);
 			Date currentHour = currentHourPriceDetails.getDate(HOUR_FIELD);
-			if(currentHour.after(startHour) && currentHour.before(endHour)){
+			if((currentHour.equals(startHour) || currentHour.after(startHour)) && currentHour.before(endHour)){
 				minPrice += currentHourPriceDetails.getDouble(MIN_PRICE_FIELD);
 				listPrice += currentHourPriceDetails.getDouble(LIST_PRICE_FIELD);
+			} else if(currentHour.equals(endHour) || currentHour.after(endHour)) {
+				break;
 			}
 		}
 		
@@ -223,7 +225,7 @@ public class AuctionServer {
 		remoteBidders = newRemoteBidders; //set the remote bidders to the new set
 		
 		AuctionResults currentResults =  new AuctionResults(); 
-		currentResults.setBids(newBids);//new results object
+		currentResults.setBids(newBids);//new results object //TODO: cut down the number here
 		
 		return currentResults;
 	}
