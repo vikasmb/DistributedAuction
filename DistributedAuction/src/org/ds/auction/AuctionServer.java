@@ -2,9 +2,12 @@ package org.ds.auction;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.Set;
+
 
 import org.ds.client.*;
 import org.ds.carServer.*;
@@ -79,21 +82,24 @@ public class AuctionServer {
 	}
 	
 	private Boolean runLocalAuction(){
-		TreeMap<Double, LocalSellerDetails> prices = getSortedListAndMinPrices();
-		TreeMap<Double, LocalSellerDetails> winners = new TreeMap<Double, LocalSellerDetails>();
+		TreeMap<Double, List<LocalSellerDetails>> prices = getSortedListAndMinPrices();
+		TreeMap<Double, List<WinnerDetails>> winners = new TreeMap<Double, List<WinnerDetails>>();
 		
 		int winnersNum = 0;
 		int lastWinPrice = Integer.MAX_VALUE;
-		for(int i = 0; i < prices.size(); i++){
-			
+		
+		Set<Double> minPrices = prices.keySet();
+		WinnerDetails winnerDetails = null;
+		List<LocalSellerDetails> sellerDetails = null;
+		for(Double minPrice:minPrices){
 		}
 		
 		return true;
 	}
 	
-	private TreeMap<Double, LocalSellerDetails> getSortedListAndMinPrices(){
+	private TreeMap<Double, List<LocalSellerDetails>> getSortedListAndMinPrices(){
 		List<BasicDBObject> localBidders = getLocalBidders();
-		TreeMap<Double, LocalSellerDetails> prices = new TreeMap<Double, LocalSellerDetails>();
+		TreeMap<Double, List<LocalSellerDetails>> prices = new TreeMap<Double, List<LocalSellerDetails>>();
 		
 		for(int i = 0; i < localBidders.size(); i++) {
 			BasicDBObject localBidder = localBidders.get(i);
@@ -103,7 +109,7 @@ public class AuctionServer {
 		return prices;
 	}
 	
-	private void enterDetails(BasicDBObject localBidder, TreeMap<Double, LocalSellerDetails> prices){
+	private void enterDetails(BasicDBObject localBidder, TreeMap<Double, List<LocalSellerDetails>> prices){
 		BasicDBList pricesByHour = (BasicDBList)localBidder.get(BUYER_PRICE_DETAILS);
 		Date startHour = getBuyerCriteria().getNeededFrom();
 		Date endHour = getBuyerCriteria().getNeededUntil();
@@ -122,7 +128,16 @@ public class AuctionServer {
 		
 		LocalSellerDetails sellerDetails = new LocalSellerDetails(listPrice, minPrice, 
 				localBidder.getString(SELLER_ID_FIELD), localBidder.getString(PRODUCT_ID_FIELD));
-		prices.put(minPrice, sellerDetails);
+		
+		List<LocalSellerDetails> value;
+		if(prices.containsKey(minPrice)) {
+			value = prices.get(minPrice);
+		} else {
+			value = new ArrayList<LocalSellerDetails>();
+		}
+		
+		value.add(sellerDetails);
+		prices.put(minPrice, value);
 	}
 	
 	private Boolean runRemoteAuction(){
@@ -157,7 +172,7 @@ public class AuctionServer {
 	
 	private AuctionResults runRound(List<BasicDBObject> remoteBidders, AuctionResults lastResults, Boolean lastCall){
 		//contact each remote bidder and ask him if he wants to bid lower than the auction results
-		TreeMap<Double, String> oldBids;
+		TreeMap<Double, List<String>> oldBids;
 		
 		//get the old bids
 		if(lastResults != null) {
@@ -167,7 +182,7 @@ public class AuctionServer {
 		}
 		
 		//new result data structures
-		TreeMap<Double, String> newBids = new TreeMap<Double, String>();
+		TreeMap<Double, List<String>> newBids = new TreeMap<Double, List<String>>();
 		List<BasicDBObject> newRemoteBidders = new ArrayList<BasicDBObject>();
 		
 		//iterate through each remote bidder and ask if they want to bid
@@ -185,7 +200,7 @@ public class AuctionServer {
 	}
 	
 	private void getBid(BasicDBObject remoteBidder, List<BasicDBObject> newRemoteBidders,
-			TreeMap<Double, String> oldBids, TreeMap<Double, String> newBids){
+			TreeMap<Double, List<String>> oldBids, TreeMap<Double, List<String>> newBids){
 		
 		String remoteAddress = remoteBidder.getString(SellerDetails.FIELD_REMOTE);//get remote address
 		String sellerName = remoteBidder.getString(SellerDetails.FIELD_NAME);//get the seller's name
@@ -196,7 +211,16 @@ public class AuctionServer {
 		
 		BidDetails bidDetails = new BidDetails();
 		if(bidDetails.getMadeBid()){
-			newBids.put(bidDetails.getBid(), sellerName); //put the bid
+			Double bid = bidDetails.getBid();
+			List<String> sellers;
+			if(newBids.containsKey(bid)) {
+				sellers = newBids.get(bid);
+			} else {
+				sellers = new ArrayList<String>();
+			}
+			
+			sellers.add(sellerName);
+			newBids.put(bid, sellers); //put the bid
 			newRemoteBidders.add(remoteBidder); //add as possible bidder for next round
 		}
 	}
