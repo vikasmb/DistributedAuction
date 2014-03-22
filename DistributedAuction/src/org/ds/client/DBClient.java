@@ -20,6 +20,7 @@ import com.mongodb.ServerAddress;
 
 import org.ds.auction.BidderDetails;
 import org.ds.carServer.*;
+import org.ds.util.DateUtil;
 
 //Singleton class holding MongoClient instance
 public class DBClient {
@@ -95,48 +96,43 @@ public class DBClient {
 
 	public BidderDetails getPotentialSellers(String clusterCategory,
 			String sellerCity, String fromTime, String tillTime) {
-		List<BasicDBObject> localSellersList=null;
-		List<BasicDBObject> remoteSellersList=null;
-		
+		List<BasicDBObject> localSellersList = null;
+		List<BasicDBObject> remoteSellersList = null;
+
 		DB db = mongoClient.getDB(CAR_VENDORS_DB);
 		if (db != null) {
 			DBCollection coll = db.getCollection(CAR_VENDORS_DETAILS);
 			if (coll != null) {
-				localSellersList=getLocalBidders(coll,sellerCity,fromTime,tillTime);
-				remoteSellersList=getRemoteBidders(coll, sellerCity);
+				localSellersList = getLocalBidders(coll, sellerCity, fromTime,
+						tillTime);
+				remoteSellersList = getRemoteBidders(coll, sellerCity);
 			}
-		}		
-		BidderDetails bidderDetails=new BidderDetails(remoteSellersList, localSellersList);
+		}
+		BidderDetails bidderDetails = new BidderDetails(remoteSellersList,
+				localSellersList);
 		return bidderDetails;
 	}
-	
-	private List<BasicDBObject> getLocalBidders(DBCollection coll,String sellerCity, String fromTime, String tillTime){
-		BasicDBObject query = new BasicDBObject("city", sellerCity);
-		List<BasicDBObject> localSellersList=new ArrayList<BasicDBObject>();
-		DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-		formatter.setTimeZone(TimeZone.getTimeZone("GMT"));
 
-		Date fromDate=null;
-		try {
-			fromDate = formatter.parse(fromTime);			
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
-		Date toDate=null;
-		try {
-			toDate = formatter.parse(tillTime);
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
-		 BasicDBObject eleMatch = new BasicDBObject();
-		 eleMatch.put("from",new BasicDBObject("$lte",fromDate));
-		 eleMatch.put("till",new BasicDBObject("$gte",toDate));
-		 BasicDBObject up = new BasicDBObject();
-		 up.put("$elemMatch",eleMatch);
-		 query.append("availableTimes", up);
-		//query.append("availableTimes.from", new BasicDBObject("$lte",fromDate));
-		//query.append("availableTimes.till", new BasicDBObject("$gte",toDate));
-		//System.out.println("QUerying"+query.toString());
+	private List<BasicDBObject> getLocalBidders(DBCollection coll,
+			String sellerCity, String fromTime, String tillTime) {
+		BasicDBObject query = new BasicDBObject("city", sellerCity);
+		List<BasicDBObject> localSellersList = new ArrayList<BasicDBObject>();
+
+		Date fromDate = DateUtil.getDate(fromTime);
+
+		Date toDate = DateUtil.getDate(tillTime);
+
+		BasicDBObject eleMatch = new BasicDBObject();
+		eleMatch.put("from", new BasicDBObject("$lte", fromDate));
+		eleMatch.put("till", new BasicDBObject("$gte", toDate));
+		BasicDBObject up = new BasicDBObject();
+		up.put("$elemMatch", eleMatch);
+		query.append("availableTimes", up);
+		// query.append("availableTimes.from", new
+		// BasicDBObject("$lte",fromDate));
+		// query.append("availableTimes.till", new
+		// BasicDBObject("$gte",toDate));
+		// System.out.println("QUerying"+query.toString());
 		DBCursor cursor = coll.find(query);
 
 		try {
@@ -144,7 +140,7 @@ public class DBClient {
 				// System.out.println( cursor.next().get("address"));
 				BasicDBObject dbObj = (BasicDBObject) cursor.next();
 				localSellersList.add(dbObj);
-				System.out.println("Found: "+dbObj.getString("userId"));
+				System.out.println("Found: " + dbObj.getString("userId"));
 			}
 		} finally {
 			cursor.close();
@@ -152,11 +148,12 @@ public class DBClient {
 		return localSellersList;
 
 	}
-	
-	private List<BasicDBObject> getRemoteBidders(DBCollection coll,String sellerCity){
-		List<BasicDBObject> remoteSellersList=new ArrayList<BasicDBObject>();
+
+	private List<BasicDBObject> getRemoteBidders(DBCollection coll,
+			String sellerCity) {
+		List<BasicDBObject> remoteSellersList = new ArrayList<BasicDBObject>();
 		BasicDBObject query = new BasicDBObject("city", sellerCity);
-		query.append("remote", new BasicDBObject("$ne",""));
+		query.append("remote", new BasicDBObject("$ne", ""));
 		DBCursor cursor = coll.find(query);
 
 		try {
@@ -164,14 +161,13 @@ public class DBClient {
 				// System.out.println( cursor.next().get("address"));
 				BasicDBObject dbObj = (BasicDBObject) cursor.next();
 				remoteSellersList.add(dbObj);
-				System.out.println("Found: "+dbObj.getString("userId"));
+				System.out.println("Found: " + dbObj.getString("userId"));
 			}
 		} finally {
 			cursor.close();
 		}
 		return remoteSellersList;
 	}
-			
 
 	/**
 	 * persists the seller details in mongo
