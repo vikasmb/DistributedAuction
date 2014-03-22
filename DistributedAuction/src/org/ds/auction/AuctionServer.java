@@ -90,18 +90,6 @@ public class AuctionServer {
 		finishUpAuction();
 	}
 	
-	private Boolean makeInitAuctionEntry(){
-		return true;
-	}
-	
-	private Boolean makeLocalWinnersEntry(TreeMap<Double, List<WinnerDetails>> winners){
-		return true;
-	}
-	
-	private Boolean makeRemoteRoundEntry(int roundNum, AuctionResults results){
-		return true;
-	}
-	
 	private Boolean runLocalAuction(){
 		TreeMap<Double, List<LocalSellerDetails>> prices = getSortedListAndMinPrices();
 		TreeMap<Double, List<WinnerDetails>> winners = new TreeMap<Double, List<WinnerDetails>>();
@@ -284,6 +272,21 @@ public class AuctionServer {
 			newBids.put(bid, sellers); //put the bid
 			newRemoteBidders.add(remoteBidder); //add as possible bidder for next round
 		}
+	}
+	
+	private Boolean makeInitAuctionEntry(){
+		AuctionServerPersistance writer = getAuctionWriter();
+		return true;
+	}
+	
+	private Boolean makeLocalWinnersEntry(TreeMap<Double, List<WinnerDetails>> winners){
+		AuctionServerPersistance writer = getAuctionWriter();
+		return true;
+	}
+	
+	private Boolean makeRemoteRoundEntry(int roundNum, AuctionResults results){
+		AuctionServerPersistance writer = getAuctionWriter();
+		return true;
 	}
 	
 	private Boolean finishUpAuction(){
