@@ -308,17 +308,19 @@ public class AuctionServer {
 		AuctionServerPersistance writer = getAuctionWriter();
 		BuyerCriteria criteria = getBuyerCriteria();
 		
+		writer.makeInitEntry(criteria.getBuyerID());
+		
 		return true;
 	}
 	
 	private Boolean makeLocalWinnersEntry(TreeMap<Double, List<WinnerDetails>> winners){
 		AuctionServerPersistance writer = getAuctionWriter();
-		return true;
+		return writer.persistLocalBidWinners(winners);
 	}
 	
 	private Boolean makeRemoteRoundEntry(int roundNum, AuctionResults results){
 		AuctionServerPersistance writer = getAuctionWriter();
-		return true;
+		return writer.persistRemoteRoundWinners(roundNum, results);
 	}
 	
 	private Boolean finishUpAuction(){

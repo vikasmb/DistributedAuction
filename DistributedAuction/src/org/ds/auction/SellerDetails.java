@@ -1,13 +1,9 @@
 package org.ds.auction;
 
-public class WinnerDetails {
-	private String token;
+public class SellerDetails {
+	
 	private String sellerID;
 	private String productID;
-	
-	public String getToken(){
-		return this.token;
-	}
 	
 	public String getSellerID(){
 		return this.sellerID;
@@ -17,9 +13,16 @@ public class WinnerDetails {
 		return this.productID;
 	}
 	
-	public WinnerDetails(String sellerID, String productID){
+	protected void setSellerID(String sellerID){
 		this.sellerID = sellerID;
-		this.productID = productID;
-		this.token = "";
 	}
+	
+	protected void setProductID(String productID){
+		this.productID = productID;
+	}
+	
+	public SellerDetails(){
+		
+	}
+	
 }
