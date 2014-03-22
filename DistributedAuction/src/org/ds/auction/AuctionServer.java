@@ -1,6 +1,7 @@
 package org.ds.auction;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -22,20 +23,21 @@ import com.mongodb.BasicDBObject;
 
 public class AuctionServer {
 
-	public static String LOCAL_BIDDERS = "local";
-	public static String REMOTE_BIDDERS = "remote";
+	public static String LIST_LOCAL_BIDDERS = "local";
+	public static String LIST_REMOTE_BIDDERS = "remote";
 
-	public static String BUYER_PRICE_DETAILS = "prices";
-	public static String HOUR_FIELD = "hour";
-	public static String LIST_PRICE_FIELD = "listPrice";
-	public static String MIN_PRICE_FIELD = "minPrice";
-	public static String SELLER_ID_FIELD = "userId";
-	public static String PRODUCT_ID_FIELD = "productId";
+	public static String FIELD_BUYER_PRICE_DETAILS = "prices";
+	public static String FIELD_HOUR = "hour";
+	public static String FIELD_LIST_PRICE = "listPrice";
+	public static String FIELD_MIN_PRICE = "minPrice";
+	public static String FIELD_SELLER_ID = "userId";
+	public static String FIELD_PRODUCT_ID = "productId";
+	public static String FIELD_REMOTE_ADDRESS = "remote";
 
 	public static String STATUS_RUNNING = "running";
 	public static String STATUS_FINISHED = "finished";
 
-	private int minWinners = 5;
+	private int MIN_WINNERS = 5;
 
 	private int maxLastCalls = 10;
 
@@ -121,7 +123,7 @@ public class AuctionServer {
 			// If this happens, that person can claim the list price
 			sellersDetails = prices.get(prices.firstKey());
 			Double price = sellersDetails.get(0).getListPrice();
-			winnersDetails = getWinnersDetails(sellersDetails);
+			winnersDetails = WinnerDetails.getWinnersDetails(price, sellersDetails);
 			winners.put(price, winnersDetails);
 		} else {
 			int winnersNum = 0;
@@ -131,11 +133,11 @@ public class AuctionServer {
 					winners.put(price - 1.0, winnersDetails);
 				}
 
-				if (winnersNum >= minWinners) {
+				if (winnersNum >= MIN_WINNERS) {
 					break;
 				} else {
 					sellersDetails = prices.get(price);
-					winnersDetails = getWinnersDetails(sellersDetails);
+					winnersDetails = WinnerDetails.getWinnersDetails(price, sellersDetails);
 					winnersNum += winnersDetails.size();
 					lastPrice = price;
 				}
@@ -155,17 +157,6 @@ public class AuctionServer {
 		}
 		makeLocalWinnersEntry(winners);
 		return true;
-	}
-
-	private List<WinnerDetails> getWinnersDetails(
-			List<LocalSellerDetails> sellersDetails) {
-		List<WinnerDetails> winnersDetails = new ArrayList<WinnerDetails>();
-		for (int i = 0; i < sellersDetails.size(); i++) {
-			LocalSellerDetails sellerDetails = sellersDetails.get(i);
-			winnersDetails.add(new WinnerDetails(sellerDetails.getSellerID(),
-					sellerDetails.getProductID()));
-		}
-		return winnersDetails;
 	}
 
 	private TreeMap<Double, List<LocalSellerDetails>> getSortedListAndMinPrices() {
@@ -225,7 +216,7 @@ public class AuctionServer {
 		@Override
 		public LocalSellerDetails call() throws Exception {
 			BasicDBList pricesByHour = (BasicDBList) localBidder
-					.get(BUYER_PRICE_DETAILS);
+					.get(FIELD_BUYER_PRICE_DETAILS);
 			Date startHour = getBuyerCriteria().getNeededFrom();
 			Date endHour = getBuyerCriteria().getNeededUntil();
 
@@ -239,15 +230,15 @@ public class AuctionServer {
 				BasicDBObject currentHourPriceDetails = (BasicDBObject) pricesByHour
 						.get(i);
 				System.out.println("At " + i + ": " + currentHourPriceDetails);
-				Date currentHour = currentHourPriceDetails.getDate(HOUR_FIELD);
+				Date currentHour = currentHourPriceDetails.getDate(FIELD_HOUR);
 				if ((currentHour.equals(startHour) || currentHour
 						.after(startHour)) && currentHour.before(endHour)) {
 					System.out
 							.println("Current hour: " + currentHour.getTime());
 					minPrice += currentHourPriceDetails
-							.getDouble(MIN_PRICE_FIELD);
+							.getDouble(FIELD_MIN_PRICE);
 					listPrice += currentHourPriceDetails
-							.getDouble(LIST_PRICE_FIELD);
+							.getDouble(FIELD_LIST_PRICE);
 				} else if (currentHour.equals(endHour)
 						|| currentHour.after(endHour)) {
 					break;
@@ -256,8 +247,8 @@ public class AuctionServer {
 
 			LocalSellerDetails sellerDetails = new LocalSellerDetails(
 					listPrice, minPrice,
-					localBidder.getString(SELLER_ID_FIELD),
-					localBidder.getString(PRODUCT_ID_FIELD));
+					localBidder.getString(FIELD_SELLER_ID),
+					localBidder.getString(FIELD_PRODUCT_ID));
 			// Synchornized
 			/*
 			 * List<LocalSellerDetails> value; if(prices.containsKey(minPrice))
@@ -269,10 +260,10 @@ public class AuctionServer {
 			return sellerDetails;
 		}
 	}
-
+	
 	private Boolean runRemoteAuction() {
 		// get the remote bidders
-		List<BasicDBObject> remoteBidders = getRemoteBidders();
+		List<RemoteSellerDetails> remoteBidders = getPackagedRemoteBidders();
 
 		// run rounds
 		int roundNum = 1;
@@ -283,12 +274,12 @@ public class AuctionServer {
 								// byzantine bidders
 
 		// results tracker
-		AuctionResults lastResults = null;
-		AuctionResults currentResults = null;
+		TreeMap<Double, List<WinnerDetails>> lastResults = null;
+		TreeMap<Double, List<WinnerDetails>> currentResults = null;
 
 		while (!lastCallSuccess && numLastCalls < maxLastCalls) {
 			while (currentResults == null
-					|| !currentResults.isSameAs(lastResults)) {
+					|| !areSame(currentResults, lastResults)) {
 				lastResults = currentResults;
 				currentResults = runRound(remoteBidders, lastResults, false);
 
@@ -304,35 +295,92 @@ public class AuctionServer {
 			makeRemoteRoundEntry(roundNum, currentResults);
 			roundNum++;
 
-			lastCallSuccess = currentResults.isSameAs(lastResults);
+			lastCallSuccess = areSame(currentResults, lastResults);
 		}
 
 		return true;
 	}
+	
+	private List<RemoteSellerDetails> getPackagedRemoteBidders(){
+		List<RemoteSellerDetails> packagedRemoteBidders = new ArrayList<RemoteSellerDetails>();
+		
+		List<BasicDBObject> remoteBidders = getRemoteBidders();
+		for(BasicDBObject bidder:remoteBidders){
+			String productID = bidder.getString(FIELD_PRODUCT_ID);
+			String sellerID = bidder.getString(FIELD_SELLER_ID);
+			String remoteAddress = bidder.getString(FIELD_REMOTE_ADDRESS);
+			RemoteSellerDetails remoteSeller = new RemoteSellerDetails(remoteAddress, sellerID, productID);
+			packagedRemoteBidders.add(remoteSeller);
+		}
+		
+		return packagedRemoteBidders;
+	}
+	
+	private Boolean areSame(TreeMap<Double, List<WinnerDetails>> currentResults, TreeMap<Double, List<WinnerDetails>> lastResults){
+		if(currentResults == null || lastResults == null){
+			return false;
+		}
+		
+		if(lastResults.size() != currentResults.size()){
+			return false;
+		}
+		
+		for(Entry<Double, List<WinnerDetails>> entry: currentResults.entrySet()){
+			Double key = entry.getKey();
+			List<WinnerDetails> bidders = entry.getValue();
+			if(lastResults.containsKey(key)) {
+				if(!equalLists(lastResults.get(key), bidders)) {
+					return false;
+				}
+			} else {
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	
+	public Boolean equalLists(List<WinnerDetails> sellerList1, List<WinnerDetails> sellerList2){
+		
+		if(sellerList1.size() != sellerList2.size()) {
+			return false;
+		}
+		
+		List<String> list1 = new ArrayList<String>();
+		List<String> list2 = new ArrayList<String>();
+		
+		for(int i = 0; i < sellerList1.size(); i++){
+			list1.add(sellerList1.get(i).getProductID());
+			list2.add(sellerList2.get(i).getProductID());
+		}
+		
+		Collections.sort(list1);
+		Collections.sort(list2);
+		
+		for(int i = 0; i < list1.size(); i++) {
+			if(!list1.get(i).equals(list2.get(i))){
+				return false;
+			}
+		}
+		
+		return true;
+	}
 
-	private AuctionResults runRound(List<BasicDBObject> remoteBidders,
-			AuctionResults lastResults, Boolean lastCall) {
+	private TreeMap<Double, List<WinnerDetails>> runRound(List<RemoteSellerDetails> remoteBidders,
+			TreeMap<Double, List<WinnerDetails>> lastResults, Boolean lastCall) {
 		// contact each remote bidder and ask him if he wants to bid lower than
 		// the auction results
-		TreeMap<Double, List<String>> oldBids;
-
-		// get the old bids
-		if (lastResults != null) {
-			oldBids = lastResults.getBids();
-		} else {
-			oldBids = null;
-		}
 
 		// new result data structures
-		TreeMap<Double, List<String>> newBids = new TreeMap<Double, List<String>>();
-		List<BasicDBObject> newRemoteBidders = new ArrayList<BasicDBObject>();
+		TreeMap<Double, List<RemoteSellerDetails>> newBids = new TreeMap<Double, List<RemoteSellerDetails>>();
+		List<RemoteSellerDetails> newRemoteBidders = new ArrayList<RemoteSellerDetails>();
 
 		// iterate through each remote bidder and ask if they want to bid
 		for (int i = 0; i < remoteBidders.size(); i++) {
-			BasicDBObject remoteBidder = remoteBidders.get(i); // get remote
+			RemoteSellerDetails remoteBidder = remoteBidders.get(i); // get remote
 																// bidder at
 																// position i
-			getBid(remoteBidder, newRemoteBidders, oldBids, newBids); // get his
+			getBid(remoteBidder, newRemoteBidders, lastResults, newBids); // get his
 																		// bid
 																		// Threadit
 		}
@@ -340,20 +388,32 @@ public class AuctionServer {
 		remoteBidders = newRemoteBidders; // set the remote bidders to the new
 											// set
 
-		AuctionResults currentResults = new AuctionResults();
-		currentResults.setBids(newBids);// new results object //TODO: cut down
-										// the number here
+		int winnersNum = 0;
+		TreeMap<Double, List<WinnerDetails>> winBids = new TreeMap<Double, List<WinnerDetails>>();
+		for(Entry<Double, List<RemoteSellerDetails>> entry:newBids.entrySet()){
+			Double price = entry.getKey();
+			List<RemoteSellerDetails> sellersDetails = entry.getValue();
+			
+			List<WinnerDetails> winnersDetails = WinnerDetails.getWinnersDetails(price, sellersDetails);
+			winBids.put(price, winnersDetails);
+			
+			winnersNum += winnersDetails.size();
+			if(winnersNum >= MIN_WINNERS){
+				break;
+			}
+		}
 
-		return currentResults;
+		return winBids;
 	}
+	
 
-	private void getBid(BasicDBObject remoteBidder,
-			List<BasicDBObject> newRemoteBidders,
-			TreeMap<Double, List<String>> oldBids,
-			TreeMap<Double, List<String>> newBids) {
+	private void getBid(RemoteSellerDetails remoteBidder,
+			List<RemoteSellerDetails> newRemoteBidders,
+			TreeMap<Double, List<WinnerDetails>> lastResults,
+			TreeMap<Double, List<RemoteSellerDetails>> newBids) {
 
-		String remoteAddress = remoteBidder.getString(SellerDetails.FIELD_REMOTE);
-		String sellerName = remoteBidder.getString(SellerDetails.FIELD_NAME);
+		Set<Double> oldBids = lastResults.keySet();
+		String remoteAddress = remoteBidder.getRemoteAddress();
 
 		// IMPORTANT: oldBids may be null. Handle the case. If it is null, then
 		// this is the first round
@@ -363,15 +423,16 @@ public class AuctionServer {
 		BidDetails bidDetails = new BidDetails();
 		if (bidDetails.getMadeBid()) {
 			Double bid = bidDetails.getBid();
-			// Synchoronization
-			List<String> sellers;
+			// Synchronization
+			List<RemoteSellerDetails> sellers;
 			if (newBids.containsKey(bid)) {
 				sellers = newBids.get(bid);
 			} else {
-				sellers = new ArrayList<String>();
+				sellers = new ArrayList<RemoteSellerDetails>();
 			}
-
-			sellers.add(sellerName);
+			
+			remoteBidder.setPrice(bid);
+			sellers.add(remoteBidder);
 			newBids.put(bid, sellers); // put the bid
 			newRemoteBidders.add(remoteBidder); // add as possible bidder for
 												// next round
@@ -391,9 +452,9 @@ public class AuctionServer {
 		return writer.persistLocalBidWinners(winners);
 	}
 
-	private Boolean makeRemoteRoundEntry(int roundNum, AuctionResults results) {
+	private Boolean makeRemoteRoundEntry(int roundNum, TreeMap<Double, List<WinnerDetails>> winners) {
 		AuctionServerPersistance writer = getAuctionWriter();
-		return writer.persistRemoteRoundWinners(roundNum, results);
+		return writer.persistRemoteRoundWinners(roundNum, winners);
 	}
 
 	private Boolean finishUpAuction() {

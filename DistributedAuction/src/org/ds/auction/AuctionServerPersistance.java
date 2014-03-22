@@ -122,20 +122,8 @@ public class AuctionServerPersistance {
 		return true;
 	}
 	
-	public Boolean persistRemoteRoundWinners(int roundNum, AuctionResults results){
+	public Boolean persistRemoteRoundWinners(int roundNum, TreeMap<Double, List<WinnerDetails>> winners){
 		MongoClient mongoClient = getMongoClient();
-		
-		TreeMap<Double, List<WinnerDetails>> winners = new TreeMap<Double, List<WinnerDetails>>();
-		for(Entry<Double, List<String>> entry:results.getBids().entrySet()){
-			Double price = entry.getKey();
-			List<String> bidders = entry.getValue();
-			List<WinnerDetails> winnersDetails = new ArrayList<WinnerDetails>();
-			for(String bidder:bidders){
-				WinnerDetails winner = new WinnerDetails("", bidder);
-				winnersDetails.add(winner);
-			}
-			winners.put(price, winnersDetails);
-		}
 		
 		RoundResults remoteResults = new RoundResults(roundNum, winners);
 		BasicDBObject entry = new BasicDBObject(FIELD_REMOTE_RESULTS, remoteResults.getRoundResults());
