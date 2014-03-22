@@ -35,6 +35,10 @@ public class DBClient {
 	private static DBClient _instance;
 	private MongoClient mongoClient;
 
+	public MongoClient getMongoClient(){
+		return this.mongoClient;
+	}
+	
 	/**
 	 * Constructor
 	 */

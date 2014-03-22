@@ -27,6 +27,9 @@ public class AuctionServer {
 	public static String SELLER_ID_FIELD = "userId";
 	public static String PRODUCT_ID_FIELD = "productId";
 	
+	public static String STATUS_RUNNING = "running";
+	public static String STATUS_FINISHED = "finished";
+	
 	private int minWinners = 5;
 	
 	private int maxLastCalls = 10;
@@ -276,6 +279,8 @@ public class AuctionServer {
 	
 	private Boolean makeInitAuctionEntry(){
 		AuctionServerPersistance writer = getAuctionWriter();
+		BuyerCriteria criteria = getBuyerCriteria();
+		
 		return true;
 	}
 	
@@ -290,6 +295,7 @@ public class AuctionServer {
 	}
 	
 	private Boolean finishUpAuction(){
+		AuctionServerPersistance writer = getAuctionWriter();
 		return true;
 	}
 }
