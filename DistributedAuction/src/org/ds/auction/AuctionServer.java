@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.Set;
 
@@ -86,7 +87,7 @@ public class AuctionServer {
 	
 	public void run() {
 		makeInitAuctionEntry();
-		
+		System.out.println("Auction entry made with id");
 		runLocalAuction();
 		runRemoteAuction();
 		
@@ -95,6 +96,13 @@ public class AuctionServer {
 	
 	private Boolean runLocalAuction(){
 		TreeMap<Double, List<LocalSellerDetails>> prices = getSortedListAndMinPrices();
+		System.out.println("Sorted list and min prices obtained for local bidders");
+		for(Entry<Double,List<LocalSellerDetails>> entry: prices.entrySet()){
+			System.out.println("For Price: "+entry.getKey());
+			for(LocalSellerDetails localSeller: entry.getValue()){
+				System.out.println("Local seller found: "+localSeller.getSellerID());
+			}
+		}
 		TreeMap<Double, List<WinnerDetails>> winners = new TreeMap<Double, List<WinnerDetails>>();
 		
 		List<WinnerDetails> winnersDetails = null;
@@ -141,6 +149,7 @@ public class AuctionServer {
 	
 	private TreeMap<Double, List<LocalSellerDetails>> getSortedListAndMinPrices(){
 		List<BasicDBObject> localBidders = getLocalBidders();
+		System.out.println("Determing the sorted list and min prices for localBidders of size:"+localBidders.size());
 		TreeMap<Double, List<LocalSellerDetails>> prices = new TreeMap<Double, List<LocalSellerDetails>>();
 		
 		for(int i = 0; i < localBidders.size(); i++) {
@@ -150,7 +159,7 @@ public class AuctionServer {
 		
 		return prices;
 	}
-	
+	//Threadit
 	private void enterDetails(BasicDBObject localBidder, TreeMap<Double, List<LocalSellerDetails>> prices){
 		BasicDBList pricesByHour = (BasicDBList)localBidder.get(BUYER_PRICE_DETAILS);
 		Date startHour = getBuyerCriteria().getNeededFrom();
@@ -172,7 +181,7 @@ public class AuctionServer {
 		
 		LocalSellerDetails sellerDetails = new LocalSellerDetails(listPrice, minPrice, 
 				localBidder.getString(SELLER_ID_FIELD), localBidder.getString(PRODUCT_ID_FIELD));
-		
+		//Synchornized
 		List<LocalSellerDetails> value;
 		if(prices.containsKey(minPrice)) {
 			value = prices.get(minPrice);
@@ -240,7 +249,7 @@ public class AuctionServer {
 		//iterate through each remote bidder and ask if they want to bid
 		for(int i = 0; i < remoteBidders.size(); i++){
 			BasicDBObject remoteBidder = remoteBidders.get(i); //get remote bidder at position i
-			getBid(remoteBidder,  newRemoteBidders, oldBids, newBids); //get his bid
+			getBid(remoteBidder,  newRemoteBidders, oldBids, newBids); //get his bid Threadit
 		}
 		
 		remoteBidders = newRemoteBidders; //set the remote bidders to the new set
@@ -264,6 +273,7 @@ public class AuctionServer {
 		BidDetails bidDetails = new BidDetails();
 		if(bidDetails.getMadeBid()){
 			Double bid = bidDetails.getBid();
+			//Synchoronization
 			List<String> sellers;
 			if(newBids.containsKey(bid)) {
 				sellers = newBids.get(bid);
