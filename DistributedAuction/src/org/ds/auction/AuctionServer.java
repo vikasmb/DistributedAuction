@@ -23,8 +23,8 @@ public class AuctionServer {
 	
 	public static String BUYER_PRICE_DETAILS = "prices";
 	public static String HOUR_FIELD = "hour";
-	public static String LIST_PRICE_FIELD = "list_price";
-	public static String MIN_PRICE_FIELD = "min_price";
+	public static String LIST_PRICE_FIELD = "listPrice";
+	public static String MIN_PRICE_FIELD = "minPrice";
 	public static String SELLER_ID_FIELD = "userId";
 	public static String PRODUCT_ID_FIELD = "productId";
 	
@@ -89,7 +89,7 @@ public class AuctionServer {
 		makeInitAuctionEntry();
 		System.out.println("Auction entry made with id");
 		runLocalAuction();
-		runRemoteAuction();
+		//runRemoteAuction();
 		
 		finishUpAuction();
 	}
@@ -107,7 +107,7 @@ public class AuctionServer {
 		
 		List<WinnerDetails> winnersDetails = null;
 		List<LocalSellerDetails> sellersDetails = null;
-		
+		Double lastPrice = Double.MAX_VALUE;
 		
 		if(prices.size() == 1 && prices.get(prices.firstKey()).size() == 1){
 			//special case when there is only seller for this particular service
@@ -121,7 +121,7 @@ public class AuctionServer {
 			Set<Double> minPrices = prices.keySet();
 			for(Double price:minPrices){
 				if(winnersDetails != null){
-					winners.put(price, winnersDetails);
+					winners.put(price - 1.0, winnersDetails);
 				}
 				
 				if(winnersNum >= minWinners) {
@@ -130,10 +130,22 @@ public class AuctionServer {
 					sellersDetails = prices.get(price);
 					winnersDetails = getWinnersDetails(sellersDetails);
 					winnersNum += winnersDetails.size();
+					lastPrice = price;
 				}
+			}
+			
+			if(winnersDetails != null){
+				winners.put(lastPrice, winnersDetails);
 			}
 		}
 		
+		System.out.println("Winners found: ");
+		for(Entry<Double,List<WinnerDetails>> entry: winners.entrySet()){
+			System.out.println("For Price: "+entry.getKey());
+			for(WinnerDetails winner: entry.getValue()){
+				System.out.println("Winner found: "+winner.getSellerID());
+			}
+		}
 		makeLocalWinnersEntry(winners);
 		return true;
 	}
@@ -165,13 +177,18 @@ public class AuctionServer {
 		Date startHour = getBuyerCriteria().getNeededFrom();
 		Date endHour = getBuyerCriteria().getNeededUntil();
 		
+		System.out.println("Start hour: " + startHour.getTime());
+		System.out.println("End hour: " + endHour.getTime());
+		
 		Double minPrice = 0.0;
 		Double listPrice = 0.0;
 		
 		for(int i = 0; i < pricesByHour.size(); i++){
 			BasicDBObject currentHourPriceDetails = (BasicDBObject)pricesByHour.get(i);
+			System.out.println("At " + i + ": " + currentHourPriceDetails);
 			Date currentHour = currentHourPriceDetails.getDate(HOUR_FIELD);
 			if((currentHour.equals(startHour) || currentHour.after(startHour)) && currentHour.before(endHour)){
+				System.out.println("Current hour: " + currentHour.getTime());
 				minPrice += currentHourPriceDetails.getDouble(MIN_PRICE_FIELD);
 				listPrice += currentHourPriceDetails.getDouble(LIST_PRICE_FIELD);
 			} else if(currentHour.equals(endHour) || currentHour.after(endHour)) {

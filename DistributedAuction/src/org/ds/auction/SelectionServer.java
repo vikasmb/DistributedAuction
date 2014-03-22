@@ -31,6 +31,10 @@ public class SelectionServer {
 		  detailsObj.getRemoteBidders().size()); // server.printArgs(args);
 		 //Pass the local and remote bidders list to auction server.
 		  BuyerCriteria criteria=new BuyerCriteria("123", DateUtil.getDate("2014-03-15T10:00:00"), DateUtil.getDate("2014-03-15T11:00:00"), "LA");
+		  
+		  /*for(BasicDBObject obj:detailsObj.getLocalBidders()){
+			  System.out.println("Obj: " + obj);
+		  }*/
 		  AuctionServer auctionServer=new AuctionServer(detailsObj, criteria);
 		  auctionServer.run();
 		  
