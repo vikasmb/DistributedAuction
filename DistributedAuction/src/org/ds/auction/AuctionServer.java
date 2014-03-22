@@ -32,23 +32,14 @@ public class AuctionServer {
 	private int maxLastCalls = 10;
 	
 	public static void main(String args[]) {
-		Map<Integer, String> checkMap = new TreeMap<Integer, String>();
-		checkMap.put(1, "One");
-		checkMap.put(4, "Four");
-		checkMap.put(3, "Three");
-		checkMap.put(2, "Two");
 		
-		for(Integer key : checkMap.keySet()) {
-		    System.out.println(checkMap.get(key));
-		}
 	}
 	
 	private BidderDetails bidderDetails;
 	private BuyerCriteria buyerCriteria;
 	
-	private BidderDetails getBidderDetails() {
-		return this.bidderDetails;
-	}
+	private AuctionServerPersistance auctionWriter;
+	
 	
 	private void setBidderDetails(BidderDetails bidderDetails){
 		this.bidderDetails = bidderDetails;
@@ -58,8 +49,20 @@ public class AuctionServer {
 		this.buyerCriteria = buyerCriteria;
 	}
 	
+	private void setAuctionWriter(AuctionServerPersistance auctionWriter) {
+		this.auctionWriter = auctionWriter;
+	}
+	
+	private BidderDetails getBidderDetails() {
+		return this.bidderDetails;
+	}
+	
 	private BuyerCriteria getBuyerCriteria() {
 		return this.buyerCriteria;
+	}
+	
+	private AuctionServerPersistance getAuctionWriter(){
+		return this.auctionWriter;
 	}
 	
 	private List<BasicDBObject> getLocalBidders() {
@@ -73,12 +76,30 @@ public class AuctionServer {
 	public AuctionServer(BidderDetails bidderDetails, BuyerCriteria buyerCriteria) {
 		setBidderDetails(bidderDetails);
 		setBuyerCriteria(buyerCriteria);
+		
+		AuctionServerPersistance writer = new AuctionServerPersistance();
+		setAuctionWriter(writer);
 	}
 	
 	public void run() {
+		makeInitAuctionEntry();
+		
 		runLocalAuction();
 		runRemoteAuction();
+		
 		finishUpAuction();
+	}
+	
+	private Boolean makeInitAuctionEntry(){
+		return true;
+	}
+	
+	private Boolean makeLocalWinnersEntry(TreeMap<Double, List<WinnerDetails>> winners){
+		return true;
+	}
+	
+	private Boolean makeRemoteRoundEntry(int roundNum, AuctionResults results){
+		return true;
 	}
 	
 	private Boolean runLocalAuction(){
@@ -114,6 +135,7 @@ public class AuctionServer {
 			}
 		}
 		
+		makeLocalWinnersEntry(winners);
 		return true;
 	}
 	
@@ -176,6 +198,8 @@ public class AuctionServer {
 		List<BasicDBObject> remoteBidders = getRemoteBidders();
 		
 		//run rounds
+		int roundNum = 1;
+		
 		//last calls tracker
 		Boolean lastCallSuccess = false;			//did the last call succeed?
 		int numLastCalls = 0;					//bound the number of last calls to offset byzantine bidders
@@ -188,12 +212,18 @@ public class AuctionServer {
 			while(currentResults == null || !currentResults.isSameAs(lastResults)) {
 				lastResults = currentResults;
 				currentResults = runRound(remoteBidders, lastResults, false);
+				
+				makeRemoteRoundEntry(roundNum, currentResults);
+				roundNum++;
 			}
 			
 			//we are ready for a last call because the bids have stabilized
 			numLastCalls++;
 			lastResults = currentResults;
 			currentResults = runRound(remoteBidders, lastResults, true);
+			
+			makeRemoteRoundEntry(roundNum, currentResults);
+			roundNum++;
 			
 			lastCallSuccess = currentResults.isSameAs(lastResults);
 		}

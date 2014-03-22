@@ -4,9 +4,14 @@ import java.util.Date;
 
 public class BuyerCriteria {
 
+	private String buyerID;
 	private Date neededFrom;
 	private Date neededUntil;
 	private String city;
+	
+	public String getBuyerID(){
+		return this.buyerID;
+	}
 	
 	public Date getNeededFrom() {
 		return this.neededFrom;
@@ -20,7 +25,8 @@ public class BuyerCriteria {
 		return this.city;
 	}
 	
-	public BuyerCriteria(Date neededFrom, Date neededUntil, String city){
+	public BuyerCriteria(String buyerID, Date neededFrom, Date neededUntil, String city){
+		this.buyerID = buyerID;
 		this.neededFrom = neededFrom;
 		this.neededUntil = neededUntil;
 		this.city = city;
