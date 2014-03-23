@@ -10,7 +10,10 @@ import org.ds.client.DBClient;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
 import com.mongodb.MongoClient;
+import com.mongodb.WriteResult;
 
 public class AuctionServerPersistance {
 	
@@ -91,8 +94,6 @@ public class AuctionServerPersistance {
 	}
 	
 	public Boolean makeInitEntry(String buyerID){
-		MongoClient mongoClient = getMongoClient();
-		
 		Date date = new Date();
 		
 		setAuctionID(buyerID + "_" + String.valueOf(date.getTime()));
@@ -110,38 +111,38 @@ public class AuctionServerPersistance {
 												.append(FIELD_LOCAL_RESULTS, localResults.getRoundResults())
 												.append(FIELD_VERSION, getVersion());
 		
-		//System.out.println("Making entry: " + entry);
-		return true;
+		System.out.println("Making entry: " + entry);
+		
+		return insertIntoMongo(entry);
 	}
 	
 	public Boolean persistLocalBidWinners(TreeMap<Double, List<WinnerDetails>> winners){
-		MongoClient mongoClient = getMongoClient();
 		String auctionID = getAuctionID();
 		
 		int oldVersion = getVersion();
 		int newVersion = incrementVersion();
-		
 		RoundResults localResults = new RoundResults(1, winners);
+		
 		BasicDBObject entry = new BasicDBObject(FIELD_LOCAL_RESULTS, localResults.getRoundResults())
 													.append(FIELD_VERSION, newVersion);
 		BasicDBObject query = new BasicDBObject(FIELD_AUCTION_ID, auctionID)
 												.append(FIELD_VERSION, oldVersion);
 		BasicDBObject update = new BasicDBObject("$set", entry);
 		
-		//System.out.println("Making query: " + query);
-		//System.out.println("Making update: " + update);
+		System.out.println("Making query: " + query);
+		System.out.println("Making update: " + update);
 		
-		return true;
+		return updateMongo(query, update);
 	}
 	
 	public Boolean persistRemoteRoundWinners(int roundNum, TreeMap<Double, List<WinnerDetails>> winners){
-		MongoClient mongoClient = getMongoClient();
 		String auctionID = getAuctionID();
 		
 		int oldVersion = getVersion();
 		int newVersion = incrementVersion();
-		
+		String status = AuctionServer.STATUS_RUNNING;
 		RoundResults remoteResults = new RoundResults(roundNum, winners);
+		
 		BasicDBObject entry = new BasicDBObject(FIELD_REMOTE_RESULTS, remoteResults.getRoundResults())
 													.append(FIELD_VERSION, newVersion);
 		BasicDBObject query = new BasicDBObject(FIELD_AUCTION_ID, auctionID)
@@ -151,11 +152,10 @@ public class AuctionServerPersistance {
 		//System.out.println("Making query: " + query);
 		//System.out.println("Making update: " + update);
 		
-		return true;
+		return updateMongo(query, update);
 	}
 	
 	public Boolean finishUpAuction(){
-		MongoClient mongoClient = getMongoClient();
 		String auctionID = getAuctionID();
 		
 		int oldVersion = getVersion();
@@ -163,8 +163,10 @@ public class AuctionServerPersistance {
 		
 		Date date = new Date();
 		Long finishedAt = date.getTime();
+		String status = AuctionServer.STATUS_FINISHED;
 		
 		BasicDBObject entry = new BasicDBObject(FIELD_FINISHED_AT, finishedAt)
+													.append(FIELD_STATUS, status)
 													.append(FIELD_VERSION, newVersion);
 		BasicDBObject query = new BasicDBObject(FIELD_AUCTION_ID, auctionID)
 												.append(FIELD_VERSION, oldVersion);
@@ -173,6 +175,51 @@ public class AuctionServerPersistance {
 		//System.out.println("Making query: " + query);
 		//System.out.println("Making update: " + update);
 		
-		return true;
+		return updateMongo(query, update);
+	}
+	
+	private Boolean insertIntoMongo(BasicDBObject entry){
+		Boolean success = true;
+		DBCollection coll = getCollection();
+		if (coll != null) {
+			WriteResult result = coll.insert(entry);
+			System.out.println("Result of insert: " + result);
+		} else {
+			System.out.println("Failed to get collection: "
+					+ DBClient.AUCTIONS_DETAILS);
+			success = false;
+		}
+		return success;
+	}
+	
+	private Boolean updateMongo(BasicDBObject query, BasicDBObject update){
+		Boolean success = true;
+		DBCollection coll = getCollection();
+		if (coll != null) {
+			WriteResult result = coll.update(query, update);
+			System.out.println("Result of insert: " + result);
+		} else {
+			System.out.println("Failed to get collection: "
+					+ DBClient.AUCTIONS_DETAILS);
+			success = false;
+		}
+		return success;
+	}
+	
+	private DB getDB(){
+		MongoClient mongoClient = getMongoClient();
+		return mongoClient.getDB(DBClient.CAR_VENDORS_DB);
+	}
+	
+	private DBCollection getCollection(){
+		DB db = getDB();
+		DBCollection coll = null;
+		if(db != null){
+			coll = db.getCollection(DBClient.AUCTIONS_DETAILS);
+		} else {
+			System.out.println("Failed to get DB: " + DBClient.CAR_VENDORS_DB);
+		}
+		
+		return coll;
 	}
 }

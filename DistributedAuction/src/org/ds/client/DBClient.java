@@ -31,6 +31,7 @@ public class DBClient {
 	// Collection names
 	public static String INDEX_COLLECTION = "indexCollection";
 	public static String CAR_VENDORS_DETAILS = "carVendorsDetails";
+	public static String AUCTIONS_DETAILS = "auctionsDetails";
 
 	// instance variables
 	private static DBClient _instance;
