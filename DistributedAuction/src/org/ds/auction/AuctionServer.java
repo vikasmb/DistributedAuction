@@ -306,7 +306,14 @@ public class AuctionServer {
 
 			lastCallSuccess = areSame(currentResults, lastResults);
 		}
-
+		
+		System.out.println("Winners found: ");
+		for (Entry<Double, List<WinnerDetails>> entry : currentResults.entrySet()) {
+			System.out.println("For Price: " + entry.getKey());
+			for (WinnerDetails winner : entry.getValue()) {
+				System.out.println("Winner found: " + winner.getSellerID());
+			}
+		}
 		return true;
 	}
 	
@@ -498,19 +505,21 @@ public class AuctionServer {
 		    oldBids.addAll(lastResults.keySet());
         }
 		String remoteAddress = remoteBidder.getRemoteAddress();
-		String restAddr="http://"+"localhost"+":"+"8080"+"/DistributedAuction/rest/"; //To be replaced with remoteSellerDetails object address
+		System.out.println("Remote address: " + remoteAddress);
+		
 		ClientResponse response=null;
 		ClientConfig config = new DefaultClientConfig();
 		Client client = Client.create(config);
-		WebResource webResource=client.resource(restAddr).path("SellerService/respondToBid");
+		WebResource webResource=client.resource(remoteAddress);
 		RemoteAuctionDetails remoteDetails=new RemoteAuctionDetails();
+		
 		remoteDetails.setAuctionId("123");
 		remoteDetails.setOldBids(oldBids);
 		remoteDetails.setRoundNumber(roundNum);
 		BidDetails bidDetails = null;
 		try{
 			 response = webResource.type(MediaType.APPLICATION_JSON).post(ClientResponse.class,remoteDetails);
-			 System.out.println("Client recieved the status  of"+response.getStatus());
+			 //System.out.println("Client recieved the status  of"+response.getStatus());
 			 bidDetails=response.getEntity(BidDetails.class);
 			 System.out.println("In round:"+roundNum+" got back bid of price "+bidDetails.getBid());
 		}

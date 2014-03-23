@@ -25,4 +25,8 @@ public class SellerDetails {
 		
 	}
 	
+	public void printDetails(){
+		System.out.println("ProductID: " + getProductID() + ". SellerID: " + getSellerID());
+	}
+	
 }

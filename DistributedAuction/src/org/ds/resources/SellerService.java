@@ -67,4 +67,38 @@ public class SellerService {
 		}
 		return Response.status(200).entity(responseBid).build();
 	}
+	
+	@POST
+	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Path("/respondToBid1")
+	public Response respondToBid1(RemoteAuctionDetails auctionDetails) { // BuyerCriteria,OldBids
+																		// and
+																		// auctionId
+
+		System.out.println("Processing auction of id"
+				+ auctionDetails.getAuctionId()+" in round"+auctionDetails.getRoundNumber());
+		Random rand = new Random();
+		Double minPriceToRespondTo = rand.nextDouble() * 60.0; // Randomize to
+																// obtain
+																// different
+																// remote
+																// services
+		Set<Double> oldRoundPrices = auctionDetails.getOldBids();
+		// Process oldBids to see if this remote seller wants to continue
+		// bidding.
+		Double minPriceInOlderRound = 25.0;
+		BidDetails responseBid = new BidDetails();
+		if (auctionDetails.getRoundNumber() >= 3) {
+			responseBid.setBid(25.0);
+			responseBid.setMadeBid(true);
+		} else {
+			responseBid.setBid(minPriceToRespondTo);
+			responseBid.setMadeBid(false);
+			if (minPriceInOlderRound > minPriceToRespondTo) {
+				responseBid.setMadeBid(true);
+			}
+		}
+		return Response.status(200).entity(responseBid).build();
+	}
 }
