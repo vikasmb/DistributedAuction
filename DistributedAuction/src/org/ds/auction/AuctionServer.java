@@ -32,6 +32,25 @@ import com.sun.jersey.api.client.config.DefaultClientConfig;
 
 public class AuctionServer {
 
+	private class RoundResults{
+		private TreeMap<Double, List<WinnerDetails>> newBids;
+		private List<RemoteSellerDetails> newRemoteBidders;
+		
+		public RoundResults(TreeMap<Double, List<WinnerDetails>> newBids, 
+				List<RemoteSellerDetails> newRemoteBidders){
+			this.newBids = newBids;
+			this.newRemoteBidders = newRemoteBidders;
+		}
+		
+		public TreeMap<Double, List<WinnerDetails>> getBids(){
+			return this.newBids;
+		}
+		
+		public List<RemoteSellerDetails> getRemoteBidders(){
+			return this.newRemoteBidders;
+		}
+	}
+	
 	public static String LIST_LOCAL_BIDDERS = "local";
 	public static String LIST_REMOTE_BIDDERS = "remote";
 
@@ -292,9 +311,12 @@ public class AuctionServer {
 			while (currentResults == null
 					|| !areSame(currentResults, lastResults)) {
 				lastResults = currentResults;
-				currentResults = runRound(remoteBidders, lastResults, false,
+				System.out.println(remoteBidders);
+				RoundResults results = runRound(remoteBidders, lastResults, false,
 						roundNum);
-
+				currentResults = results.getBids();
+				remoteBidders = results.getRemoteBidders();
+				
 				makeRemoteRoundEntry(roundNum, currentResults);
 				roundNum++;
 			}
@@ -302,8 +324,10 @@ public class AuctionServer {
 			// we are ready for a last call because the bids have stabilized
 			numLastCalls++;
 			lastResults = currentResults;
-			currentResults = runRound(remoteBidders, lastResults, true,
+			RoundResults results = runRound(remoteBidders, lastResults, true,
 					roundNum);
+			currentResults = results.getBids();
+			remoteBidders = results.getRemoteBidders();
 
 			makeRemoteRoundEntry(roundNum, currentResults);
 			roundNum++;
@@ -392,7 +416,7 @@ public class AuctionServer {
 		return true;
 	}
 
-	private TreeMap<Double, List<WinnerDetails>> runRound(
+	private RoundResults runRound(
 			List<RemoteSellerDetails> remoteBidders,
 			TreeMap<Double, List<WinnerDetails>> lastResults, Boolean lastCall,
 			int roundNum) {
@@ -432,7 +456,8 @@ public class AuctionServer {
 				try {
 					remoteBidderDetails = f.get();
 					Double bidPrice = remoteBidderDetails.getPrice();
-					if (bidPrice != -1d) {
+					System.out.println("*******Bid price is: " + bidPrice);
+					if (bidPrice > 0) {
 						System.out.println("Trying to find if key exists for "
 								+ bidPrice);
 						if (newBids.containsKey(bidPrice)) {
@@ -460,9 +485,6 @@ public class AuctionServer {
 		// newBids,roundNum); // get his
 		// bid
 
-		remoteBidders = newRemoteBidders; // set the remote bidders to the new
-											// set
-
 		int winnersNum = 0;
 		TreeMap<Double, List<WinnerDetails>> winBids = new TreeMap<Double, List<WinnerDetails>>();
 		for (Entry<Double, List<RemoteSellerDetails>> entry : newBids
@@ -480,7 +502,8 @@ public class AuctionServer {
 			}
 		}
 
-		return winBids;
+		RoundResults results = new RoundResults(winBids, newRemoteBidders);
+		return results;
 	}
 
 	private class RemoteBidder implements Callable<RemoteSellerDetails> {
@@ -522,7 +545,7 @@ public class AuctionServer {
 						ClientResponse.class, remoteDetails);
 				// System.out.println("Client recieved the status  of"+response.getStatus());
 				bidDetails = response.getEntity(BidDetails.class);
-				System.out.println("In round:" + roundNum + "with madeBid as "
+				System.out.println("In round: " + roundNum + " with madeBid as "
 						+ bidDetails.getMadeBid() + " got back bid of price "
 						+ bidDetails.getBid());
 			} catch (Exception e) {
