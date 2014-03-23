@@ -71,17 +71,6 @@ public class SelectionServer {
 
 	}
 
-	private void printArgs(String[] args) {
-		try {
-			// Thread.currentThread();
-			System.out.println("Starting sleep");
-			Thread.sleep(3000);
-			System.out.println("Ending sleep");
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		System.out.println("Received args");
-
-	}
+	
 
 }

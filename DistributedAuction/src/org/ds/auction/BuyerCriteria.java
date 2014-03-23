@@ -2,6 +2,8 @@ package org.ds.auction;
 
 import java.util.Date;
 
+import javax.xml.bind.annotation.XmlRootElement;
+@XmlRootElement
 public class BuyerCriteria {
 
 	private String buyerID;

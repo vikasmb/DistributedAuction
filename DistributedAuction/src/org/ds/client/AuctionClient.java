@@ -79,4 +79,9 @@ public class AuctionClient {
 		} else
 			System.out.println("null");
 	}
+	
+	public static void main(String[] args){
+		System.out.println("Can run");
+		
+	}
 }
