@@ -229,6 +229,7 @@ public class AuctionServer {
 				}
 			}
 		}
+		es.shutdown();
 		// enterDetails(localBidder, prices);
 		return prices;
 	}
@@ -476,6 +477,7 @@ public class AuctionServer {
 				}
 			}
 		}
+		es.shutdown();
 		/*
 		 * sellers.add(remoteBidder); newBids.put(bid, sellers); // put the bid
 		 * newRemoteBidders.add(remoteBidder); // add as possible bidder for //
