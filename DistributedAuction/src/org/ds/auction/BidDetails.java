@@ -1,10 +1,23 @@
 package org.ds.auction;
 
+import javax.faces.bean.ManagedBean;
+import javax.faces.bean.SessionScoped;
+import javax.xml.bind.annotation.XmlRootElement;
+
+@XmlRootElement
 public class BidDetails {
 
 	Boolean madeBid;
 	Double bid;
 	
+	public void setMadeBid(Boolean madeBid) {
+		this.madeBid = madeBid;
+	}
+
+	public void setBid(Double bid) {
+		this.bid = bid;
+	}
+
 	public Boolean getMadeBid() {
 		return this.madeBid;
 	}
@@ -14,8 +27,5 @@ public class BidDetails {
 	}
 	
 	public BidDetails(){
-		//TODO: this constructor has to be modified to use the details sent back by the remote URI
-		this.madeBid = true;
-		this.bid = 10.0;
 	}
 }

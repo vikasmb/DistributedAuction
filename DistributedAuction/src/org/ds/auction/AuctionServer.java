@@ -3,6 +3,7 @@ package org.ds.auction;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -15,11 +16,19 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import javax.ws.rs.core.MediaType;
+
 import org.ds.client.*;
 import org.ds.carServer.*;
+import org.ds.resources.RemoteAuctionDetails;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.api.client.config.ClientConfig;
+import com.sun.jersey.api.client.config.DefaultClientConfig;
 
 public class AuctionServer {
 
@@ -95,7 +104,7 @@ public class AuctionServer {
 		makeInitAuctionEntry();
 		System.out.println("Auction entry made with id");
 		runLocalAuction();
-		// runRemoteAuction();
+		runRemoteAuction();
 
 		finishUpAuction();
 	}
@@ -276,12 +285,12 @@ public class AuctionServer {
 		// results tracker
 		TreeMap<Double, List<WinnerDetails>> lastResults = null;
 		TreeMap<Double, List<WinnerDetails>> currentResults = null;
-
+        
 		while (!lastCallSuccess && numLastCalls < maxLastCalls) {
 			while (currentResults == null
 					|| !areSame(currentResults, lastResults)) {
 				lastResults = currentResults;
-				currentResults = runRound(remoteBidders, lastResults, false);
+				currentResults = runRound(remoteBidders, lastResults, false,roundNum);
 
 				makeRemoteRoundEntry(roundNum, currentResults);
 				roundNum++;
@@ -290,7 +299,7 @@ public class AuctionServer {
 			// we are ready for a last call because the bids have stabilized
 			numLastCalls++;
 			lastResults = currentResults;
-			currentResults = runRound(remoteBidders, lastResults, true);
+			currentResults = runRound(remoteBidders, lastResults, true,roundNum);
 
 			makeRemoteRoundEntry(roundNum, currentResults);
 			roundNum++;
@@ -367,7 +376,7 @@ public class AuctionServer {
 	}
 
 	private TreeMap<Double, List<WinnerDetails>> runRound(List<RemoteSellerDetails> remoteBidders,
-			TreeMap<Double, List<WinnerDetails>> lastResults, Boolean lastCall) {
+			TreeMap<Double, List<WinnerDetails>> lastResults, Boolean lastCall,int roundNum) {
 		// contact each remote bidder and ask him if he wants to bid lower than
 		// the auction results
 
@@ -380,7 +389,7 @@ public class AuctionServer {
 			RemoteSellerDetails remoteBidder = remoteBidders.get(i); // get remote
 																// bidder at
 																// position i
-			getBid(remoteBidder, newRemoteBidders, lastResults, newBids); // get his
+			getBid(remoteBidder, newRemoteBidders, lastResults, newBids,roundNum); // get his
 																		// bid
 																		// Threadit
 		}
@@ -410,17 +419,41 @@ public class AuctionServer {
 	private void getBid(RemoteSellerDetails remoteBidder,
 			List<RemoteSellerDetails> newRemoteBidders,
 			TreeMap<Double, List<WinnerDetails>> lastResults,
-			TreeMap<Double, List<RemoteSellerDetails>> newBids) {
-
-		Set<Double> oldBids = lastResults.keySet();
+			TreeMap<Double, List<RemoteSellerDetails>> newBids,int roundNum) {
+		Set<Double> oldBids=new HashSet<Double>();
+        if(lastResults!=null){
+		    oldBids.addAll(lastResults.keySet());
+        }
 		String remoteAddress = remoteBidder.getRemoteAddress();
-
+		String restAddr="http://"+"localhost"+":"+"8080"+"/DistributedAuction/rest/"; //To be replaced with remoteSellerDetails object address
+		ClientResponse response=null;
+		ClientConfig config = new DefaultClientConfig();
+		Client client = Client.create(config);
+		WebResource webResource=client.resource(restAddr).path("SellerService/respondToBid");
+		RemoteAuctionDetails remoteDetails=new RemoteAuctionDetails();
+		remoteDetails.setAuctionId("123");
+		remoteDetails.setOldBids(oldBids);
+		remoteDetails.setRoundNumber(roundNum);
+		BidDetails bidDetails = null;
+		try{
+			 response = webResource.type(MediaType.APPLICATION_JSON).post(ClientResponse.class,remoteDetails);
+			 System.out.println("Client recieved the status  of"+response.getStatus());
+			 bidDetails=response.getEntity(BidDetails.class);
+			 System.out.println("In round:"+roundNum+" got back bid of price "+bidDetails.getBid());
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
+		
 		// IMPORTANT: oldBids may be null. Handle the case. If it is null, then
 		// this is the first round
 		// make a URI call to remote address.
 		// convert the response to BidDetails Object
 
-		BidDetails bidDetails = new BidDetails();
+		if(bidDetails==null){
+			System.out.println("Bid Details are null!!");
+			return;
+		}			
 		if (bidDetails.getMadeBid()) {
 			Double bid = bidDetails.getBid();
 			// Synchronization
