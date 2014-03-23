@@ -384,6 +384,7 @@ public class AuctionServer {
 		TreeMap<Double, List<RemoteSellerDetails>> newBids = new TreeMap<Double, List<RemoteSellerDetails>>();
 		List<RemoteSellerDetails> newRemoteBidders = new ArrayList<RemoteSellerDetails>();
 
+		
 		// iterate through each remote bidder and ask if they want to bid
 		for (int i = 0; i < remoteBidders.size(); i++) {
 			RemoteSellerDetails remoteBidder = remoteBidders.get(i); // get remote
@@ -415,7 +416,79 @@ public class AuctionServer {
 		return winBids;
 	}
 	
+	private class RemoteBidder implements Callable<RemoteSellerDetails>{
+        
+		private RemoteSellerDetails remoteBidder;
+        private TreeMap<Double, List<WinnerDetails>> lastResults;
+        private TreeMap<Double, List<RemoteSellerDetails>> newBids;
+        private int roundNum;
+        
+        public RemoteBidder(RemoteSellerDetails remoteBidder,
+				TreeMap<Double, List<WinnerDetails>> lastResults,
+				TreeMap<Double, List<RemoteSellerDetails>> newBids, int roundNum) {
+			super();
+			this.remoteBidder = remoteBidder;
+			this.lastResults = lastResults;
+			this.newBids = newBids;
+			this.roundNum = roundNum;
+		}
+        
+		@Override
+		public RemoteSellerDetails call() throws Exception {
+			Set<Double> oldBids=new HashSet<Double>();
+	        if(lastResults!=null){
+			    oldBids.addAll(lastResults.keySet());
+	        }
+			String remoteAddress = remoteBidder.getRemoteAddress();
+			String restAddr="http://"+"localhost"+":"+"8080"+"/DistributedAuction/rest/"; //To be replaced with remoteSellerDetails object address
+			ClientResponse response=null;
+			ClientConfig config = new DefaultClientConfig();
+			Client client = Client.create(config);
+			WebResource webResource=client.resource(restAddr).path("SellerService/respondToBid");
+			RemoteAuctionDetails remoteDetails=new RemoteAuctionDetails();
+			remoteDetails.setAuctionId("123");
+			remoteDetails.setOldBids(oldBids);
+			remoteDetails.setRoundNumber(roundNum);
+			BidDetails bidDetails = null;
+			try{
+				 response = webResource.type(MediaType.APPLICATION_JSON).post(ClientResponse.class,remoteDetails);
+				 System.out.println("Client recieved the status  of"+response.getStatus());
+				 bidDetails=response.getEntity(BidDetails.class);
+				 System.out.println("In round:"+roundNum+" got back bid of price "+bidDetails.getBid());
+			}
+			catch(Exception e){
+				e.printStackTrace();
+			}
+			
+			// IMPORTANT: oldBids may be null. Handle the case. If it is null, then
+			// this is the first round
+			// make a URI call to remote address.
+			// convert the response to BidDetails Object
 
+			if(bidDetails==null){
+				System.out.println("Bid Details are null!!");
+				return;
+			}			
+			if (bidDetails.getMadeBid()) {
+				Double bid = bidDetails.getBid();
+				// Synchronization
+				List<RemoteSellerDetails> sellers;
+				if (newBids.containsKey(bid)) {
+					sellers = newBids.get(bid);
+				} else {
+					sellers = new ArrayList<RemoteSellerDetails>();
+				}
+				
+				remoteBidder.setPrice(bid);
+				sellers.add(remoteBidder);
+				newBids.put(bid, sellers); // put the bid
+				newRemoteBidders.add(remoteBidder); // add as possible bidder for
+													// next round
+			}
+			return null;
+		}
+		
+	}
 	private void getBid(RemoteSellerDetails remoteBidder,
 			List<RemoteSellerDetails> newRemoteBidders,
 			TreeMap<Double, List<WinnerDetails>> lastResults,
