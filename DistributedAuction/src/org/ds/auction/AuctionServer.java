@@ -132,7 +132,8 @@ public class AuctionServer {
 			// If this happens, that person can claim the list price
 			sellersDetails = prices.get(prices.firstKey());
 			Double price = sellersDetails.get(0).getListPrice();
-			winnersDetails = WinnerDetails.getWinnersDetails(price, sellersDetails);
+			winnersDetails = WinnerDetails.getWinnersDetails(price,
+					sellersDetails);
 			winners.put(price, winnersDetails);
 		} else {
 			int winnersNum = 0;
@@ -146,7 +147,8 @@ public class AuctionServer {
 					break;
 				} else {
 					sellersDetails = prices.get(price);
-					winnersDetails = WinnerDetails.getWinnersDetails(price, sellersDetails);
+					winnersDetails = WinnerDetails.getWinnersDetails(price,
+							sellersDetails);
 					winnersNum += winnersDetails.size();
 					lastPrice = price;
 				}
@@ -179,7 +181,7 @@ public class AuctionServer {
 			BasicDBObject localBidder = localBidders.get(i);
 			localBiddersList.add(new DetailExtractor(localBidder));
 		}
-		ExecutorService es = Executors.newFixedThreadPool(5); 
+		ExecutorService es = Executors.newFixedThreadPool(5);
 		List<Future<LocalSellerDetails>> resultList = null;
 		try {
 			resultList = es.invokeAll(localBiddersList);
@@ -269,7 +271,7 @@ public class AuctionServer {
 			return sellerDetails;
 		}
 	}
-	
+
 	private Boolean runRemoteAuction() {
 		// get the remote bidders
 		List<RemoteSellerDetails> remoteBidders = getPackagedRemoteBidders();
@@ -285,12 +287,13 @@ public class AuctionServer {
 		// results tracker
 		TreeMap<Double, List<WinnerDetails>> lastResults = null;
 		TreeMap<Double, List<WinnerDetails>> currentResults = null;
-        
+
 		while (!lastCallSuccess && numLastCalls < maxLastCalls) {
 			while (currentResults == null
 					|| !areSame(currentResults, lastResults)) {
 				lastResults = currentResults;
-				currentResults = runRound(remoteBidders, lastResults, false,roundNum);
+				currentResults = runRound(remoteBidders, lastResults, false,
+						roundNum);
 
 				makeRemoteRoundEntry(roundNum, currentResults);
 				roundNum++;
@@ -299,16 +302,18 @@ public class AuctionServer {
 			// we are ready for a last call because the bids have stabilized
 			numLastCalls++;
 			lastResults = currentResults;
-			currentResults = runRound(remoteBidders, lastResults, true,roundNum);
+			currentResults = runRound(remoteBidders, lastResults, true,
+					roundNum);
 
 			makeRemoteRoundEntry(roundNum, currentResults);
 			roundNum++;
 
 			lastCallSuccess = areSame(currentResults, lastResults);
 		}
-		
+
 		System.out.println("Winners found: ");
-		for (Entry<Double, List<WinnerDetails>> entry : currentResults.entrySet()) {
+		for (Entry<Double, List<WinnerDetails>> entry : currentResults
+				.entrySet()) {
 			System.out.println("For Price: " + entry.getKey());
 			for (WinnerDetails winner : entry.getValue()) {
 				System.out.println("Winner found: " + winner.getSellerID());
@@ -316,74 +321,81 @@ public class AuctionServer {
 		}
 		return true;
 	}
-	
-	private List<RemoteSellerDetails> getPackagedRemoteBidders(){
+
+	private List<RemoteSellerDetails> getPackagedRemoteBidders() {
 		List<RemoteSellerDetails> packagedRemoteBidders = new ArrayList<RemoteSellerDetails>();
-		
+
 		List<BasicDBObject> remoteBidders = getRemoteBidders();
-		for(BasicDBObject bidder:remoteBidders){
+		for (BasicDBObject bidder : remoteBidders) {
 			String productID = bidder.getString(FIELD_PRODUCT_ID);
 			String sellerID = bidder.getString(FIELD_SELLER_ID);
 			String remoteAddress = bidder.getString(FIELD_REMOTE_ADDRESS);
-			RemoteSellerDetails remoteSeller = new RemoteSellerDetails(remoteAddress, sellerID, productID);
+			RemoteSellerDetails remoteSeller = new RemoteSellerDetails(
+					remoteAddress, sellerID, productID);
 			packagedRemoteBidders.add(remoteSeller);
 		}
-		
+
 		return packagedRemoteBidders;
 	}
-	
-	private Boolean areSame(TreeMap<Double, List<WinnerDetails>> currentResults, TreeMap<Double, List<WinnerDetails>> lastResults){
-		if(currentResults == null || lastResults == null){
+
+	private Boolean areSame(
+			TreeMap<Double, List<WinnerDetails>> currentResults,
+			TreeMap<Double, List<WinnerDetails>> lastResults) {
+		if (currentResults == null || lastResults == null) {
 			return false;
 		}
-		
-		if(lastResults.size() != currentResults.size()){
+
+		if (lastResults.size() != currentResults.size()) {
 			return false;
 		}
-		
-		for(Entry<Double, List<WinnerDetails>> entry: currentResults.entrySet()){
+
+		for (Entry<Double, List<WinnerDetails>> entry : currentResults
+				.entrySet()) {
 			Double key = entry.getKey();
 			List<WinnerDetails> bidders = entry.getValue();
-			if(lastResults.containsKey(key)) {
-				if(!equalLists(lastResults.get(key), bidders)) {
+			if (lastResults.containsKey(key)) {
+				if (!equalLists(lastResults.get(key), bidders)) {
 					return false;
 				}
 			} else {
 				return false;
 			}
 		}
-		
-		return true;
-	}
-	
-	public Boolean equalLists(List<WinnerDetails> sellerList1, List<WinnerDetails> sellerList2){
-		
-		if(sellerList1.size() != sellerList2.size()) {
-			return false;
-		}
-		
-		List<String> list1 = new ArrayList<String>();
-		List<String> list2 = new ArrayList<String>();
-		
-		for(int i = 0; i < sellerList1.size(); i++){
-			list1.add(sellerList1.get(i).getProductID());
-			list2.add(sellerList2.get(i).getProductID());
-		}
-		
-		Collections.sort(list1);
-		Collections.sort(list2);
-		
-		for(int i = 0; i < list1.size(); i++) {
-			if(!list1.get(i).equals(list2.get(i))){
-				return false;
-			}
-		}
-		
+
 		return true;
 	}
 
-	private TreeMap<Double, List<WinnerDetails>> runRound(List<RemoteSellerDetails> remoteBidders,
-			TreeMap<Double, List<WinnerDetails>> lastResults, Boolean lastCall,int roundNum) {
+	public Boolean equalLists(List<WinnerDetails> sellerList1,
+			List<WinnerDetails> sellerList2) {
+
+		if (sellerList1.size() != sellerList2.size()) {
+			return false;
+		}
+
+		List<String> list1 = new ArrayList<String>();
+		List<String> list2 = new ArrayList<String>();
+
+		for (int i = 0; i < sellerList1.size(); i++) {
+			list1.add(sellerList1.get(i).getProductID());
+			list2.add(sellerList2.get(i).getProductID());
+		}
+
+		Collections.sort(list1);
+		Collections.sort(list2);
+
+		for (int i = 0; i < list1.size(); i++) {
+			if (!list1.get(i).equals(list2.get(i))) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	private TreeMap<Double, List<WinnerDetails>> runRound(
+			List<RemoteSellerDetails> remoteBidders,
+			TreeMap<Double, List<WinnerDetails>> lastResults, Boolean lastCall,
+			int roundNum) {
 		// contact each remote bidder and ask him if he wants to bid lower than
 		// the auction results
 
@@ -391,151 +403,203 @@ public class AuctionServer {
 		TreeMap<Double, List<RemoteSellerDetails>> newBids = new TreeMap<Double, List<RemoteSellerDetails>>();
 		List<RemoteSellerDetails> newRemoteBidders = new ArrayList<RemoteSellerDetails>();
 
-		
 		// iterate through each remote bidder and ask if they want to bid
+		List<Callable<RemoteSellerDetails>> remoteBiddersList = new ArrayList<Callable<RemoteSellerDetails>>();
 		for (int i = 0; i < remoteBidders.size(); i++) {
-			RemoteSellerDetails remoteBidder = remoteBidders.get(i); // get remote
-																// bidder at
-																// position i
-			getBid(remoteBidder, newRemoteBidders, lastResults, newBids,roundNum); // get his
-																		// bid
-																		// Threadit
+			RemoteSellerDetails remoteBidderObj = remoteBidders.get(i); // get
+																		// remote
+			// bidder at
+			// position i
+			RemoteBidder remoteBidder = new RemoteBidder(remoteBidderObj,
+					lastResults, roundNum);
+			remoteBiddersList.add(remoteBidder);
+			// Threadit
 		}
+
+		ExecutorService es = Executors.newFixedThreadPool(5);
+		List<Future<RemoteSellerDetails>> resultList = null;
+		try {
+			resultList = es.invokeAll(remoteBiddersList);
+		} catch (InterruptedException e1) {
+			e1.printStackTrace();
+		}
+
+		List<RemoteSellerDetails> valueList;
+
+		if (resultList != null) {
+			for (Future<RemoteSellerDetails> f : resultList) {
+				RemoteSellerDetails remoteBidderDetails = null;
+				try {
+					remoteBidderDetails = f.get();
+					Double bidPrice = remoteBidderDetails.getPrice();
+					if (bidPrice != -1d) {
+						System.out.println("Trying to find if key exists for "
+								+ bidPrice);
+						if (newBids.containsKey(bidPrice)) {
+							valueList = newBids.get(bidPrice);
+						} else {
+							valueList = new ArrayList<RemoteSellerDetails>();
+						}
+						valueList.add(remoteBidderDetails);
+						newBids.put(remoteBidderDetails.getPrice(), valueList);
+						newRemoteBidders.add(remoteBidderDetails);
+					}
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				} catch (ExecutionException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		/*
+		 * sellers.add(remoteBidder); newBids.put(bid, sellers); // put the bid
+		 * newRemoteBidders.add(remoteBidder); // add as possible bidder for //
+		 * next round
+		 */
+		// getBid(remoteBidder, newRemoteBidders, lastResults,
+		// newBids,roundNum); // get his
+		// bid
 
 		remoteBidders = newRemoteBidders; // set the remote bidders to the new
 											// set
 
 		int winnersNum = 0;
 		TreeMap<Double, List<WinnerDetails>> winBids = new TreeMap<Double, List<WinnerDetails>>();
-		for(Entry<Double, List<RemoteSellerDetails>> entry:newBids.entrySet()){
+		for (Entry<Double, List<RemoteSellerDetails>> entry : newBids
+				.entrySet()) {
 			Double price = entry.getKey();
 			List<RemoteSellerDetails> sellersDetails = entry.getValue();
-			
-			List<WinnerDetails> winnersDetails = WinnerDetails.getWinnersDetails(price, sellersDetails);
+
+			List<WinnerDetails> winnersDetails = WinnerDetails
+					.getWinnersDetails(price, sellersDetails);
 			winBids.put(price, winnersDetails);
-			
+
 			winnersNum += winnersDetails.size();
-			if(winnersNum >= MIN_WINNERS){
+			if (winnersNum >= MIN_WINNERS) {
 				break;
 			}
 		}
 
 		return winBids;
 	}
-	
-	private class RemoteBidder implements Callable<RemoteSellerDetails>{
-        
+
+	private class RemoteBidder implements Callable<RemoteSellerDetails> {
+
 		private RemoteSellerDetails remoteBidder;
-        private TreeMap<Double, List<WinnerDetails>> lastResults;
-        private TreeMap<Double, List<RemoteSellerDetails>> newBids;
-        private int roundNum;
-        
-        public RemoteBidder(RemoteSellerDetails remoteBidder,
-				TreeMap<Double, List<WinnerDetails>> lastResults,
-				TreeMap<Double, List<RemoteSellerDetails>> newBids, int roundNum) {
+		private TreeMap<Double, List<WinnerDetails>> lastResults;
+		private int roundNum;
+
+		public RemoteBidder(RemoteSellerDetails remoteBidder,
+				TreeMap<Double, List<WinnerDetails>> lastResults, int roundNum) {
 			super();
 			this.remoteBidder = remoteBidder;
 			this.lastResults = lastResults;
-			this.newBids = newBids;
 			this.roundNum = roundNum;
 		}
-        
+
 		@Override
 		public RemoteSellerDetails call() throws Exception {
-			Set<Double> oldBids=new HashSet<Double>();
-	        if(lastResults!=null){
-			    oldBids.addAll(lastResults.keySet());
-	        }
+			Set<Double> oldBids = new HashSet<Double>();
+
+			if (lastResults != null) {
+				oldBids.addAll(lastResults.keySet());
+			}
 			String remoteAddress = remoteBidder.getRemoteAddress();
-			String restAddr="http://"+"localhost"+":"+"8080"+"/DistributedAuction/rest/"; //To be replaced with remoteSellerDetails object address
-			ClientResponse response=null;
+			System.out.println("Remote address: " + remoteAddress);
+
+			ClientResponse response = null;
 			ClientConfig config = new DefaultClientConfig();
 			Client client = Client.create(config);
-			WebResource webResource=client.resource(restAddr).path("SellerService/respondToBid");
-			RemoteAuctionDetails remoteDetails=new RemoteAuctionDetails();
-			remoteDetails.setAuctionId("123");
+			WebResource webResource = client.resource(remoteAddress);
+			RemoteAuctionDetails remoteDetails = new RemoteAuctionDetails();
+
+			remoteDetails.setAuctionId(getAuctionWriter().getAuctionID());
 			remoteDetails.setOldBids(oldBids);
 			remoteDetails.setRoundNumber(roundNum);
 			BidDetails bidDetails = null;
-			try{
-				 response = webResource.type(MediaType.APPLICATION_JSON).post(ClientResponse.class,remoteDetails);
-				 System.out.println("Client recieved the status  of"+response.getStatus());
-				 bidDetails=response.getEntity(BidDetails.class);
-				 System.out.println("In round:"+roundNum+" got back bid of price "+bidDetails.getBid());
-			}
-			catch(Exception e){
+			try {
+				response = webResource.type(MediaType.APPLICATION_JSON).post(
+						ClientResponse.class, remoteDetails);
+				// System.out.println("Client recieved the status  of"+response.getStatus());
+				bidDetails = response.getEntity(BidDetails.class);
+				System.out.println("In round:" + roundNum + "with madeBid as "
+						+ bidDetails.getMadeBid() + " got back bid of price "
+						+ bidDetails.getBid());
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			
-			// IMPORTANT: oldBids may be null. Handle the case. If it is null, then
+
+			// IMPORTANT: oldBids may be null. Handle the case. If it is null,
+			// then
 			// this is the first round
 			// make a URI call to remote address.
 			// convert the response to BidDetails Object
 
-			if(bidDetails==null){
+			if (bidDetails == null) {
 				System.out.println("Bid Details are null!!");
-				return;
-			}			
-			if (bidDetails.getMadeBid()) {
-				Double bid = bidDetails.getBid();
-				// Synchronization
-				List<RemoteSellerDetails> sellers;
-				if (newBids.containsKey(bid)) {
-					sellers = newBids.get(bid);
-				} else {
-					sellers = new ArrayList<RemoteSellerDetails>();
+				return null;
+			} else {
+				Double bid = -1d;
+				if (bidDetails.getMadeBid()) {
+					bid = bidDetails.getBid();
 				}
-				
+
 				remoteBidder.setPrice(bid);
-				sellers.add(remoteBidder);
-				newBids.put(bid, sellers); // put the bid
-				newRemoteBidders.add(remoteBidder); // add as possible bidder for
-													// next round
+				System.out
+						.println("In call method remoteBidder price is set to "
+								+ remoteBidder.getPrice());
+				return remoteBidder;
+				/*
+				 * sellers.add(remoteBidder); newBids.put(bid, sellers); // put
+				 * the bid newRemoteBidders.add(remoteBidder); // add as
+				 * possible bidder for // next round
+				 */
 			}
-			return null;
 		}
-		
+
 	}
+
 	private void getBid(RemoteSellerDetails remoteBidder,
 			List<RemoteSellerDetails> newRemoteBidders,
 			TreeMap<Double, List<WinnerDetails>> lastResults,
-			TreeMap<Double, List<RemoteSellerDetails>> newBids,int roundNum) {
-		Set<Double> oldBids=new HashSet<Double>();
-        if(lastResults!=null){
-		    oldBids.addAll(lastResults.keySet());
-        }
+			TreeMap<Double, List<RemoteSellerDetails>> newBids, int roundNum) {
+		Set<Double> oldBids = new HashSet<Double>();
+		if (lastResults != null) {
+			oldBids.addAll(lastResults.keySet());
+		}
 		String remoteAddress = remoteBidder.getRemoteAddress();
 		System.out.println("Remote address: " + remoteAddress);
-		
-		ClientResponse response=null;
+
+		ClientResponse response = null;
 		ClientConfig config = new DefaultClientConfig();
 		Client client = Client.create(config);
-		WebResource webResource=client.resource(remoteAddress);
-		RemoteAuctionDetails remoteDetails=new RemoteAuctionDetails();
-		
+		WebResource webResource = client.resource(remoteAddress);
+		RemoteAuctionDetails remoteDetails = new RemoteAuctionDetails();
+
 		remoteDetails.setAuctionId("123");
 		remoteDetails.setOldBids(oldBids);
 		remoteDetails.setRoundNumber(roundNum);
 		BidDetails bidDetails = null;
-		try{
-			 response = webResource.type(MediaType.APPLICATION_JSON).post(ClientResponse.class,remoteDetails);
-			 //System.out.println("Client recieved the status  of"+response.getStatus());
-			 bidDetails=response.getEntity(BidDetails.class);
-			 System.out.println("In round:"+roundNum+" got back bid of price "+bidDetails.getBid());
-		}
-		catch(Exception e){
+		try {
+			response = webResource.type(MediaType.APPLICATION_JSON).post(
+					ClientResponse.class, remoteDetails);
+			// System.out.println("Client recieved the status  of"+response.getStatus());
+			bidDetails = response.getEntity(BidDetails.class);
+			System.out.println("In round:" + roundNum
+					+ " got back bid of price " + bidDetails.getBid());
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 		// IMPORTANT: oldBids may be null. Handle the case. If it is null, then
 		// this is the first round
 		// make a URI call to remote address.
 		// convert the response to BidDetails Object
 
-		if(bidDetails==null){
+		if (bidDetails == null) {
 			System.out.println("Bid Details are null!!");
 			return;
-		}			
+		}
 		if (bidDetails.getMadeBid()) {
 			Double bid = bidDetails.getBid();
 			// Synchronization
@@ -545,7 +609,7 @@ public class AuctionServer {
 			} else {
 				sellers = new ArrayList<RemoteSellerDetails>();
 			}
-			
+
 			remoteBidder.setPrice(bid);
 			sellers.add(remoteBidder);
 			newBids.put(bid, sellers); // put the bid
@@ -567,7 +631,8 @@ public class AuctionServer {
 		return writer.persistLocalBidWinners(winners);
 	}
 
-	private Boolean makeRemoteRoundEntry(int roundNum, TreeMap<Double, List<WinnerDetails>> winners) {
+	private Boolean makeRemoteRoundEntry(int roundNum,
+			TreeMap<Double, List<WinnerDetails>> winners) {
 		AuctionServerPersistance writer = getAuctionWriter();
 		return writer.persistRemoteRoundWinners(roundNum, winners);
 	}
