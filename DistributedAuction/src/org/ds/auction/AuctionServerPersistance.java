@@ -52,6 +52,7 @@ public class AuctionServerPersistance {
 	public static String FIELD_STATUS = "status";
 	public static String FIELD_USER_ID = "userID";
 	public static String FIELD_INITIATED_AT = "initiatedAt";
+	public static String FIELD_FINISHED_AT = "finishedAt";
 	public static String FIELD_REMOTE_RESULTS = "remoteResults";
 	public static String FIELD_LOCAL_RESULTS = "localResults";
 	public static String FIELD_VERSION = "version";
@@ -108,31 +109,70 @@ public class AuctionServerPersistance {
 												.append(FIELD_REMOTE_RESULTS, remoteResults.getRoundResults())
 												.append(FIELD_LOCAL_RESULTS, localResults.getRoundResults())
 												.append(FIELD_VERSION, getVersion());
-		System.out.println(entry);
+		
+		//System.out.println("Making entry: " + entry);
 		return true;
 	}
 	
 	public Boolean persistLocalBidWinners(TreeMap<Double, List<WinnerDetails>> winners){
 		MongoClient mongoClient = getMongoClient();
+		String auctionID = getAuctionID();
+		
+		int oldVersion = getVersion();
+		int newVersion = incrementVersion();
 		
 		RoundResults localResults = new RoundResults(1, winners);
-		BasicDBObject entry = new BasicDBObject(FIELD_LOCAL_RESULTS, localResults.getRoundResults());
+		BasicDBObject entry = new BasicDBObject(FIELD_LOCAL_RESULTS, localResults.getRoundResults())
+													.append(FIELD_VERSION, newVersion);
+		BasicDBObject query = new BasicDBObject(FIELD_AUCTION_ID, auctionID)
+												.append(FIELD_VERSION, oldVersion);
+		BasicDBObject update = new BasicDBObject("$set", entry);
 		
-		System.out.println(entry);
+		//System.out.println("Making query: " + query);
+		//System.out.println("Making update: " + update);
+		
 		return true;
 	}
 	
 	public Boolean persistRemoteRoundWinners(int roundNum, TreeMap<Double, List<WinnerDetails>> winners){
 		MongoClient mongoClient = getMongoClient();
+		String auctionID = getAuctionID();
+		
+		int oldVersion = getVersion();
+		int newVersion = incrementVersion();
 		
 		RoundResults remoteResults = new RoundResults(roundNum, winners);
-		BasicDBObject entry = new BasicDBObject(FIELD_REMOTE_RESULTS, remoteResults.getRoundResults());
+		BasicDBObject entry = new BasicDBObject(FIELD_REMOTE_RESULTS, remoteResults.getRoundResults())
+													.append(FIELD_VERSION, newVersion);
+		BasicDBObject query = new BasicDBObject(FIELD_AUCTION_ID, auctionID)
+													.append(FIELD_VERSION, oldVersion);
+		BasicDBObject update = new BasicDBObject("$set", entry);
+		
+		//System.out.println("Making query: " + query);
+		//System.out.println("Making update: " + update);
 		
 		return true;
 	}
 	
 	public Boolean finishUpAuction(){
 		MongoClient mongoClient = getMongoClient();
+		String auctionID = getAuctionID();
+		
+		int oldVersion = getVersion();
+		int newVersion = incrementVersion();
+		
+		Date date = new Date();
+		Long finishedAt = date.getTime();
+		
+		BasicDBObject entry = new BasicDBObject(FIELD_FINISHED_AT, finishedAt)
+													.append(FIELD_VERSION, newVersion);
+		BasicDBObject query = new BasicDBObject(FIELD_AUCTION_ID, auctionID)
+												.append(FIELD_VERSION, oldVersion);
+		BasicDBObject update = new BasicDBObject("$set", entry);
+		
+		//System.out.println("Making query: " + query);
+		//System.out.println("Making update: " + update);
+		
 		return true;
 	}
 }
