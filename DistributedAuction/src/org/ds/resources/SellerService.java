@@ -1,6 +1,8 @@
 package org.ds.resources;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Random;
 import java.util.Set;
 
@@ -17,6 +19,10 @@ import org.ds.carServer.SellerStore;
 
 @Path("SellerService")
 public class SellerService {
+	
+	int DEFAULT_BID_PROBABILITY = 100;
+	int DEFAULT_BID_LOWER_PROBABILITY = 0;
+	
 	@POST
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -44,28 +50,71 @@ public class SellerService {
 
 		System.out.println("Processing auction of id"
 				+ auctionDetails.getAuctionId()+" in round"+auctionDetails.getRoundNumber());
-		Random rand = new Random();
-		Double minPriceToRespondTo = rand.nextDouble() * 60.0; // Randomize to
-																// obtain
-																// different
-																// remote
-																// services
-		Set<Double> oldRoundPrices = auctionDetails.getOldBids();
-		// Process oldBids to see if this remote seller wants to continue
-		// bidding.
-		Double minPriceInOlderRound = 30.0;
+		
+		Set<Double> oldBids  = auctionDetails.getOldBids();
+		int roundNumber = auctionDetails.getRoundNumber();
+		Double lowestBid = (Math.random() * 1000);
+		Double highestBid = lowestBid;
+		if(oldBids != null && oldBids.size() > 0 ){
+			lowestBid = oldBids.iterator().next();
+			for(Double price:oldBids){
+				highestBid = price;
+			}
+		}	
+		
+		HashMap<Integer, Integer> bidProbabilityMap = getMakeBidProbabilityMap();
+		HashMap<Integer, Integer> bidLowerProbabilityMap = getBidLowerProbabilityMap();
+		
+		int bidProbability = DEFAULT_BID_PROBABILITY;
+		int bidLowerProbability = DEFAULT_BID_LOWER_PROBABILITY;
+		
+		if(bidProbabilityMap.containsKey(roundNumber)){
+			bidProbability = bidProbabilityMap.get(roundNumber);
+		}
+		
+		if(bidLowerProbabilityMap.containsKey(roundNumber)){
+			bidLowerProbability = bidLowerProbabilityMap.get(roundNumber);
+		}
+		
+		int makeBidRand = (int) (Math.random() * 100);
+		int bidLowerRand = (int) (Math.random() * 100);
+		
 		BidDetails responseBid = new BidDetails();
-		if (auctionDetails.getRoundNumber() >= 3) {
-			responseBid.setBid(30.0);
+		
+		if(makeBidRand < bidProbability){
+			if(bidLowerRand < bidLowerProbability){
+				double bid = lowestBid + (Math.random() * 100) * (highestBid - lowestBid);
+				responseBid.setBid(bid);
+			} else {
+				responseBid.setBid(lowestBid);	
+			}
 			responseBid.setMadeBid(true);
 		} else {
-			responseBid.setBid(minPriceToRespondTo);
+			responseBid.setBid(-1.0);
 			responseBid.setMadeBid(false);
-			if (minPriceInOlderRound > minPriceToRespondTo) {
-				responseBid.setMadeBid(true);
-			}
 		}
+		
 		return Response.status(200).entity(responseBid).build();
+	}
+	
+	private HashMap<Integer, Integer> getMakeBidProbabilityMap(){
+		HashMap<Integer, Integer> probabilityMap = new HashMap<Integer, Integer>();
+		probabilityMap.put(1, 50);
+		probabilityMap.put(2, 60);
+		probabilityMap.put(3, 70);
+		probabilityMap.put(4, 80);
+		probabilityMap.put(5, 90);
+		return probabilityMap;
+	}
+	
+	private HashMap<Integer, Integer> getBidLowerProbabilityMap(){
+		HashMap<Integer, Integer> probabilityMap = new HashMap<Integer, Integer>();
+		probabilityMap.put(1, 100);
+		probabilityMap.put(2, 80);
+		probabilityMap.put(3, 60);
+		probabilityMap.put(4, 40);
+		probabilityMap.put(5, 20);
+		return probabilityMap;
 	}
 	
 	@POST

@@ -65,6 +65,10 @@ public class AuctionServerPersistance {
 	public static String FIELD_BID = "bid";
 	public static String FIELD_TOKEN = "token";
 	
+	
+	public static String MONGO_RESPONSE_FIELD_OK = "ok";
+	public static String MONGO_RESPONSE_FIELD_ERR = "err";
+	
 	private void setAuctionID(String id){
 		this.auctionID = id;
 	}
@@ -182,8 +186,7 @@ public class AuctionServerPersistance {
 		Boolean success = true;
 		DBCollection coll = getCollection();
 		if (coll != null) {
-			WriteResult result = coll.insert(entry);
-			System.out.println("Result of insert: " + result);
+			success = verifyNoError(coll.insert(entry));
 		} else {
 			System.out.println("Failed to get collection: "
 					+ DBClient.AUCTIONS_DETAILS);
@@ -196,8 +199,7 @@ public class AuctionServerPersistance {
 		Boolean success = true;
 		DBCollection coll = getCollection();
 		if (coll != null) {
-			WriteResult result = coll.update(query, update);
-			System.out.println("Result of insert: " + result);
+			success = verifyNoError(coll.update(query, update));
 		} else {
 			System.out.println("Failed to get collection: "
 					+ DBClient.AUCTIONS_DETAILS);
@@ -221,5 +223,10 @@ public class AuctionServerPersistance {
 		}
 		
 		return coll;
+	}
+	
+	private Boolean verifyNoError(WriteResult result){
+		System.out.println("Result of operation: " + result);
+		return true;
 	}
 }
