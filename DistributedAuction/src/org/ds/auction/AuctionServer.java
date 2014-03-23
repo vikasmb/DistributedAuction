@@ -501,6 +501,6 @@ public class AuctionServer {
 
 	private Boolean finishUpAuction() {
 		AuctionServerPersistance writer = getAuctionWriter();
-		return true;
+		return writer.finishUpAuction();
 	}
 }
