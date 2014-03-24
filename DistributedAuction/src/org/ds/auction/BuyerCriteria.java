@@ -10,7 +10,7 @@ public class BuyerCriteria {
 		super();
 	}
 
-	private String buyerID;
+	private String buyerID;	
 	private Date neededFrom;
 	private Date neededUntil;
 	private String city;
@@ -30,6 +30,23 @@ public class BuyerCriteria {
 	public String getCity() {
 		return this.city;
 	}
+	
+	public void setBuyerID(String buyerID) {
+		this.buyerID = buyerID;
+	}
+
+	public void setNeededFrom(Date neededFrom) {
+		this.neededFrom = neededFrom;
+	}
+
+	public void setNeededUntil(Date neededUntil) {
+		this.neededUntil = neededUntil;
+	}
+
+	public void setCity(String city) {
+		this.city = city;
+	}
+
 
 	public BuyerCriteria(String buyerID, Date neededFrom, Date neededUntil,
 			String city) {
