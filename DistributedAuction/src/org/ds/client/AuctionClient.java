@@ -2,6 +2,10 @@ package org.ds.client;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
@@ -10,8 +14,10 @@ import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.ws.rs.core.MediaType;
 
+import org.ds.auction.BuyerCriteria;
 import org.ds.carServer.SellerDetails;
 import org.ds.resources.SellerService;
+import org.ds.util.DateUtil;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.util.JSON;
@@ -78,5 +84,28 @@ public class AuctionClient {
 			//System.out.println("User registered" + activeUser.getSellerName());
 		} else
 			System.out.println("null");
+	}
+	
+	public static void main(String[] args){
+		BuyerCriteria buyerCriteria=new BuyerCriteria();
+		buyerCriteria.setBuyerID("buyer123");
+		buyerCriteria.setCity("LA");
+		buyerCriteria.setNeededFrom(DateUtil.getDate("2014-03-15T10:00:00"));
+		buyerCriteria.setNeededUntil(DateUtil.getDate("2014-03-15T11:00:00"));
+		ClientConfig config = new DefaultClientConfig();
+		Client client = Client.create(config);
+		DBClient dbClient = DBClient.getInstance();
+		BasicDBObject jsonAddr = dbClient.getClusterAddress("cars"); //TODO Replace with the actual service selection by the user
+		String restAddr="http://"+jsonAddr.getString("ip")+":"+jsonAddr.getInt("port")+"/DistributedAuction/rest/";
+		WebResource webResource=client.resource(restAddr).path("invokeAuction");
+		ClientResponse response=null;
+		try{
+			 response = webResource.type(MediaType.APPLICATION_JSON).post(ClientResponse.class,buyerCriteria);
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
+		System.out.println("Client recieved the status  of"+response.getStatus()+" and response as "+response.getEntity(String.class));
+		System.out.println("Client exiting the rest call");
 	}
 }

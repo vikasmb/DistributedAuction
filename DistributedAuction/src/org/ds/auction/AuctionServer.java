@@ -11,10 +11,12 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.core.MediaType;
 
@@ -229,6 +231,7 @@ public class AuctionServer {
 				}
 			}
 		}
+		es.shutdown();
 		// enterDetails(localBidder, prices);
 		return prices;
 	}
@@ -443,18 +446,25 @@ public class AuctionServer {
 		ExecutorService es = Executors.newFixedThreadPool(5);
 		List<Future<RemoteSellerDetails>> resultList = null;
 		try {
-			resultList = es.invokeAll(remoteBiddersList);
+			resultList = es.invokeAll(remoteBiddersList,5,TimeUnit.SECONDS);
+			System.out.println("Size of returned resultList is:"+resultList.size());
 		} catch (InterruptedException e1) {
 			e1.printStackTrace();
 		}
-
+		
 		List<RemoteSellerDetails> valueList;
 
 		if (resultList != null) {
 			for (Future<RemoteSellerDetails> f : resultList) {
 				RemoteSellerDetails remoteBidderDetails = null;
 				try {
-					remoteBidderDetails = f.get();
+					try{
+				      	remoteBidderDetails = f.get();
+					}
+					catch (CancellationException ce){
+						System.out.println("########Ignoring timed out futures");
+						continue; //Ignore as they would not be added to newBids or newRemoteBidders
+					}			         
 					Double bidPrice = remoteBidderDetails.getPrice();
 					System.out.println("*******Bid price is: " + bidPrice);
 					if (bidPrice > 0) {
@@ -476,6 +486,7 @@ public class AuctionServer {
 				}
 			}
 		}
+		es.shutdown();
 		/*
 		 * sellers.add(remoteBidder); newBids.put(bid, sellers); // put the bid
 		 * newRemoteBidders.add(remoteBidder); // add as possible bidder for //

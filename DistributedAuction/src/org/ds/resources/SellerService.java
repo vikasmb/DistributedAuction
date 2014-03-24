@@ -50,7 +50,16 @@ public class SellerService {
 
 		System.out.println("Processing auction of id"
 				+ auctionDetails.getAuctionId()+" in round"+auctionDetails.getRoundNumber());
-		
+		// For testing timeout of remote peers
+		/*if( (Math.random()*100.0f -50.0)>0){
+			try {
+				System.out.println("Sleeping for 16 seconds");
+				Thread.sleep(16000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}*/	
 		Set<Double> oldBids  = auctionDetails.getOldBids();
 		int roundNumber = auctionDetails.getRoundNumber();
 		Double lowestBid = (Math.random() * 1000);

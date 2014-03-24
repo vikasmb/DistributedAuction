@@ -9,7 +9,6 @@ public class DateUtil {
 public static Date getDate(String dateTimeStr){
 	DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 	formatter.setTimeZone(TimeZone.getTimeZone("GMT"));
-
 	Date date=null;
 	try {
 		date = formatter.parse(dateTimeStr);			
@@ -17,5 +16,13 @@ public static Date getDate(String dateTimeStr){
 		e.printStackTrace();
 	}
 	return date;
+}
+
+public static String getStringFromDate(Date dateObj){
+	DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+	formatter.setTimeZone(TimeZone.getTimeZone("GMT"));
+	String dateStr=null;
+	dateStr = formatter.format(dateObj);
+	return dateStr;
 }
 }
