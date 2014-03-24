@@ -56,6 +56,7 @@ public class AuctionServerPersistance {
 	public static String FIELD_USER_ID = "userID";
 	public static String FIELD_INITIATED_AT = "initiatedAt";
 	public static String FIELD_FINISHED_AT = "finishedAt";
+	public static String FIELD_BUYER_CRITERIA = "buyerCriteria";
 	public static String FIELD_REMOTE_RESULTS = "remoteResults";
 	public static String FIELD_LOCAL_RESULTS = "localResults";
 	public static String FIELD_VERSION = "version";
@@ -97,7 +98,9 @@ public class AuctionServerPersistance {
 		return mongoClient;
 	}
 	
-	public Boolean makeInitEntry(String buyerID){
+	public Boolean makeInitEntry(BuyerCriteria criteria){
+		String buyerID = criteria.getBuyerID();
+		BasicDBObject criteriaBSON = criteria.packageToBSON();
 		Date date = new Date();
 		
 		setAuctionID(buyerID + "_" + String.valueOf(date.getTime()));
@@ -111,6 +114,7 @@ public class AuctionServerPersistance {
 												.append(FIELD_STATUS, status)
 												.append(FIELD_USER_ID, buyerID)
 												.append(FIELD_INITIATED_AT, initiatedAt)
+												.append(FIELD_BUYER_CRITERIA, criteriaBSON)
 												.append(FIELD_REMOTE_RESULTS, remoteResults.getRoundResults())
 												.append(FIELD_LOCAL_RESULTS, localResults.getRoundResults())
 												.append(FIELD_VERSION, getVersion());

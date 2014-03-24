@@ -644,7 +644,7 @@ public class AuctionServer {
 	private Boolean makeInitAuctionEntry() {
 		AuctionServerPersistance writer = getAuctionWriter();
 		BuyerCriteria criteria = getBuyerCriteria();
-		writer.makeInitEntry(criteria.getBuyerID());
+		writer.makeInitEntry(criteria);
 		return true;
 	}
 
