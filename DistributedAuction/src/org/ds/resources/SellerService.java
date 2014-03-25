@@ -19,10 +19,10 @@ import org.ds.carServer.SellerStore;
 
 @Path("SellerService")
 public class SellerService {
-	
+
 	int DEFAULT_BID_PROBABILITY = 100;
 	int DEFAULT_BID_LOWER_PROBABILITY = 0;
-	
+
 	@POST
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -49,64 +49,72 @@ public class SellerService {
 																		// auctionId
 
 		System.out.println("Processing auction of id"
-				+ auctionDetails.getAuctionId()+" in round"+auctionDetails.getRoundNumber());
+				+ auctionDetails.getAuctionId() + " in round"
+				+ auctionDetails.getRoundNumber());
 		// For testing timeout of remote peers
-		/*if( (Math.random()*100.0f -50.0)>0){
-			try {
-				System.out.println("Sleeping for 16 seconds");
-				Thread.sleep(16000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}*/	
-		Set<Double> oldBids  = auctionDetails.getOldBids();
+		/*
+		 * if( (Math.random()*100.0f -50.0)>0){ try {
+		 * System.out.println("Sleeping for 16 seconds"); Thread.sleep(16000); }
+		 * catch (InterruptedException e) { // TODO Auto-generated catch block
+		 * e.printStackTrace(); } }
+		 */
+		Set<Double> oldBids = auctionDetails.getOldBids();
 		int roundNumber = auctionDetails.getRoundNumber();
 		Double lowestBid = (Math.random() * 1000);
 		Double highestBid = lowestBid;
-		if(oldBids != null && oldBids.size() > 0 ){
+		if (oldBids != null && oldBids.size() > 0) {
 			lowestBid = oldBids.iterator().next();
-			for(Double price:oldBids){
+			for (Double price : oldBids) {
 				highestBid = price;
 			}
-		}	
-		
+		}
+
 		HashMap<Integer, Integer> bidProbabilityMap = getMakeBidProbabilityMap();
 		HashMap<Integer, Integer> bidLowerProbabilityMap = getBidLowerProbabilityMap();
-		
+
 		int bidProbability = DEFAULT_BID_PROBABILITY;
 		int bidLowerProbability = DEFAULT_BID_LOWER_PROBABILITY;
-		
-		if(bidProbabilityMap.containsKey(roundNumber)){
+
+		if (bidProbabilityMap.containsKey(roundNumber)) {
 			bidProbability = bidProbabilityMap.get(roundNumber);
 		}
-		
-		if(bidLowerProbabilityMap.containsKey(roundNumber)){
+
+		if (bidLowerProbabilityMap.containsKey(roundNumber)) {
 			bidLowerProbability = bidLowerProbabilityMap.get(roundNumber);
 		}
-		
+
 		int makeBidRand = (int) (Math.random() * 100);
 		int bidLowerRand = (int) (Math.random() * 100);
-		
+
 		BidDetails responseBid = new BidDetails();
-		
-		if(makeBidRand < bidProbability){
-			if(bidLowerRand < bidLowerProbability){
-				double bid = lowestBid + Math.random() * (highestBid - lowestBid);
+
+		if (makeBidRand < bidProbability) {
+			if (bidLowerRand < bidLowerProbability) {
+				double bid = lowestBid + Math.random()
+						* (highestBid - lowestBid);
 				responseBid.setBid(bid);
 			} else {
-				responseBid.setBid(lowestBid);	
+				responseBid.setBid(lowestBid);
 			}
 			responseBid.setMadeBid(true);
 		} else {
+			// For testing timeout of remote peers
+			if ((Math.random() * 100.0f - 50.0) > 0) {
+				try {
+					// System.out.println("Sleeping for 16 seconds");
+					Thread.sleep(16000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
 			responseBid.setBid(-1.0);
 			responseBid.setMadeBid(false);
 		}
-		
+
 		return Response.status(200).entity(responseBid).build();
 	}
-	
-	private HashMap<Integer, Integer> getMakeBidProbabilityMap(){
+
+	private HashMap<Integer, Integer> getMakeBidProbabilityMap() {
 		HashMap<Integer, Integer> probabilityMap = new HashMap<Integer, Integer>();
 		probabilityMap.put(1, 70);
 		probabilityMap.put(2, 80);
@@ -115,8 +123,8 @@ public class SellerService {
 		probabilityMap.put(5, 100);
 		return probabilityMap;
 	}
-	
-	private HashMap<Integer, Integer> getBidLowerProbabilityMap(){
+
+	private HashMap<Integer, Integer> getBidLowerProbabilityMap() {
 		HashMap<Integer, Integer> probabilityMap = new HashMap<Integer, Integer>();
 		probabilityMap.put(1, 100);
 		probabilityMap.put(2, 80);
@@ -125,17 +133,18 @@ public class SellerService {
 		probabilityMap.put(5, 20);
 		return probabilityMap;
 	}
-	
+
 	@POST
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("/respondToBid1")
 	public Response respondToBid1(RemoteAuctionDetails auctionDetails) { // BuyerCriteria,OldBids
-																		// and
-																		// auctionId
+																			// and
+																			// auctionId
 
 		System.out.println("Processing auction of id"
-				+ auctionDetails.getAuctionId()+" in round"+auctionDetails.getRoundNumber());
+				+ auctionDetails.getAuctionId() + " in round"
+				+ auctionDetails.getRoundNumber());
 		Random rand = new Random();
 		Double minPriceToRespondTo = rand.nextDouble() * 60.0; // Randomize to
 																// obtain
