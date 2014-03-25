@@ -8,7 +8,7 @@ import java.util.Map.Entry;
 import org.ds.auction.AuctionServer;
 import org.ds.auction.AuctionServerPersistance;
 import org.ds.auction.BuyerCriteria;
-import org.ds.claim.ClaimServer.AvailibiltyData;
+import org.ds.claim.ClaimServer.AvailabiltyData;
 import org.ds.client.DBClient;
 
 import com.mongodb.BasicDBList;
@@ -28,8 +28,19 @@ public class ClaimServerPersistance {
 		return mongoClient;
 	}
 	
-	public BasicDBObject getProductData(String productID){
-		BasicDBObject query = new BasicDBObject(AuctionServer.FIELD_PRODUCT_ID, productID);
+	public BasicDBObject getProductData(String productID, BuyerCriteria criteria){
+		Date neededFrom = criteria.getNeededFrom();
+		Date neededUntil = criteria.getNeededUntil();
+		
+		BasicDBObject eleMatch = new BasicDBObject();
+		eleMatch.put("from", new BasicDBObject("$lte", neededFrom));
+		eleMatch.put("till", new BasicDBObject("$gte", neededUntil));
+		
+		BasicDBObject wrapper = new BasicDBObject();
+		wrapper.put("$elemMatch", eleMatch);
+		
+		BasicDBObject query = new BasicDBObject(AuctionServer.FIELD_PRODUCT_ID, productID)
+													.append(ClaimServer.FIELD_AVAILABILITY, wrapper);
 		BasicDBObject productData = readMongo(query, DBClient.CAR_VENDORS_DETAILS);
 		System.out.println("Read result : " + productData);
 		
@@ -45,17 +56,16 @@ public class ClaimServerPersistance {
 		
 	}
 	
-	private Boolean updateMongo(BasicDBObject query, BasicDBObject update, String collectionName){
-		Boolean success = true;
+	private WriteResult updateMongo(BasicDBObject query, BasicDBObject update, String collectionName){
+		WriteResult result = null;
 		DBCollection coll = getCollection(collectionName);
 		if (coll != null) {
-			success = verifyNoError(coll.update(query, update));
+			result = coll.update(query, update);
 		} else {
 			System.out.println("Failed to get collection: "
 					+ collectionName);
-			success = false;
 		}
-		return success;
+		return result;
 	}
 	
 	
@@ -96,7 +106,7 @@ public class ClaimServerPersistance {
 		return coll;
 	}
 	
-	private Boolean verifyNoError(WriteResult result){
+	public Boolean verifyNoError(WriteResult result){
 		System.out.println("Result of operation: " + result);
 		return true;
 	}
