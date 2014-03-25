@@ -5,12 +5,19 @@ import java.util.Date;
 import org.ds.auction.AuctionServer;
 import org.ds.auction.AuctionServerPersistance;
 import org.ds.auction.BuyerCriteria;
+import org.ds.client.DBClient;
 import org.ds.util.DateUtil;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
+import com.mongodb.WriteResult;
 
 public class ClaimServer {
+	
+	public static void main(String[] args){
+		ClaimServer server = new ClaimServer("123_1395772115708", "car1");
+		server.claim();
+	}
 	
 	public static String FIELD_AVAILABILITY = "availableTimes" ;
 	public static String FIELD_VERSION = "version";
@@ -132,11 +139,6 @@ public class ClaimServer {
 		return this.buyerCriteria; 
 	}
 	
-	public static void main(String[] args){
-		ClaimServer server = new ClaimServer("buyer123_1395762078671", "car1");
-		server.claim();
-	}
-	
 	public ClaimServer(String auctionID, String productID){
 		this.auctionID = auctionID;
 		this.productID = productID;	
@@ -164,6 +166,7 @@ public class ClaimServer {
 			newAvailibility.printAvailability();
 			return commitClaim(newAvailibility, availability);
 		} else {
+			System.out.println("Item no longer available");
 			reason = ClaimResult.REASON_PERMANENT;
 		}
 		
@@ -219,23 +222,20 @@ public class ClaimServer {
 		
 		
 		BasicDBList sunderedList = new BasicDBList();
-		if(!fromField.equals(neededFrom) && !toField.equals(neededUntil)){
-			BasicDBObject firstInterval = new BasicDBObject(FIELD_FROM_DATE, fromField)
-															.append(FIELD_TO_DATE, neededFrom);
-			BasicDBObject secondInterval = new BasicDBObject(FIELD_FROM_DATE, neededUntil)
-															.append(FIELD_TO_DATE, toField);
-			sunderedList.add(firstInterval);
-			sunderedList.add(secondInterval);
-		} else if(fromField.equals(neededFrom)) {
-			BasicDBObject newInterval = new BasicDBObject(FIELD_FROM_DATE, neededUntil)
-															.append(FIELD_TO_DATE, toField);
-			sunderedList.add(newInterval);
-		} else if(toField.equals(neededUntil)){
-			BasicDBObject newInterval = new BasicDBObject(FIELD_FROM_DATE, fromField)
-															.append(FIELD_TO_DATE, neededFrom);
-			sunderedList.add(newInterval);
+		if(!(fromField.equals(neededFrom) && toField.equals(neededUntil))){
+			if(!fromField.equals(neededFrom)) {
+				BasicDBObject newInterval = new BasicDBObject(FIELD_FROM_DATE, fromField)
+																.append(FIELD_TO_DATE, neededFrom);
+				sunderedList.add(newInterval);
+			}
+			
+			if(!toField.equals(neededUntil)){
+				BasicDBObject newInterval = new BasicDBObject(FIELD_FROM_DATE, neededUntil)
+																.append(FIELD_TO_DATE, toField);
+				sunderedList.add(newInterval);
+			}
 		} else {
-			System.out.println("Error!");
+			System.out.println("Exact match of interval!");
 		}
 		
 		return sunderedList;
@@ -243,7 +243,7 @@ public class ClaimServer {
 	
 	private ClaimResult commitClaim(AvailabiltyData newAvailibility, AvailabiltyData oldAvailability){
 		Boolean success = true;
-		String reason = "";
+		String reason = ClaimResult.REASON_TEMPORARY;
 		
 		ClaimServerPersistance persistance = getClaimServerPersistance();
 		BuyerCriteria criteria = getBuyerCriteria();
@@ -261,10 +261,17 @@ public class ClaimServer {
 		BasicDBObject query = new BasicDBObject(AuctionServer.FIELD_PRODUCT_ID, productID)
 													.append(FIELD_AVAILABILITY, wrapper)
 													.append(FIELD_VERSION, oldAvailability.getVersion());
+		System.out.println("Query: " + query);
+		
 		BasicDBObject entry = new BasicDBObject(FIELD_AVAILABILITY, newAvailibility.getAvailabilityData())
 													.append(FIELD_VERSION, newAvailibility.getVersion());
-		
 		BasicDBObject update = new BasicDBObject("$set", entry);
+		System.out.println("Update: " + update);
+		
+		WriteResult updateResult = persistance.updateMongo(query, update, DBClient.CAR_VENDORS_DETAILS);
+		System.out.println("Update result: " + updateResult);
+		
+		success = updateResult.isUpdateOfExisting();
 		
 		return new ClaimResult(success, reason);
 	}

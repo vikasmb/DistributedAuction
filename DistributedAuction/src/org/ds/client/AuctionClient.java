@@ -92,21 +92,30 @@ public class AuctionClient {
 		buyerCriteria.setCity("LA");
 		buyerCriteria.setNeededFrom(DateUtil.getDate("2014-03-15T10:00:00"));
 		buyerCriteria.setNeededUntil(DateUtil.getDate("2014-03-15T11:00:00"));
-		ClientConfig config = new DefaultClientConfig();
-		Client client = Client.create(config);
-		DBClient dbClient = DBClient.getInstance();
-		BasicDBObject jsonAddr = dbClient.getClusterAddress("cars"); //TODO Replace with the actual service selection by the user
-		String restAddr="http://"+jsonAddr.getString("ip")+":"+jsonAddr.getInt("port")+jsonAddr.getString("path");
-		System.out.println("Contacting "+restAddr+"for invokeAuction");
-		WebResource webResource=client.resource(restAddr);
-		ClientResponse response=null;
-		try{
-			 response = webResource.type(MediaType.APPLICATION_JSON).post(ClientResponse.class,buyerCriteria);
+		
+		for(int i = 1; i <= 1; i++){
+			long startTime = System.currentTimeMillis();
+			ClientConfig config = new DefaultClientConfig();
+			Client client = Client.create(config);
+			DBClient dbClient = DBClient.getInstance();
+			BasicDBObject jsonAddr = dbClient.getClusterAddress("cars"); //TODO Replace with the actual service selection by the user
+			String restAddr="http://"+jsonAddr.getString("ip")+":"+jsonAddr.getInt("port")+jsonAddr.getString("path");
+			System.out.println("Contacting "+restAddr+" for invokeAuction");
+		
+			
+			WebResource webResource=client.resource(restAddr);
+			ClientResponse response=null;
+			try{
+				 response = webResource.type(MediaType.APPLICATION_JSON).post(ClientResponse.class,buyerCriteria);
+			}
+			catch(Exception e){
+				e.printStackTrace();
+			}
+			System.out.println("Client recieved the status  of"+response.getStatus()+" and response as "+response.getEntity(String.class));
+			System.out.println("Client exiting the rest call");
+			
+			long difference = System.currentTimeMillis() - startTime;
+			System.out.println("Latency: " + i + ", " + difference);
 		}
-		catch(Exception e){
-			e.printStackTrace();
-		}
-		System.out.println("Client recieved the status  of"+response.getStatus()+" and response as "+response.getEntity(String.class));
-		System.out.println("Client exiting the rest call");
 	}
 }

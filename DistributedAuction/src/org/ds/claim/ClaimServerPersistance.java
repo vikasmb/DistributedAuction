@@ -41,7 +41,9 @@ public class ClaimServerPersistance {
 		
 		BasicDBObject query = new BasicDBObject(AuctionServer.FIELD_PRODUCT_ID, productID)
 													.append(ClaimServer.FIELD_AVAILABILITY, wrapper);
+		System.out.println("Query: " + query);
 		BasicDBObject productData = readMongo(query, DBClient.CAR_VENDORS_DETAILS);
+		
 		System.out.println("Read result : " + productData);
 		
 		return productData;
@@ -56,7 +58,7 @@ public class ClaimServerPersistance {
 		
 	}
 	
-	private WriteResult updateMongo(BasicDBObject query, BasicDBObject update, String collectionName){
+	public WriteResult updateMongo(BasicDBObject query, BasicDBObject update, String collectionName){
 		WriteResult result = null;
 		DBCollection coll = getCollection(collectionName);
 		if (coll != null) {
@@ -69,7 +71,7 @@ public class ClaimServerPersistance {
 	}
 	
 	
-	private BasicDBObject readMongo(BasicDBObject query, String collectionName){
+	public BasicDBObject readMongo(BasicDBObject query, String collectionName){
 		DBCursor cursor;
 		BasicDBObject queryResult = null;
 		DBCollection coll = getCollection(collectionName);
