@@ -92,7 +92,7 @@ public class SellerService {
 		
 		if(makeBidRand < bidProbability){
 			if(bidLowerRand < bidLowerProbability){
-				double bid = lowestBid + (Math.random() * 100) * (highestBid - lowestBid);
+				double bid = lowestBid + Math.random() * (highestBid - lowestBid);
 				responseBid.setBid(bid);
 			} else {
 				responseBid.setBid(lowestBid);	
@@ -108,11 +108,11 @@ public class SellerService {
 	
 	private HashMap<Integer, Integer> getMakeBidProbabilityMap(){
 		HashMap<Integer, Integer> probabilityMap = new HashMap<Integer, Integer>();
-		probabilityMap.put(1, 50);
-		probabilityMap.put(2, 60);
-		probabilityMap.put(3, 70);
-		probabilityMap.put(4, 80);
-		probabilityMap.put(5, 90);
+		probabilityMap.put(1, 70);
+		probabilityMap.put(2, 80);
+		probabilityMap.put(3, 90);
+		probabilityMap.put(4, 100);
+		probabilityMap.put(5, 100);
 		return probabilityMap;
 	}
 	

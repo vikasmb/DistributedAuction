@@ -2,6 +2,7 @@ package org.ds.claim;
 
 import org.ds.auction.AuctionServerPersistance;
 import org.ds.auction.BuyerCriteria;
+import org.ds.util.DateUtil;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
@@ -172,7 +173,8 @@ public class ClaimServer {
 		BasicDBList availability = availabilityData.getAvailabilityData();
 		System.out.println("Availability: " + availability);
 		BuyerCriteria criteria = getBuyerCriteria();
-		System.out.println("Needed from: " + criteria.getNeededFrom() + ". Needed until: " + criteria.getNeededUntil());
+		System.out.println("Needed from: " + DateUtil.getStringFromDate(criteria.getNeededFrom()) +
+				". Needed until: " + DateUtil.getStringFromDate(criteria.getNeededUntil()));
 		return new BasicDBObject();
 	}
 	
