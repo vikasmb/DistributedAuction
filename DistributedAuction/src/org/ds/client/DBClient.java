@@ -160,12 +160,14 @@ public class DBClient {
 		BasicDBObject query = new BasicDBObject("city", sellerCity);
 		query.append("remote", new BasicDBObject("$ne", ""));
 		DBCursor cursor = coll.find(query);
-
+        final int REMOTE_SELLERS_LIMIT=10;
+        int count=0;
 		try {
-			while (cursor.hasNext()) {
+			while (cursor.hasNext() && count<REMOTE_SELLERS_LIMIT) {
 				// System.out.println( cursor.next().get("address"));
 				BasicDBObject dbObj = (BasicDBObject) cursor.next();
 				remoteSellersList.add(dbObj);
+				count++;
 				System.out.println("Found: " + dbObj.getString("userId"));
 			}
 		} finally {

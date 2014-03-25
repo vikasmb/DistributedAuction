@@ -97,6 +97,7 @@ public class AuctionClient {
 		DBClient dbClient = DBClient.getInstance();
 		BasicDBObject jsonAddr = dbClient.getClusterAddress("cars"); //TODO Replace with the actual service selection by the user
 		String restAddr="http://"+jsonAddr.getString("ip")+":"+jsonAddr.getInt("port")+"/DistributedAuction/rest/";
+		System.out.println("Contacting "+restAddr+"for invokeAuction");
 		WebResource webResource=client.resource(restAddr).path("invokeAuction");
 		ClientResponse response=null;
 		try{
