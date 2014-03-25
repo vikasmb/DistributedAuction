@@ -1,5 +1,8 @@
 package org.ds.claim;
 
+import java.util.Date;
+
+import org.ds.auction.AuctionServer;
 import org.ds.auction.AuctionServerPersistance;
 import org.ds.auction.BuyerCriteria;
 import org.ds.util.DateUtil;
@@ -11,6 +14,9 @@ public class ClaimServer {
 	
 	public static String FIELD_AVAILABILITY = "availableTimes" ;
 	public static String FIELD_VERSION = "version";
+	
+	public static String FIELD_FROM_DATE = "from";
+	public static String FIELD_TO_DATE = "till";
 	
 	public static class ClaimResult{
 		
@@ -46,7 +52,7 @@ public class ClaimServer {
 		}
 	}
 	
-	public static class AvailibiltyData{
+	public static class AvailabiltyData{
 		private BasicDBList availabilityData;
 		private int version;
 		
@@ -58,11 +64,17 @@ public class ClaimServer {
 			return this.version;
 		}
 		
-		public Boolean readSucceeded(){
+		public Boolean isAvailable(){
 			return this.availabilityData != null;
 		}
 		
-		public AvailibiltyData(BasicDBList availabilityData, int version){
+		public void printAvailability(){
+			for(Object interval:getAvailabilityData()){
+				System.out.println(interval);
+			}
+		}
+		
+		public AvailabiltyData(BasicDBList availabilityData, int version){
 			this.availabilityData = availabilityData;
 			this.version = version;
 		}
@@ -104,7 +116,8 @@ public class ClaimServer {
 	public BasicDBObject getProductDetails(){
 		if(this.productDetails == null){
 			ClaimServerPersistance persistance = getClaimServerPersistance();
-			this.productDetails = persistance.getProductData(getProductID());
+			BuyerCriteria criteria = getBuyerCriteria();
+			this.productDetails = persistance.getProductData(getProductID(), criteria);
 		}
 		return this.productDetails;
 	}
@@ -120,7 +133,7 @@ public class ClaimServer {
 	}
 	
 	public static void main(String[] args){
-		ClaimServer server = new ClaimServer("123_1395703797188", "car3");
+		ClaimServer server = new ClaimServer("buyer123_1395762078671", "car1");
 		server.claim();
 	}
 	
@@ -143,12 +156,13 @@ public class ClaimServer {
 		Boolean success = true;
 		String reason = "";
 		
-		AvailibiltyData readResult = getAvailibilityData();
-		success = readResult.readSucceeded();
+		AvailabiltyData availability = getAvailibilityData();
+		success = availability.isAvailable();
 		if(success){
-			BasicDBObject newAvailibility = sunderAvailability(readResult);
-			System.out.println("New availability: " + newAvailibility);
-			return commitClaim(newAvailibility, readResult);
+			AvailabiltyData newAvailibility = sunderAvailability(availability);
+			System.out.println("New availability: ");
+			newAvailibility.printAvailability();
+			return commitClaim(newAvailibility, availability);
 		} else {
 			reason = ClaimResult.REASON_PERMANENT;
 		}
@@ -156,31 +170,102 @@ public class ClaimServer {
 		return new ClaimResult(success, reason);
 	}
 	
-	private AvailibiltyData getAvailibilityData(){
+	private AvailabiltyData getAvailibilityData(){
 		BasicDBObject productDetails = getProductDetails();
 		
 		BasicDBList availabilityData = null;
 		int version = 0;
-		if(productDetails.containsField(FIELD_AVAILABILITY) && productDetails.containsField(FIELD_VERSION)){
+		if(productDetails != null && productDetails.containsField(FIELD_AVAILABILITY) && productDetails.containsField(FIELD_VERSION)){
 			availabilityData = (BasicDBList) productDetails.get(FIELD_AVAILABILITY);
 			version = productDetails.getInt(FIELD_VERSION);
 		}
 		
-		return new AvailibiltyData(availabilityData, version);
+		return new AvailabiltyData(availabilityData, version);
 	}
 	
-	private BasicDBObject sunderAvailability(AvailibiltyData availabilityData){
+	private AvailabiltyData sunderAvailability(AvailabiltyData availabilityData){
 		BasicDBList availability = availabilityData.getAvailabilityData();
-		System.out.println("Availability: " + availability);
 		BuyerCriteria criteria = getBuyerCriteria();
+		
+		Date neededFrom = criteria.getNeededFrom();
+		Date neededUntil = criteria.getNeededUntil();
+		
+		System.out.println("Availability: " + availability);
 		System.out.println("Needed from: " + DateUtil.getStringFromDate(criteria.getNeededFrom()) +
 				". Needed until: " + DateUtil.getStringFromDate(criteria.getNeededUntil()));
-		return new BasicDBObject();
+		
+		BasicDBList newAvailability = new BasicDBList();
+		for(Object period:availability){
+			BasicDBObject interval = (BasicDBObject)period;
+			Date fromField = interval.getDate(FIELD_FROM_DATE);
+			Date toField = interval.getDate(FIELD_TO_DATE);
+			if((neededFrom.equals(fromField) || neededFrom.after(fromField)) 
+					&& (neededUntil.before(toField) || neededUntil.equals(toField))){
+				System.out.println("Found matching interval: " + interval);
+				BasicDBList sunderedIntervals = getNewIntervals(interval, neededFrom, neededUntil);
+				newAvailability.addAll(sunderedIntervals);
+			} else {
+				newAvailability.add(interval);
+				System.out.println("Skipping interval: " + interval);
+			}
+		}
+		
+		return new AvailabiltyData(newAvailability, availabilityData.getVersion() + 1);
 	}
 	
-	private ClaimResult commitClaim(BasicDBObject availibility, AvailibiltyData result){
+	private BasicDBList getNewIntervals(BasicDBObject interval, Date neededFrom, Date neededUntil){
+		Date fromField = interval.getDate(FIELD_FROM_DATE);
+		Date toField = interval.getDate(FIELD_TO_DATE);
+		
+		
+		BasicDBList sunderedList = new BasicDBList();
+		if(!fromField.equals(neededFrom) && !toField.equals(neededUntil)){
+			BasicDBObject firstInterval = new BasicDBObject(FIELD_FROM_DATE, fromField)
+															.append(FIELD_TO_DATE, neededFrom);
+			BasicDBObject secondInterval = new BasicDBObject(FIELD_FROM_DATE, neededUntil)
+															.append(FIELD_TO_DATE, toField);
+			sunderedList.add(firstInterval);
+			sunderedList.add(secondInterval);
+		} else if(fromField.equals(neededFrom)) {
+			BasicDBObject newInterval = new BasicDBObject(FIELD_FROM_DATE, neededUntil)
+															.append(FIELD_TO_DATE, toField);
+			sunderedList.add(newInterval);
+		} else if(toField.equals(neededUntil)){
+			BasicDBObject newInterval = new BasicDBObject(FIELD_FROM_DATE, fromField)
+															.append(FIELD_TO_DATE, neededFrom);
+			sunderedList.add(newInterval);
+		} else {
+			System.out.println("Error!");
+		}
+		
+		return sunderedList;
+	}
+	
+	private ClaimResult commitClaim(AvailabiltyData newAvailibility, AvailabiltyData oldAvailability){
 		Boolean success = true;
 		String reason = "";
+		
+		ClaimServerPersistance persistance = getClaimServerPersistance();
+		BuyerCriteria criteria = getBuyerCriteria();
+		
+		Date neededFrom = criteria.getNeededFrom();
+		Date neededUntil = criteria.getNeededUntil();
+		
+		BasicDBObject eleMatch = new BasicDBObject();
+		eleMatch.put("from", new BasicDBObject("$lte", neededFrom));
+		eleMatch.put("till", new BasicDBObject("$gte", neededUntil));
+		
+		BasicDBObject wrapper = new BasicDBObject();
+		wrapper.put("$elemMatch", eleMatch);
+		
+		BasicDBObject query = new BasicDBObject(AuctionServer.FIELD_PRODUCT_ID, productID)
+													.append(FIELD_AVAILABILITY, wrapper)
+													.append(FIELD_VERSION, oldAvailability.getVersion());
+		BasicDBObject entry = new BasicDBObject(FIELD_AVAILABILITY, newAvailibility.getAvailabilityData())
+													.append(FIELD_VERSION, newAvailibility.getVersion());
+		
+		BasicDBObject update = new BasicDBObject("$set", entry);
+		
 		return new ClaimResult(success, reason);
 	}
 }
