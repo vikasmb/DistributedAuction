@@ -142,7 +142,7 @@ public class DBClient {
 		// BasicDBObject("$lte",fromDate));
 		// query.append("availableTimes.till", new
 		// BasicDBObject("$gte",toDate));
-		 System.out.println("QUerying"+query.toString());
+		// System.out.println("QUerying"+query.toString());
 		DBCursor cursor = coll.find(query);
 
 		try {
