@@ -105,7 +105,7 @@ public class AuctionServerPersistance {
 		
 		setAuctionID(buyerID + "_" + String.valueOf(date.getTime()));
 		String status = AuctionServer.STATUS_RUNNING;
-		Long initiatedAt = date.getTime();
+		
 		
 		RoundResults remoteResults = new RoundResults(0, new TreeMap<Double, List<WinnerDetails>>());
 		RoundResults localResults = new RoundResults(0, new TreeMap<Double, List<WinnerDetails>>());
@@ -113,10 +113,8 @@ public class AuctionServerPersistance {
 		BasicDBObject entry = new BasicDBObject(FIELD_AUCTION_ID, getAuctionID())
 												.append(FIELD_STATUS, status)
 												.append(FIELD_USER_ID, buyerID)
-												.append(FIELD_INITIATED_AT, initiatedAt)
+												.append(FIELD_INITIATED_AT, date)
 												.append(FIELD_BUYER_CRITERIA, criteriaBSON)
-												.append(FIELD_REMOTE_RESULTS, remoteResults.getRoundResults())
-												.append(FIELD_LOCAL_RESULTS, localResults.getRoundResults())
 												.append(FIELD_VERSION, getVersion());
 		
 		System.out.println("Making entry: " + entry);
@@ -170,10 +168,10 @@ public class AuctionServerPersistance {
 		int newVersion = incrementVersion();
 		
 		Date date = new Date();
-		Long finishedAt = date.getTime();
+		
 		String status = AuctionServer.STATUS_FINISHED;
 		
-		BasicDBObject entry = new BasicDBObject(FIELD_FINISHED_AT, finishedAt)
+		BasicDBObject entry = new BasicDBObject(FIELD_FINISHED_AT, date)
 													.append(FIELD_STATUS, status)
 													.append(FIELD_VERSION, newVersion);
 		BasicDBObject query = new BasicDBObject(FIELD_AUCTION_ID, auctionID)
@@ -183,7 +181,8 @@ public class AuctionServerPersistance {
 		//System.out.println("Making query: " + query);
 		//System.out.println("Making update: " + update);
 		
-		return updateMongo(query, update);
+		return updateMongo(query, update); // changeit to simulate auction failure
+		
 	}
 	
 	private Boolean insertIntoMongo(BasicDBObject entry){
