@@ -72,7 +72,7 @@ public class DBClient {
 	 * @param clusterCategory
 	 * @return the cluster address if it exists
 	 */
-	public BasicDBObject getClusterAddress(String clusterCategory) {
+	public BasicDBObject getClusterAddress(String clusterCategory) { //TODO Load balancing for the cluster address
 		DB db = mongoClient.getDB(INDEX_DB);
 		BasicDBObject clusterAddr = null;
 		if (db != null) {
@@ -100,7 +100,7 @@ public class DBClient {
 	}
 
 	public BidderDetails getPotentialSellers(String clusterCategory,
-			String sellerCity, String fromTime, String tillTime) {
+			String sellerCity, String fromTime, String tillTime,boolean includeLocalSellers) {
 		List<BasicDBObject> localSellersList = null;
 		List<BasicDBObject> remoteSellersList = null;
 
@@ -108,8 +108,13 @@ public class DBClient {
 		if (db != null) {
 			DBCollection coll = db.getCollection(CAR_VENDORS_DETAILS);
 			if (coll != null) {
+				if(includeLocalSellers){
 				localSellersList = getLocalBidders(coll, sellerCity, fromTime,
 						tillTime);
+				}
+				else{
+					localSellersList = new ArrayList<BasicDBObject>();
+				}
 				remoteSellersList = getRemoteBidders(coll, sellerCity);
 			}
 		}
@@ -160,7 +165,7 @@ public class DBClient {
 		BasicDBObject query = new BasicDBObject("city", sellerCity);
 		query.append("remote", new BasicDBObject("$ne", ""));
 		DBCursor cursor = coll.find(query);
-        final int REMOTE_SELLERS_LIMIT=10;
+        final int REMOTE_SELLERS_LIMIT=100;
         int count=0;
 		try {
 			while (cursor.hasNext() && count<REMOTE_SELLERS_LIMIT) {

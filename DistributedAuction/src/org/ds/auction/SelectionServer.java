@@ -10,6 +10,8 @@ import org.ds.client.DBClient;
 import org.ds.util.DateUtil;
 
 import com.mongodb.BasicDBObject;
+import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
 
 public class SelectionServer {
 
@@ -21,16 +23,30 @@ public class SelectionServer {
 		SelectionServer server = new SelectionServer();
 		DBClient client = DBClient.getInstance();
 		BidderDetails detailsObj = null;
-		BuyerCriteria criteria=null;
-		if (args.length > 0) {
-			detailsObj = client.getPotentialSellers("cars", args[1], args[2],
-					args[3]);
-			criteria = new BuyerCriteria(args[0],
-					DateUtil.getDate(args[2]),
-					DateUtil.getDate(args[3]),  args[1]);
-		} else {
+		BuyerCriteria criteria = null;
+		int argsLength = args.length;
+		if (argsLength > 0) {
+			if (argsLength == 1) { // Only auctionId is present to resume the
+									// auction.
+				String auctionId = args[0];
+				BasicDBObject auctionObj = getAuctionObj(auctionId);
+				criteria = getBuyerCriteriaForAuctionid(auctionObj);
+
+				// Check if local results are already populated in the auction.
+				boolean runLocalAuction = checkLocalResultsExist(auctionObj);
+				detailsObj=client.getPotentialSellers("cars", criteria.getCity(), DateUtil.getStringFromDate(criteria.getNeededFrom()),
+							DateUtil.getStringFromDate(criteria.getNeededUntil()), runLocalAuction);
+				}
+			else {
+				detailsObj = client.getPotentialSellers("cars", args[1],
+						args[2], args[3],true);
+				criteria = new BuyerCriteria(args[0],
+						DateUtil.getDate(args[2]), DateUtil.getDate(args[3]),
+						args[1]);
+			}
+		} else { // For testing purpose
 			detailsObj = client.getPotentialSellers("cars", "LA",
-					"2014-03-15T10:00:00", "2014-03-15T11:00:00");
+					"2014-03-15T10:00:00", "2014-03-15T11:00:00",true);
 			criteria = new BuyerCriteria("123",
 					DateUtil.getDate("2014-03-15T10:00:00"),
 					DateUtil.getDate("2014-03-15T11:00:00"), "LA");
@@ -39,10 +55,48 @@ public class SelectionServer {
 		System.out.println("Remote Size:"
 				+ detailsObj.getRemoteBidders().size()); // server.printArgs(args);
 		// Pass the local and remote bidders list to auction server.
-	
 
 		AuctionServer auctionServer = new AuctionServer(detailsObj, criteria);
 		auctionServer.run();
+	}
+
+	private static boolean checkLocalResultsExist(BasicDBObject auctionObj) {
+		if (auctionObj.containsField("localResults")) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	private static BasicDBObject getAuctionObj(String auctionId) {
+		BasicDBObject query = new BasicDBObject(
+				AuctionServerPersistance.FIELD_AUCTION_ID, auctionId);
+		DBClient client = DBClient.getInstance();
+		DBCollection coll = client.getMongoClient()
+				.getDB(DBClient.CAR_VENDORS_DB)
+				.getCollection(DBClient.AUCTIONS_DETAILS);
+		BasicDBObject auctionObj = null;
+		DBCursor cursor = coll.find(query);
+		try {
+			while (cursor.hasNext()) {
+				auctionObj = (BasicDBObject) cursor.next();
+			}
+		} finally {
+			cursor.close();
+		}
+		return auctionObj;
+	}
+
+	private static BuyerCriteria getBuyerCriteriaForAuctionid(
+			BasicDBObject auctionObj) {
+		BasicDBObject buyerCriteriaDBObj = (BasicDBObject) auctionObj
+				.get("buyerCriteria");
+		BuyerCriteria criteria = new BuyerCriteria(
+				buyerCriteriaDBObj.getString("buyerID"),
+				buyerCriteriaDBObj.getDate("neededFrom"),
+				buyerCriteriaDBObj.getDate("neededUntil"),
+				buyerCriteriaDBObj.getString("city"));
+		return criteria;
 	}
 
 }

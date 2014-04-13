@@ -34,25 +34,25 @@ import com.sun.jersey.api.client.config.DefaultClientConfig;
 
 public class AuctionServer {
 
-	private class RoundResults{
+	private class RoundResults {
 		private TreeMap<Double, List<WinnerDetails>> newBids;
 		private List<RemoteSellerDetails> newRemoteBidders;
-		
-		public RoundResults(TreeMap<Double, List<WinnerDetails>> newBids, 
-				List<RemoteSellerDetails> newRemoteBidders){
+
+		public RoundResults(TreeMap<Double, List<WinnerDetails>> newBids,
+				List<RemoteSellerDetails> newRemoteBidders) {
 			this.newBids = newBids;
 			this.newRemoteBidders = newRemoteBidders;
 		}
-		
-		public TreeMap<Double, List<WinnerDetails>> getBids(){
+
+		public TreeMap<Double, List<WinnerDetails>> getBids() {
 			return this.newBids;
 		}
-		
-		public List<RemoteSellerDetails> getRemoteBidders(){
+
+		public List<RemoteSellerDetails> getRemoteBidders() {
 			return this.newRemoteBidders;
 		}
 	}
-	
+
 	public static String LIST_LOCAL_BIDDERS = "local";
 	public static String LIST_REMOTE_BIDDERS = "remote";
 
@@ -77,6 +77,8 @@ public class AuctionServer {
 
 	private BidderDetails bidderDetails;
 	private BuyerCriteria buyerCriteria;
+	private String resumeAuctionId;
+	private boolean runLocalAuction = true;
 
 	private AuctionServerPersistance auctionWriter;
 
@@ -121,10 +123,22 @@ public class AuctionServer {
 		setAuctionWriter(writer);
 	}
 
+	public AuctionServer(BidderDetails bidderDetails,
+			BuyerCriteria buyerCriteria, String resumeAuctionId,
+			boolean runLocalAuction) {
+		this(bidderDetails, buyerCriteria);
+		this.runLocalAuction = runLocalAuction;
+		this.resumeAuctionId = resumeAuctionId;
+	}
+
 	public void run() {
-		makeInitAuctionEntry();
+		if (resumeAuctionId == null) {
+			makeInitAuctionEntry();
+		}
 		System.out.println("Auction entry made with id");
-		runLocalAuction();
+		if (runLocalAuction) {
+			runLocalAuction();
+		}
 		runRemoteAuction();
 
 		finishUpAuction();
@@ -187,7 +201,7 @@ public class AuctionServer {
 				System.out.println("Winner found: " + winner.getSellerID());
 			}
 		}
-		makeLocalWinnersEntry(winners);
+		makeLocalWinnersEntry(winners); //changeit for simulating local round failure 
 		return true;
 	}
 
@@ -315,11 +329,11 @@ public class AuctionServer {
 					|| !areSame(currentResults, lastResults)) {
 				lastResults = currentResults;
 				System.out.println(remoteBidders);
-				RoundResults results = runRound(remoteBidders, lastResults, false,
-						roundNum);
+				RoundResults results = runRound(remoteBidders, lastResults,
+						false, roundNum);
 				currentResults = results.getBids();
 				remoteBidders = results.getRemoteBidders();
-				
+
 				makeRemoteRoundEntry(roundNum, currentResults);
 				roundNum++;
 			}
@@ -419,8 +433,7 @@ public class AuctionServer {
 		return true;
 	}
 
-	private RoundResults runRound(
-			List<RemoteSellerDetails> remoteBidders,
+	private RoundResults runRound(List<RemoteSellerDetails> remoteBidders,
 			TreeMap<Double, List<WinnerDetails>> lastResults, Boolean lastCall,
 			int roundNum) {
 		// contact each remote bidder and ask him if he wants to bid lower than
@@ -443,28 +456,32 @@ public class AuctionServer {
 			// Threadit
 		}
 
-		ExecutorService es = Executors.newFixedThreadPool(5);
+		ExecutorService es = Executors.newFixedThreadPool(100);
+		System.out.println("********##### Contacting "
+				+ remoteBiddersList.size() + " number of remoteBidders");
 		List<Future<RemoteSellerDetails>> resultList = null;
 		try {
-			resultList = es.invokeAll(remoteBiddersList,5,TimeUnit.SECONDS);
-			System.out.println("Size of returned resultList is:"+resultList.size());
+			resultList = es.invokeAll(remoteBiddersList, 5, TimeUnit.SECONDS);
+			System.out.println("Size of returned resultList is:"
+					+ resultList.size());
 		} catch (InterruptedException e1) {
 			e1.printStackTrace();
 		}
-		
+
 		List<RemoteSellerDetails> valueList;
 
 		if (resultList != null) {
 			for (Future<RemoteSellerDetails> f : resultList) {
 				RemoteSellerDetails remoteBidderDetails = null;
 				try {
-					try{
-				      	remoteBidderDetails = f.get();
+					try {
+						remoteBidderDetails = f.get();
+					} catch (CancellationException ce) {
+						System.out
+								.println("########Ignoring timed out futures");
+						continue; // Ignore as they would not be added to
+									// newBids or newRemoteBidders
 					}
-					catch (CancellationException ce){
-						System.out.println("########Ignoring timed out futures");
-						continue; //Ignore as they would not be added to newBids or newRemoteBidders
-					}			         
 					Double bidPrice = remoteBidderDetails.getPrice();
 					System.out.println("*******Bid price is: " + bidPrice);
 					if (bidPrice > 0) {
@@ -556,9 +573,9 @@ public class AuctionServer {
 						ClientResponse.class, remoteDetails);
 				// System.out.println("Client recieved the status  of"+response.getStatus());
 				bidDetails = response.getEntity(BidDetails.class);
-				System.out.println("In round: " + roundNum + " with madeBid as "
-						+ bidDetails.getMadeBid() + " got back bid of price "
-						+ bidDetails.getBid());
+				System.out.println("In round: " + roundNum
+						+ " with madeBid as " + bidDetails.getMadeBid()
+						+ " got back bid of price " + bidDetails.getBid());
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
