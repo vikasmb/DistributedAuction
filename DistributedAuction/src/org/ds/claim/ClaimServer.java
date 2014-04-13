@@ -15,8 +15,13 @@ import com.mongodb.WriteResult;
 public class ClaimServer {
 	
 	public static void main(String[] args){
-		ClaimServer server = new ClaimServer("123_1395772115708", "car1");
+		long startTime = System.currentTimeMillis();
+		String num = args[0];
+		ClaimServer server = new ClaimServer("123_1395772856232", "car" + num);
 		server.claim();
+		long difference = System.currentTimeMillis() - startTime;
+		System.out.println("Latency: " + num + ", " + difference);
+		return;
 	}
 	
 	public static String FIELD_AVAILABILITY = "availableTimes" ;
@@ -162,7 +167,7 @@ public class ClaimServer {
 		success = availability.isAvailable();
 		if(success){
 			AvailabiltyData newAvailibility = sunderAvailability(availability);
-			System.out.println("New availability: ");
+			//System.out.println("New availability: ");
 			newAvailibility.printAvailability();
 			return commitClaim(newAvailibility, availability);
 		} else {
@@ -193,9 +198,9 @@ public class ClaimServer {
 		Date neededFrom = criteria.getNeededFrom();
 		Date neededUntil = criteria.getNeededUntil();
 		
-		System.out.println("Availability: " + availability);
-		System.out.println("Needed from: " + DateUtil.getStringFromDate(criteria.getNeededFrom()) +
-				". Needed until: " + DateUtil.getStringFromDate(criteria.getNeededUntil()));
+		//System.out.println("Availability: " + availability);
+		//System.out.println("Needed from: " + DateUtil.getStringFromDate(criteria.getNeededFrom()) +
+		//		". Needed until: " + DateUtil.getStringFromDate(criteria.getNeededUntil()));
 		
 		BasicDBList newAvailability = new BasicDBList();
 		for(Object period:availability){
@@ -204,12 +209,12 @@ public class ClaimServer {
 			Date toField = interval.getDate(FIELD_TO_DATE);
 			if((neededFrom.equals(fromField) || neededFrom.after(fromField)) 
 					&& (neededUntil.before(toField) || neededUntil.equals(toField))){
-				System.out.println("Found matching interval: " + interval);
+				//System.out.println("Found matching interval: " + interval);
 				BasicDBList sunderedIntervals = getNewIntervals(interval, neededFrom, neededUntil);
 				newAvailability.addAll(sunderedIntervals);
 			} else {
 				newAvailability.add(interval);
-				System.out.println("Skipping interval: " + interval);
+				//System.out.println("Skipping interval: " + interval);
 			}
 		}
 		
@@ -235,7 +240,7 @@ public class ClaimServer {
 				sunderedList.add(newInterval);
 			}
 		} else {
-			System.out.println("Exact match of interval!");
+			//System.out.println("Exact match of interval!");
 		}
 		
 		return sunderedList;
@@ -261,15 +266,15 @@ public class ClaimServer {
 		BasicDBObject query = new BasicDBObject(AuctionServer.FIELD_PRODUCT_ID, productID)
 													.append(FIELD_AVAILABILITY, wrapper)
 													.append(FIELD_VERSION, oldAvailability.getVersion());
-		System.out.println("Query: " + query);
+		//System.out.println("Query: " + query);
 		
 		BasicDBObject entry = new BasicDBObject(FIELD_AVAILABILITY, newAvailibility.getAvailabilityData())
 													.append(FIELD_VERSION, newAvailibility.getVersion());
 		BasicDBObject update = new BasicDBObject("$set", entry);
-		System.out.println("Update: " + update);
+		//System.out.println("Update: " + update);
 		
 		WriteResult updateResult = persistance.updateMongo(query, update, DBClient.CAR_VENDORS_DETAILS);
-		System.out.println("Update result: " + updateResult);
+		//System.out.println("Update result: " + updateResult);
 		
 		success = updateResult.isUpdateOfExisting();
 		

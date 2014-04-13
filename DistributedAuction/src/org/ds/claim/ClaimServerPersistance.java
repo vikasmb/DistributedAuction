@@ -41,10 +41,10 @@ public class ClaimServerPersistance {
 		
 		BasicDBObject query = new BasicDBObject(AuctionServer.FIELD_PRODUCT_ID, productID)
 													.append(ClaimServer.FIELD_AVAILABILITY, wrapper);
-		System.out.println("Query: " + query);
+		//System.out.println("Query: " + query);
 		BasicDBObject productData = readMongo(query, DBClient.CAR_VENDORS_DETAILS);
 		
-		System.out.println("Read result : " + productData);
+		//System.out.println("Read result : " + productData);
 		
 		return productData;
 	}
@@ -52,7 +52,7 @@ public class ClaimServerPersistance {
 	public BasicDBObject getAuctionData(String auctionID){
 		BasicDBObject query = new BasicDBObject(AuctionServerPersistance.FIELD_AUCTION_ID, auctionID);
 		BasicDBObject auctionData = readMongo(query, DBClient.AUCTIONS_DETAILS);
-		System.out.println("Read result : " + auctionData);
+		//System.out.println("Read result : " + auctionData);
 		
 		return auctionData;
 		
@@ -109,7 +109,7 @@ public class ClaimServerPersistance {
 	}
 	
 	public Boolean verifyNoError(WriteResult result){
-		System.out.println("Result of operation: " + result);
+		//System.out.println("Result of operation: " + result);
 		return true;
 	}
 }
