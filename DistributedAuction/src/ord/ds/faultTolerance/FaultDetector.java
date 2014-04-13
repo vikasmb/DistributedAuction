@@ -1,5 +1,6 @@
 package ord.ds.faultTolerance;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -25,6 +26,7 @@ import com.sun.jersey.api.client.config.DefaultClientConfig;
 
 public class FaultDetector {
 
+	public static int EXPECTED_AUCTION_RUNNING_TIME = 2;
 	/**
 	 * @param args
 	 */
@@ -35,7 +37,7 @@ public class FaultDetector {
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-			resumeUnFinishedAuctions();
+			resumeUnfinishedAuctions();
 		}
 	}
 	
@@ -50,44 +52,83 @@ public class FaultDetector {
 		return mongoClient;
 	}
 	
-	private static void resumeUnFinishedAuctions(){
-		BasicDBObject query = new BasicDBObject(AuctionServerPersistance.FIELD_STATUS, AuctionServer.STATUS_RUNNING);		
-		Calendar cal = Calendar.getInstance();
-        cal.setTimeZone(TimeZone.getTimeZone("GMT"));
-        cal.add(Calendar.MINUTE, -2);
-        query.append(AuctionServerPersistance.FIELD_INITIATED_AT, new BasicDBObject("$lte", cal.getTime()));
-        
-        DBCollection coll = getMongoClient().getDB(DBClient.CAR_VENDORS_DB).getCollection(DBClient.AUCTIONS_DETAILS);
 
-        BasicDBObject projectedFields = new BasicDBObject();
-        projectedFields.append(AuctionServerPersistance.FIELD_AUCTION_ID, "1");
-    	
-        DBCursor cursor = coll.find(query,projectedFields);
+	private static void resumeUnfinishedAuctions(){		
+		
+		List<String> failedAuctions = getFailedAuctions();
+		
     	ClientConfig config = new DefaultClientConfig();
 		Client client = Client.create(config);
-    	try {
+    	
+		for(String auctionID : failedAuctions){
+			if(!resumeAuction(client, auctionID)){
+				System.out.println("Failed to reschedule auction: " + auctionID);
+			}
+		}	
+	}
+	
+	
+	private static Boolean resumeAuction(Client client, String auctionID){
+		//TODO: This has to be a call to the index cluster
+		Boolean success = true;
+		
+		RemoteAuctionDetails auctionObj=new RemoteAuctionDetails();
+	    auctionObj.setAuctionId(auctionID);
+	  	
+	    BasicDBObject jsonAddr = getDBClient().getClusterAddress("cars");
+	  	String restAddr = "http://" + 
+	  						jsonAddr.getString("ip") + ":" + jsonAddr.getInt("port") + 
+	  						jsonAddr.getString("faultTolerancePath");
+	  	
+	  	System.out.println("Contacting restAddr:" + restAddr + " for resuming auction: " + auctionID);
+	  	
+	  	WebResource webResource=client.resource(restAddr);
+		ClientResponse response=null;
+		try{
+			 response = webResource.type(MediaType.APPLICATION_JSON).post(ClientResponse.class,auctionObj);
+		}
+		catch(Exception e){
+			e.printStackTrace();
+			success = false;
+		}
+		
+		System.out.println("Fault tolerant process recieved the status  of" + response.getStatus() + 
+				" and response as " + response.getEntity(String.class));
+		
+		return success && response.getStatus() == 200;
+	}
+	
+	private static BasicDBObject getFaultCheckQuery(){
+		Calendar cal = Calendar.getInstance();
+        cal.setTimeZone(TimeZone.getTimeZone("GMT"));
+        cal.add(Calendar.MINUTE, -EXPECTED_AUCTION_RUNNING_TIME);
+        
+        BasicDBObject query = new BasicDBObject(AuctionServerPersistance.FIELD_STATUS, AuctionServer.STATUS_RUNNING);
+        query.append(AuctionServerPersistance.FIELD_INITIATED_AT, new BasicDBObject("$lte", cal.getTime()));
+        
+        return query;
+	}
+	
+	private static List<String> getFailedAuctions(){
+		BasicDBObject query = getFaultCheckQuery();
+		
+		DBCollection coll = getMongoClient().getDB(DBClient.CAR_VENDORS_DB).getCollection(DBClient.AUCTIONS_DETAILS);
+        BasicDBObject projectedFields = new BasicDBObject();
+        projectedFields.append(AuctionServerPersistance.FIELD_AUCTION_ID, "1");
+        
+        List<String> failedAuctions = new ArrayList<String>();
+        DBCursor cursor = coll.find(query,projectedFields);
+        try {
 			while (cursor.hasNext()) {
 				BasicDBObject dbObj = (BasicDBObject) cursor.next();
-			    String auctionId=dbObj.getString(AuctionServerPersistance.FIELD_AUCTION_ID);		
-			    RemoteAuctionDetails auctionObj=new RemoteAuctionDetails();
-			    auctionObj.setAuctionId(auctionId);
-			  	BasicDBObject jsonAddr = getDBClient().getClusterAddress("cars");
-			  	String restAddr="http://"+jsonAddr.getString("ip")+":"+jsonAddr.getInt("port")+jsonAddr.getString("faultTolerancePath");
-			  	System.out.println("Contacting restAddr:"+restAddr+" for resuming auction: "+auctionId);
-			  	WebResource webResource=client.resource(restAddr);
-				ClientResponse response=null;
-				try{
-					 response = webResource.type(MediaType.APPLICATION_JSON).post(ClientResponse.class,auctionObj);
-				}
-				catch(Exception e){
-					e.printStackTrace();
-				}
-				System.out.println("Fault tolerant process recieved the status  of"+response.getStatus()+" and response as "+response.getEntity(String.class));
-				System.out.println("Fault tolerant process exiting the rest call");	
+			    String auctionID = dbObj.getString(AuctionServerPersistance.FIELD_AUCTION_ID);		
+			    failedAuctions.add(auctionID);
 			}     
 		} finally {
 			cursor.close();
 		}
+        
+        return failedAuctions;
 	}
 
 }

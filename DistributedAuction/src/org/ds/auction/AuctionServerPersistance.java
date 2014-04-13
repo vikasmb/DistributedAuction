@@ -37,6 +37,7 @@ public class AuctionServerPersistance {
 				List<WinnerDetails> winnersDetails = entry.getValue();
 				for(WinnerDetails details:winnersDetails){
 					BasicDBObject bidDetails = new BasicDBObject(FIELD_PRODUCT_ID, details.getProductID())
+																	.append(FIELD_SELLER_ID, details.getSellerID())
 																	.append(FIELD_BID, price)
 																	.append(FIELD_TOKEN, details.getToken());
 					bids.add(bidDetails);
@@ -63,6 +64,7 @@ public class AuctionServerPersistance {
 	public static String FIELD_ROUND_NUM = "roundNum";
 	public static String FIELD_BIDS = "bids";
 	public static String FIELD_PRODUCT_ID ="productID";
+	public static String FIELD_SELLER_ID ="productID";
 	public static String FIELD_BID = "bid";
 	public static String FIELD_TOKEN = "token";
 	
@@ -91,6 +93,11 @@ public class AuctionServerPersistance {
 		this.version = 1;
 	}
 	
+	public AuctionServerPersistance(String auctionID, int version){
+		setAuctionID(auctionID);
+		this.version = version;
+	}
+	
 	private MongoClient getMongoClient(){
 		DBClient dbClient = DBClient.getInstance();
 		MongoClient mongoClient = dbClient.getMongoClient();
@@ -108,13 +115,13 @@ public class AuctionServerPersistance {
 		
 		
 		RoundResults remoteResults = new RoundResults(0, new TreeMap<Double, List<WinnerDetails>>());
-		RoundResults localResults = new RoundResults(0, new TreeMap<Double, List<WinnerDetails>>());
 		
 		BasicDBObject entry = new BasicDBObject(FIELD_AUCTION_ID, getAuctionID())
 												.append(FIELD_STATUS, status)
 												.append(FIELD_USER_ID, buyerID)
 												.append(FIELD_INITIATED_AT, date)
 												.append(FIELD_BUYER_CRITERIA, criteriaBSON)
+												.append(FIELD_REMOTE_RESULTS, remoteResults.getRoundResults())
 												.append(FIELD_VERSION, getVersion());
 		
 		System.out.println("Making entry: " + entry);

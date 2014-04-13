@@ -77,8 +77,8 @@ public class AuctionServer {
 
 	private BidderDetails bidderDetails;
 	private BuyerCriteria buyerCriteria;
-	private String resumeAuctionId;
-	private boolean runLocalAuction = true;
+	private Boolean resumingAuction;
+	private BasicDBObject failedAuctionDetails;
 
 	private AuctionServerPersistance auctionWriter;
 
@@ -106,6 +106,14 @@ public class AuctionServer {
 		return this.auctionWriter;
 	}
 
+	private Boolean isResumingAuction(){
+		return this.resumingAuction;
+	}
+	
+	private BasicDBObject getFailedAuctionDetails(){
+		return this.failedAuctionDetails;
+	}
+	
 	private List<BasicDBObject> getLocalBidders() {
 		return getBidderDetails().getLocalBidders();
 	}
@@ -121,30 +129,36 @@ public class AuctionServer {
 
 		AuctionServerPersistance writer = new AuctionServerPersistance();
 		setAuctionWriter(writer);
+		this.resumingAuction = false;
 	}
-
+	
 	public AuctionServer(BidderDetails bidderDetails,
-			BuyerCriteria buyerCriteria, String resumeAuctionId,
-			boolean runLocalAuction) {
-		this(bidderDetails, buyerCriteria);
-		this.runLocalAuction = runLocalAuction;
-		this.resumeAuctionId = resumeAuctionId;
+			BuyerCriteria buyerCriteria, String auctionID, BasicDBObject failedAuctionDetails) {
+		setBidderDetails(bidderDetails);
+		setBuyerCriteria(buyerCriteria);
+
+		AuctionServerPersistance writer = new AuctionServerPersistance(auctionID, failedAuctionDetails.getInt(AuctionServerPersistance.FIELD_VERSION));
+		setAuctionWriter(writer);
+		this.resumingAuction = true;
+		this.failedAuctionDetails = failedAuctionDetails;
 	}
 
 	public void run() {
-		if (resumeAuctionId == null) {
+		if (!isResumingAuction()) {
 			makeInitAuctionEntry();
 		}
-		System.out.println("Auction entry made with id");
-		if (runLocalAuction) {
-			runLocalAuction();
-		}
+		
+		runLocalAuction();
 		runRemoteAuction();
 
 		finishUpAuction();
 	}
 
 	private Boolean runLocalAuction() {
+		if(getLocalBidders().size() == 0){
+			return true;
+		}
+		
 		TreeMap<Double, List<LocalSellerDetails>> prices = getSortedListAndMinPrices();
 		System.out
 				.println("Sorted list and min prices obtained for local bidders");
@@ -308,12 +322,53 @@ public class AuctionServer {
 		}
 	}
 
+	private int getInitRoundNumber(){
+		int roundNum = 1;
+		if(getFailedAuctionDetails() != null){
+			BasicDBObject remoteResults = (BasicDBObject)getFailedAuctionDetails()
+											.get(AuctionServerPersistance.FIELD_REMOTE_RESULTS);
+			roundNum = remoteResults.getInt(AuctionServerPersistance.FIELD_ROUND_NUM) + 1;
+		}	
+		
+		return roundNum;
+	}
+	
+	private TreeMap<Double, List<WinnerDetails>> getInitLastResults(int roundNum){
+		TreeMap<Double, List<WinnerDetails>> lastResults = null;
+		if(roundNum >= 1){
+			lastResults = new TreeMap<Double, List<WinnerDetails>>();
+			if(getFailedAuctionDetails() != null){
+				BasicDBObject remoteResults = (BasicDBObject)getFailedAuctionDetails()
+												.get(AuctionServerPersistance.FIELD_REMOTE_RESULTS);
+				BasicDBList bids = (BasicDBList)remoteResults.get(AuctionServerPersistance.FIELD_BIDS);
+				for(Object bid: bids){
+					BasicDBObject bidDetails = (BasicDBObject)bid;
+					Double price = bidDetails.getDouble(AuctionServerPersistance.FIELD_BID);
+					WinnerDetails details = new WinnerDetails(price, 
+													bidDetails.getString(AuctionServerPersistance.FIELD_SELLER_ID),
+													bidDetails.getString(AuctionServerPersistance.FIELD_PRODUCT_ID));
+					
+					List<WinnerDetails> winnersDetails = null;
+					if(lastResults.containsKey(price)){
+						winnersDetails = lastResults.get(price);
+					} else {
+						winnersDetails = new ArrayList<WinnerDetails>();
+					}
+					winnersDetails.add(details);
+					lastResults.put(price, winnersDetails);
+				}
+			}	
+		}
+		
+		return lastResults;
+	}
+	
 	private Boolean runRemoteAuction() {
 		// get the remote bidders
 		List<RemoteSellerDetails> remoteBidders = getPackagedRemoteBidders();
 
 		// run rounds
-		int roundNum = 1;
+		int roundNum = getInitRoundNumber();
 
 		// last calls tracker
 		Boolean lastCallSuccess = false; // did the last call succeed?
@@ -321,7 +376,7 @@ public class AuctionServer {
 								// byzantine bidders
 
 		// results tracker
-		TreeMap<Double, List<WinnerDetails>> lastResults = null;
+		TreeMap<Double, List<WinnerDetails>> lastResults = getInitLastResults(roundNum);
 		TreeMap<Double, List<WinnerDetails>> currentResults = null;
 
 		while (!lastCallSuccess && numLastCalls < maxLastCalls) {
@@ -672,24 +727,26 @@ public class AuctionServer {
 	private Boolean makeInitAuctionEntry() {
 		AuctionServerPersistance writer = getAuctionWriter();
 		BuyerCriteria criteria = getBuyerCriteria();
-		writer.makeInitEntry(criteria);
-		return true;
+		return writer.makeInitEntry(criteria);
 	}
 
 	private Boolean makeLocalWinnersEntry(
 			TreeMap<Double, List<WinnerDetails>> winners) {
 		AuctionServerPersistance writer = getAuctionWriter();
 		return writer.persistLocalBidWinners(winners);
+		//return true;
 	}
 
 	private Boolean makeRemoteRoundEntry(int roundNum,
 			TreeMap<Double, List<WinnerDetails>> winners) {
 		AuctionServerPersistance writer = getAuctionWriter();
 		return writer.persistRemoteRoundWinners(roundNum, winners);
+		//return true;
 	}
 
 	private Boolean finishUpAuction() {
 		AuctionServerPersistance writer = getAuctionWriter();
 		return writer.finishUpAuction();
+		//return true;
 	}
 }

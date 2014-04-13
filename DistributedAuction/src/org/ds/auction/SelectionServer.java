@@ -19,49 +19,60 @@ public class SelectionServer {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-
-		SelectionServer server = new SelectionServer();
 		DBClient client = DBClient.getInstance();
 		BidderDetails detailsObj = null;
 		BuyerCriteria criteria = null;
+		AuctionServer auctionServer = null;
 		int argsLength = args.length;
 		if (argsLength > 0) {
 			if (argsLength == 1) { // Only auctionId is present to resume the
 									// auction.
 				String auctionId = args[0];
 				BasicDBObject auctionObj = getAuctionObj(auctionId);
-				criteria = getBuyerCriteriaForAuctionid(auctionObj);
+				criteria = getBuyerCriteriaForAuction(auctionObj);
 
 				// Check if local results are already populated in the auction.
 				boolean runLocalAuction = checkLocalResultsExist(auctionObj);
-				detailsObj=client.getPotentialSellers("cars", criteria.getCity(), DateUtil.getStringFromDate(criteria.getNeededFrom()),
+				detailsObj = client.getPotentialSellers("cars", criteria.getCity(), DateUtil.getStringFromDate(criteria.getNeededFrom()),
 							DateUtil.getStringFromDate(criteria.getNeededUntil()), runLocalAuction);
-				}
+				auctionServer = new AuctionServer(detailsObj, criteria, auctionId, auctionObj);
+			}
 			else {
 				detailsObj = client.getPotentialSellers("cars", args[1],
 						args[2], args[3],true);
 				criteria = new BuyerCriteria(args[0],
 						DateUtil.getDate(args[2]), DateUtil.getDate(args[3]),
 						args[1]);
+				auctionServer = new AuctionServer(detailsObj, criteria);
 			}
 		} else { // For testing purpose
-			detailsObj = client.getPotentialSellers("cars", "LA",
+			/*detailsObj = client.getPotentialSellers("cars", "LA",
 					"2014-03-15T10:00:00", "2014-03-15T11:00:00",true);
 			criteria = new BuyerCriteria("123",
 					DateUtil.getDate("2014-03-15T10:00:00"),
 					DateUtil.getDate("2014-03-15T11:00:00"), "LA");
+			auctionServer = new AuctionServer(detailsObj, criteria);*/
+			
+			String auctionId = "123_1397418677436";
+			BasicDBObject auctionObj = getAuctionObj(auctionId);
+			criteria = getBuyerCriteriaForAuction(auctionObj);
+
+			// Check if local results are already populated in the auction.
+			boolean runLocalAuction = !checkLocalResultsExist(auctionObj);
+			detailsObj = client.getPotentialSellers("cars", criteria.getCity(), DateUtil.getStringFromDate(criteria.getNeededFrom()),
+						DateUtil.getStringFromDate(criteria.getNeededUntil()), runLocalAuction);
+			auctionServer = new AuctionServer(detailsObj, criteria, auctionId, auctionObj);
 		}
 		System.out.println("Local Size:" + detailsObj.getLocalBidders().size());
 		System.out.println("Remote Size:"
 				+ detailsObj.getRemoteBidders().size()); // server.printArgs(args);
 		// Pass the local and remote bidders list to auction server.
 
-		AuctionServer auctionServer = new AuctionServer(detailsObj, criteria);
 		auctionServer.run();
 	}
 
 	private static boolean checkLocalResultsExist(BasicDBObject auctionObj) {
-		if (auctionObj.containsField("localResults")) {
+		if (auctionObj.containsField(AuctionServerPersistance.FIELD_LOCAL_RESULTS)) {
 			return true;
 		} else {
 			return false;
@@ -87,7 +98,7 @@ public class SelectionServer {
 		return auctionObj;
 	}
 
-	private static BuyerCriteria getBuyerCriteriaForAuctionid(
+	private static BuyerCriteria getBuyerCriteriaForAuction(
 			BasicDBObject auctionObj) {
 		BasicDBObject buyerCriteriaDBObj = (BasicDBObject) auctionObj
 				.get("buyerCriteria");
