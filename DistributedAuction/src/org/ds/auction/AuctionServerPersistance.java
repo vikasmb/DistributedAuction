@@ -56,6 +56,7 @@ public class AuctionServerPersistance {
 	public static String FIELD_STATUS = "status";
 	public static String FIELD_USER_ID = "userID";
 	public static String FIELD_INITIATED_AT = "initiatedAt";
+	public static String FIELD_VIEWED_AT = "viewedAt";
 	public static String FIELD_FINISHED_AT = "finishedAt";
 	public static String FIELD_BUYER_CRITERIA = "buyerCriteria";
 	public static String FIELD_REMOTE_RESULTS = "remoteResults";
@@ -64,7 +65,7 @@ public class AuctionServerPersistance {
 	public static String FIELD_ROUND_NUM = "roundNum";
 	public static String FIELD_BIDS = "bids";
 	public static String FIELD_PRODUCT_ID ="productID";
-	public static String FIELD_SELLER_ID ="productID";
+	public static String FIELD_SELLER_ID ="sellerID";
 	public static String FIELD_BID = "bid";
 	public static String FIELD_TOKEN = "token";
 	

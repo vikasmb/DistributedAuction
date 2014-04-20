@@ -46,14 +46,14 @@ public class SelectionServer {
 				auctionServer = new AuctionServer(detailsObj, criteria);
 			}
 		} else { // For testing purpose
-			/*detailsObj = client.getPotentialSellers("cars", "LA",
+			detailsObj = client.getPotentialSellers("cars", "LA",
 					"2014-03-15T10:00:00", "2014-03-15T11:00:00",true);
 			criteria = new BuyerCriteria("123",
 					DateUtil.getDate("2014-03-15T10:00:00"),
 					DateUtil.getDate("2014-03-15T11:00:00"), "LA");
-			auctionServer = new AuctionServer(detailsObj, criteria);*/
+			auctionServer = new AuctionServer(detailsObj, criteria);
 			
-			String auctionId = "123_1397418677436";
+			/*String auctionId = "123_1397418677436";
 			BasicDBObject auctionObj = getAuctionObj(auctionId);
 			criteria = getBuyerCriteriaForAuction(auctionObj);
 
@@ -61,7 +61,7 @@ public class SelectionServer {
 			boolean runLocalAuction = !checkLocalResultsExist(auctionObj);
 			detailsObj = client.getPotentialSellers("cars", criteria.getCity(), DateUtil.getStringFromDate(criteria.getNeededFrom()),
 						DateUtil.getStringFromDate(criteria.getNeededUntil()), runLocalAuction);
-			auctionServer = new AuctionServer(detailsObj, criteria, auctionId, auctionObj);
+			auctionServer = new AuctionServer(detailsObj, criteria, auctionId, auctionObj);*/
 		}
 		System.out.println("Local Size:" + detailsObj.getLocalBidders().size());
 		System.out.println("Remote Size:"

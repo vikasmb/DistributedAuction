@@ -2,9 +2,11 @@ package org.ds.auction;
 
 import java.util.Date;
 
-
 import com.mongodb.BasicDBObject;
+
 import javax.xml.bind.annotation.XmlRootElement;
+
+import org.ds.util.DateUtil;
 
 @XmlRootElement
 public class BuyerCriteria {
@@ -75,5 +77,11 @@ public class BuyerCriteria {
 									.append(FIELD_NEEDED_FROM, getNeededFrom())
 									.append(FIELD_NEEDED_UNTIL, getNeededUntil())
 									.append(FIELD_CITY, getCity());
+	}
+	
+	public void printCriteria(){
+		System.out.println("BuyerID: " + getBuyerID() +  " City: " + getCity() 
+							+ " Needed from: " + DateUtil.getStringFromDate(getNeededFrom())
+							+ " Needed until: " + DateUtil.getStringFromDate(getNeededUntil()));
 	}
 }

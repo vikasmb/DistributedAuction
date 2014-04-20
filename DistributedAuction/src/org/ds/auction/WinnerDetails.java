@@ -35,4 +35,9 @@ public class WinnerDetails extends SellerDetails {
 		}
 		return winnersDetails;
 	}
+	
+	public void printDetails(){
+		super.printDetails();
+		System.out.println("Price: " + getPrice() + " Token: " + getToken());
+	}
 }
