@@ -1,4 +1,4 @@
-package ord.ds.faultTolerance;
+package org.ds.faultTolerance;
 
 import java.util.ArrayList;
 import java.util.Calendar;
