@@ -127,7 +127,7 @@ public class AuctionServer {
 		setBidderDetails(bidderDetails);
 		setBuyerCriteria(buyerCriteria);
 
-		AuctionServerPersistance writer = new AuctionServerPersistance();
+		AuctionServerPersistance writer = new AuctionServerPersistance(getBuyerCriteria());
 		setAuctionWriter(writer);
 		this.resumingAuction = false;
 	}
@@ -137,7 +137,7 @@ public class AuctionServer {
 		setBidderDetails(bidderDetails);
 		setBuyerCriteria(buyerCriteria);
 
-		AuctionServerPersistance writer = new AuctionServerPersistance(auctionID, failedAuctionDetails.getInt(AuctionServerPersistance.FIELD_VERSION));
+		AuctionServerPersistance writer = new AuctionServerPersistance(getBuyerCriteria(), auctionID, failedAuctionDetails.getInt(AuctionServerPersistance.FIELD_VERSION));
 		setAuctionWriter(writer);
 		this.resumingAuction = true;
 		this.failedAuctionDetails = failedAuctionDetails;
@@ -727,7 +727,7 @@ public class AuctionServer {
 	private Boolean makeInitAuctionEntry() {
 		AuctionServerPersistance writer = getAuctionWriter();
 		BuyerCriteria criteria = getBuyerCriteria();
-		return writer.makeInitEntry(criteria);
+		return writer.makeInitEntry();
 	}
 
 	private Boolean makeLocalWinnersEntry(

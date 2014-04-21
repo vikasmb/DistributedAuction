@@ -27,11 +27,13 @@ public class DBClient {
 	// DB Names
 	public static String INDEX_DB = "serviceIndex";
 	public static String CAR_VENDORS_DB = "carVendorsDB";
+	public static String USERS_DB = "usersDB";
 
 	// Collection names
 	public static String INDEX_COLLECTION = "indexCollection";
 	public static String CAR_VENDORS_DETAILS = "carVendorsDetails";
 	public static String AUCTIONS_DETAILS = "auctionsDetails";
+	public static String USERS_DETAILS = "usersDetails";
 
 	// instance variables
 	private static DBClient _instance;

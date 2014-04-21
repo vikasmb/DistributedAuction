@@ -7,6 +7,7 @@ import java.util.TreeMap;
 import java.util.Map.Entry;
 
 import org.ds.client.DBClient;
+import org.ds.userServer.UserPersistance;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
@@ -50,7 +51,9 @@ public class AuctionServerPersistance {
 	}
 	
 	private String auctionID;
+	private BuyerCriteria criteria;
 	private int version;
+	private UserPersistance userWriter;
 	
 	public static String FIELD_AUCTION_ID = "auctionID";
 	public static String FIELD_STATUS = "status";
@@ -81,6 +84,14 @@ public class AuctionServerPersistance {
 		return this.auctionID;
 	}
 	
+	private void setBuyerCriteria(BuyerCriteria criteria){
+		this.criteria = criteria;
+	}
+	
+	public BuyerCriteria getBuyerCriteria(){
+		return this.criteria;
+	}
+	
 	public int getVersion(){
 		return this.version;
 	}
@@ -90,13 +101,25 @@ public class AuctionServerPersistance {
 		return getVersion();
 	}
 	
-	public AuctionServerPersistance(){
-		this.version = 1;
+	public UserPersistance getUserWriter(){
+		return this.userWriter;
 	}
 	
-	public AuctionServerPersistance(String auctionID, int version){
-		setAuctionID(auctionID);
+	public void initUserWriter(){
+		this.userWriter = new UserPersistance(getBuyerCriteria().getBuyerID());;
+	}
+	
+	public AuctionServerPersistance(BuyerCriteria criteria){
+		this.version = 1;
+		setBuyerCriteria(criteria);
+		initUserWriter();
+	}
+	
+	public AuctionServerPersistance(BuyerCriteria criteria, String auctionID, int version){
 		this.version = version;
+		setAuctionID(auctionID);
+		setBuyerCriteria(criteria);
+		initUserWriter();
 	}
 	
 	private MongoClient getMongoClient(){
@@ -106,21 +129,22 @@ public class AuctionServerPersistance {
 		return mongoClient;
 	}
 	
-	public Boolean makeInitEntry(BuyerCriteria criteria){
+	public Boolean makeInitEntry(){
+		BuyerCriteria criteria = getBuyerCriteria();
 		String buyerID = criteria.getBuyerID();
 		BasicDBObject criteriaBSON = criteria.packageToBSON();
-		Date date = new Date();
+		Date initiatedAt = new Date();
 		
-		setAuctionID(buyerID + "_" + String.valueOf(date.getTime()));
+		setAuctionID(buyerID + "_" + String.valueOf(initiatedAt.getTime()));
 		String status = AuctionServer.STATUS_RUNNING;
-		
-		
 		RoundResults remoteResults = new RoundResults(0, new TreeMap<Double, List<WinnerDetails>>());
+		
+		getUserWriter().recordAuctionInit(buyerID, getAuctionID(), initiatedAt);
 		
 		BasicDBObject entry = new BasicDBObject(FIELD_AUCTION_ID, getAuctionID())
 												.append(FIELD_STATUS, status)
 												.append(FIELD_USER_ID, buyerID)
-												.append(FIELD_INITIATED_AT, date)
+												.append(FIELD_INITIATED_AT, initiatedAt)
 												.append(FIELD_BUYER_CRITERIA, criteriaBSON)
 												.append(FIELD_REMOTE_RESULTS, remoteResults.getRoundResults())
 												.append(FIELD_VERSION, getVersion());
@@ -175,11 +199,13 @@ public class AuctionServerPersistance {
 		int oldVersion = getVersion();
 		int newVersion = incrementVersion();
 		
-		Date date = new Date();
+		Date finishedAt = new Date();
 		
 		String status = AuctionServer.STATUS_FINISHED;
 		
-		BasicDBObject entry = new BasicDBObject(FIELD_FINISHED_AT, date)
+		getUserWriter().recordAuctionEnd(getBuyerCriteria().getBuyerID(), getAuctionID(), finishedAt);
+		
+		BasicDBObject entry = new BasicDBObject(FIELD_FINISHED_AT, finishedAt)
 													.append(FIELD_STATUS, status)
 													.append(FIELD_VERSION, newVersion);
 		BasicDBObject query = new BasicDBObject(FIELD_AUCTION_ID, auctionID)
@@ -191,6 +217,21 @@ public class AuctionServerPersistance {
 		
 		return updateMongo(query, update); // changeit to simulate auction failure
 		
+	}
+	
+	public Boolean recordViewedAt(){
+		String auctionID = getAuctionID();
+		
+		int oldVersion = getVersion();
+		int newVersion = incrementVersion();
+		
+		Date date = new Date();
+		BasicDBObject entry = new BasicDBObject(FIELD_VIEWED_AT, date)
+												.append(FIELD_VERSION, newVersion);
+		BasicDBObject query = new BasicDBObject(FIELD_AUCTION_ID, auctionID)
+												.append(FIELD_VERSION, oldVersion);
+		BasicDBObject update = new BasicDBObject("$set", entry);
+		return updateMongo(query, update);
 	}
 	
 	private Boolean insertIntoMongo(BasicDBObject entry){
