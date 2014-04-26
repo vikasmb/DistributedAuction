@@ -71,6 +71,7 @@ public class AuctionServerPersistance {
 	public static String FIELD_SELLER_ID ="sellerID";
 	public static String FIELD_BID = "bid";
 	public static String FIELD_TOKEN = "token";
+	public static String FIELD_CLAIMED = "claimed";
 	
 	
 	public static String MONGO_RESPONSE_FIELD_OK = "ok";
@@ -162,6 +163,24 @@ public class AuctionServerPersistance {
 		RoundResults localResults = new RoundResults(1, winners);
 		
 		BasicDBObject entry = new BasicDBObject(FIELD_LOCAL_RESULTS, localResults.getRoundResults())
+													.append(FIELD_VERSION, newVersion);
+		BasicDBObject query = new BasicDBObject(FIELD_AUCTION_ID, auctionID)
+												.append(FIELD_VERSION, oldVersion);
+		BasicDBObject update = new BasicDBObject("$set", entry);
+		
+		System.out.println("Making query: " + query);
+		System.out.println("Making update: " + update);
+		
+		return updateMongo(query, update);
+	}
+	
+	public Boolean updateOnClaim(BasicDBObject localResults){
+		String auctionID = getAuctionID();
+		
+		int oldVersion = getVersion();
+		int newVersion = incrementVersion();
+		
+		BasicDBObject entry = new BasicDBObject(FIELD_LOCAL_RESULTS, localResults)
 													.append(FIELD_VERSION, newVersion);
 		BasicDBObject query = new BasicDBObject(FIELD_AUCTION_ID, auctionID)
 												.append(FIELD_VERSION, oldVersion);

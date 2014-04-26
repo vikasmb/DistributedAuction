@@ -61,7 +61,9 @@ public class SubscriptionSweeper {
 			List<String> productIDs = new ArrayList<String>();
 			for(Object bid:localBids){
 				BasicDBObject bidObj = (BasicDBObject)bid;
-				productIDs.add(bidObj.getString(AuctionServerPersistance.FIELD_PRODUCT_ID));
+				if(!bidObj.getBoolean(AuctionServerPersistance.FIELD_CLAIMED)){
+					productIDs.add(bidObj.getString(AuctionServerPersistance.FIELD_PRODUCT_ID));
+				}
 			}
 			
 			for(Object bid: remoteBids){
@@ -77,15 +79,18 @@ public class SubscriptionSweeper {
 			
 			for(Object bid:localBids){
 				BasicDBObject bidObj = (BasicDBObject)bid;
-				BasicDBObject product = productDetails.get(bidObj.getString(AuctionServerPersistance.FIELD_PRODUCT_ID));
-				WinnerDetails winnerDetails = new WinnerDetails(bidObj.getDouble(AuctionServerPersistance.FIELD_BID),
-													product.getString(AuctionServer.FIELD_SELLER_ID),
-													product.getString(AuctionServerPersistance.FIELD_PRODUCT_ID),
-													product.getString(SellerDetails.FIELD_NAME),
-													product.getString(SellerDetails.FIELD_MODEL),
-													product.getString(SellerDetails.FIELD_ADDRESS),
-													product.getString(SellerDetails.FIELD_IMAGE));
-				deals.add(new SubscriptionDetails(criteria, winnerDetails));
+				if(!bidObj.getBoolean(AuctionServerPersistance.FIELD_CLAIMED)){
+					BasicDBObject product = productDetails.get(bidObj.getString(AuctionServerPersistance.FIELD_PRODUCT_ID));
+					WinnerDetails winnerDetails = new WinnerDetails(bidObj.getDouble(AuctionServerPersistance.FIELD_BID),
+														product.getString(AuctionServer.FIELD_SELLER_ID),
+														product.getString(AuctionServerPersistance.FIELD_PRODUCT_ID),
+														product.getString(SellerDetails.FIELD_NAME),
+														product.getString(SellerDetails.FIELD_MODEL),
+														product.getString(SellerDetails.FIELD_ADDRESS),
+														product.getString(SellerDetails.FIELD_IMAGE));
+				
+					deals.add(new SubscriptionDetails(criteria, winnerDetails));
+				}
 			}
 			for(Object bid:remoteBids){
 				BasicDBObject bidObj = (BasicDBObject)bid;
