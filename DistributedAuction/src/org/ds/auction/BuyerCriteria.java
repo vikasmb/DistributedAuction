@@ -4,11 +4,15 @@ import java.util.Date;
 
 import com.mongodb.BasicDBObject;
 
+import javax.faces.bean.ManagedBean;
+import javax.faces.bean.SessionScoped;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.ds.util.DateUtil;
 
 @XmlRootElement
+@ManagedBean(name="buyerCriteria")
+@SessionScoped
 public class BuyerCriteria {
 	public BuyerCriteria() {
 		super();
@@ -39,6 +43,7 @@ public class BuyerCriteria {
 	private Date neededFrom;
 	private Date neededUntil;
 	private String city;
+	private String category;
 
 	public String getBuyerID() {
 		return this.buyerID;
@@ -69,6 +74,7 @@ public class BuyerCriteria {
 	}
 
 	public void setCity(String city) {
+		System.out.println("Setting city to"+city);
 		this.city = city;
 	}
 	
@@ -83,5 +89,14 @@ public class BuyerCriteria {
 		System.out.println("BuyerID: " + getBuyerID() +  " City: " + getCity() 
 							+ " Needed from: " + DateUtil.getStringFromDate(getNeededFrom())
 							+ " Needed until: " + DateUtil.getStringFromDate(getNeededUntil()));
+	}
+
+	public String getCategory() {
+		return category;
+	}
+
+	public void setCategory(String category) {
+		System.out.println("Setting category to"+category);
+		this.category = category;
 	}
 }

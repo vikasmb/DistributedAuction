@@ -10,7 +10,7 @@ import com.mongodb.BasicDBObject;
 
 //encapsulation and abstraction of seller details
 @XmlRootElement
-@ManagedBean
+@ManagedBean(name="sellerDetails")
 @SessionScoped
 public class SellerDetails {
 	

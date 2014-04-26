@@ -15,25 +15,22 @@
 
 <h:body>
 	<h:form>
-		<h:outputText>Welcome to Distributed Auction</h:outputText>		
-		<p:separator id="separator"/> 
-		<p:commandLink  value="New seller? Register here" action="register" />
+		<h:outputText>Welcome to Distributed Auction</h:outputText>
+		<p:separator id="separator" />
+		<p:commandLink value="New seller? Register here" action="register" />
 		<p:panelGrid columns="2">
-		<h:outputText value="Select Category" />
-	
-		<p:selectOneMenu value="#{auctionClient.category}" immediate="true" >
-			<f:selectItem itemLabel="Select One" itemValue="" />
-			<f:selectItem itemLabel="Cars" itemValue="cars" />
-			<f:selectItem itemLabel="Hotels" itemValue="hotels" />
-			<f:selectItem itemLabel="Flights" itemValue="flights" />
-		</p:selectOneMenu>
-		 
-				<p:commandButton value="Search" actionListener="${auctionClient.search}" update="growl"></p:commandButton>
-				<br />
-		
-          </p:panelGrid>
-         
- <p:growl id="growl" showDetail="true" sticky="true" />  
+			<h:outputText value="userId" />
+			<p:inputText id="UserName" />
+
+			<h:outputText value="password" />
+			<p:password id="password" />
+
+			<p:commandButton value="Login" action="success"></p:commandButton>
+			<br />
+
+		</p:panelGrid>
+
+		<p:growl id="growl" showDetail="true" sticky="true" />
 	</h:form>
 </h:body>
 
