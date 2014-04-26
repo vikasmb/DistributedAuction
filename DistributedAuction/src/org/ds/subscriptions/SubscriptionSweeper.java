@@ -4,11 +4,13 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.TimeZone;
 
 import org.ds.auction.AuctionServer;
 import org.ds.auction.AuctionServerPersistance;
 import org.ds.auction.BuyerCriteria;
+import org.ds.auction.SellerDetails;
 import org.ds.auction.WinnerDetails;
 import org.ds.client.DBClient;
 import org.ds.util.DateUtil;
@@ -55,18 +57,45 @@ public class SubscriptionSweeper {
 					.get(AuctionServerPersistance.FIELD_REMOTE_RESULTS))
 					.get(AuctionServerPersistance.FIELD_BIDS);
 			List <SubscriptionDetails> deals = new ArrayList<SubscriptionDetails>();
+			
+			List<String> productIDs = new ArrayList<String>();
 			for(Object bid:localBids){
 				BasicDBObject bidObj = (BasicDBObject)bid;
+				productIDs.add(bidObj.getString(AuctionServerPersistance.FIELD_PRODUCT_ID));
+			}
+			
+			for(Object bid: remoteBids){
+				BasicDBObject bidObj = (BasicDBObject)bid;
+				productIDs.add(bidObj.getString(AuctionServerPersistance.FIELD_PRODUCT_ID));
+			}
+			
+			DBClient client = DBClient.getInstance();
+			Map<String, BasicDBObject> productDetails = client.getProductDetails(productIDs);
+			for(String s:productDetails.keySet()){
+				System.out.println(productDetails.get(s));
+			}
+			
+			for(Object bid:localBids){
+				BasicDBObject bidObj = (BasicDBObject)bid;
+				BasicDBObject product = productDetails.get(bidObj.getString(AuctionServerPersistance.FIELD_PRODUCT_ID));
 				WinnerDetails winnerDetails = new WinnerDetails(bidObj.getDouble(AuctionServerPersistance.FIELD_BID),
-													bidObj.getString(AuctionServerPersistance.FIELD_SELLER_ID),
-													bidObj.getString(AuctionServerPersistance.FIELD_PRODUCT_ID));
+													product.getString(AuctionServer.FIELD_SELLER_ID),
+													product.getString(AuctionServerPersistance.FIELD_PRODUCT_ID),
+													product.getString(SellerDetails.FIELD_NAME),
+													product.getString(SellerDetails.FIELD_MODEL),
+													product.getString(SellerDetails.FIELD_ADDRESS),
+													product.getString(SellerDetails.FIELD_IMAGE));
 				deals.add(new SubscriptionDetails(criteria, winnerDetails));
 			}
 			for(Object bid:remoteBids){
 				BasicDBObject bidObj = (BasicDBObject)bid;
+				BasicDBObject product = productDetails.get(bidObj.getString(AuctionServerPersistance.FIELD_PRODUCT_ID));
 				WinnerDetails winnerDetails = new WinnerDetails(bidObj.getDouble(AuctionServerPersistance.FIELD_BID),
-													bidObj.getString(AuctionServerPersistance.FIELD_SELLER_ID),
-													bidObj.getString(AuctionServerPersistance.FIELD_PRODUCT_ID));
+													product.getString(AuctionServer.FIELD_SELLER_ID),
+													product.getString(AuctionServerPersistance.FIELD_PRODUCT_ID),
+													product.getString(SellerDetails.FIELD_NAME),
+													product.getString(SellerDetails.FIELD_ADDRESS),
+													product.getString(SellerDetails.FIELD_IMAGE));
 				deals.add(new SubscriptionDetails(criteria, winnerDetails));
 			}	
 			

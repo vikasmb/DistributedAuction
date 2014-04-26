@@ -46,7 +46,6 @@ public class ClientReadableBidderDetails {
 			convertedRemoteBidders.add(new RemoteSellerDetails(remoteBidder.getString(AuctionServer.FIELD_SELLER_ID), 
 					remoteBidder.getString(AuctionServer.FIELD_PRODUCT_ID),
 					remoteBidder.getString(SellerDetails.FIELD_NAME),
-					remoteBidder.getString(SellerDetails.FIELD_MODEL),
 					remoteBidder.getString(SellerDetails.FIELD_ADDRESS),
 					remoteBidder.getString(SellerDetails.FIELD_IMAGE)));
 		}

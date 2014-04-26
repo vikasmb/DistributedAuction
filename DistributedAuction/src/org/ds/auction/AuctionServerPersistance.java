@@ -67,7 +67,7 @@ public class AuctionServerPersistance {
 	public static String FIELD_VERSION = "version";
 	public static String FIELD_ROUND_NUM = "roundNum";
 	public static String FIELD_BIDS = "bids";
-	public static String FIELD_PRODUCT_ID ="productID";
+	public static String FIELD_PRODUCT_ID ="productId";
 	public static String FIELD_SELLER_ID ="sellerID";
 	public static String FIELD_BID = "bid";
 	public static String FIELD_TOKEN = "token";

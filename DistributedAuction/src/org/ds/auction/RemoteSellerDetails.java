@@ -28,12 +28,11 @@ public class RemoteSellerDetails extends SellerDetails {
 		setProductID(productID);
 	}
 	
-	public RemoteSellerDetails(String sellerID, String productID, String name, String model, String address, String image){
+	public RemoteSellerDetails(String sellerID, String productID, String name, String address, String image){
 		setSellerID(sellerID);
 		setProductID(productID);
 		
 		setName(name);
-		setModel(model);
 		setAddress(address);
 		setImage(image);
 	}

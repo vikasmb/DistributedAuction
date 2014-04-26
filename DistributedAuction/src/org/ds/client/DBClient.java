@@ -8,9 +8,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
+import java.util.TreeMap;
 
+import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
@@ -18,6 +21,7 @@ import com.mongodb.DBCursor;
 import com.mongodb.MongoClient;
 import com.mongodb.ServerAddress;
 
+import org.ds.auction.AuctionServer;
 import org.ds.auction.BidderDetails;
 import org.ds.carServer.*;
 import org.ds.util.DateUtil;
@@ -207,5 +211,37 @@ public class DBClient {
 		}
 
 		return success;
+	}
+	
+	public Map<String, BasicDBObject> getProductDetails(List<String> productIDs){
+		BasicDBObject query = constructGetProductDetailsQuery(productIDs);
+		Map<String, BasicDBObject> productDetails =  new TreeMap<String, BasicDBObject>();
+		DB db = mongoClient.getDB(CAR_VENDORS_DB);
+		if (db != null) {
+			DBCollection coll = db.getCollection(CAR_VENDORS_DETAILS);
+			if (coll != null) {
+				DBCursor cursor = coll.find(query);
+				try {
+					while (cursor.hasNext()) {
+						BasicDBObject dbObj = (BasicDBObject) cursor.next();
+						productDetails.put(dbObj.getString(AuctionServer.FIELD_PRODUCT_ID), dbObj);
+					}
+				} finally {
+					cursor.close();
+				}
+			}
+		}
+		return productDetails;
+	}
+	
+	private BasicDBObject constructGetProductDetailsQuery(List<String> productIDs){
+		BasicDBList orParts = new BasicDBList();
+		for(String productID: productIDs){
+			BasicDBObject orPart = new BasicDBObject(AuctionServer.FIELD_PRODUCT_ID, productID);
+			orParts.add(orPart);
+		}
+		
+		BasicDBObject query = new BasicDBObject("$or", orParts);
+		return query;
 	}
 }

@@ -25,6 +25,29 @@ public class WinnerDetails extends SellerDetails {
 		setProductID(productID);
 	}
 	
+	public WinnerDetails(Double price, String sellerID, String productID, String name, String model, String address, String image){
+		this.price = price;
+		this.token = "";
+		setSellerID(sellerID);
+		setProductID(productID);
+		
+		setName(name);
+		setModel(model);
+		setAddress(address);
+		setImage(image);
+	}
+	
+	public WinnerDetails(Double price, String sellerID, String productID, String name, String address, String image){
+		this.price = price;
+		this.token = "";
+		setSellerID(sellerID);
+		setProductID(productID);
+		
+		setName(name);
+		setAddress(address);
+		setImage(image);
+	}
+	
 	public static List<WinnerDetails> getWinnersDetails(Double price,
 			List<? extends SellerDetails> sellersDetails) {
 		List<WinnerDetails> winnersDetails = new ArrayList<WinnerDetails>();

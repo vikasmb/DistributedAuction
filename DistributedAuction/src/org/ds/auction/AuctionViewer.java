@@ -2,6 +2,7 @@ package org.ds.auction;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.ds.client.DBClient;
 
@@ -30,19 +31,45 @@ public class AuctionViewer {
 			List <WinnerDetails> localWinners = new ArrayList<WinnerDetails>();
 			List <WinnerDetails> remoteWinners = new ArrayList<WinnerDetails>();
 			
+			List<String> productIDs = new ArrayList<String>();
 			for(Object bid:localBids){
 				BasicDBObject bidObj = (BasicDBObject)bid;
+				productIDs.add(bidObj.getString(AuctionServerPersistance.FIELD_PRODUCT_ID));
+			}
+			
+			for(Object bid: remoteBids){
+				BasicDBObject bidObj = (BasicDBObject)bid;
+				productIDs.add(bidObj.getString(AuctionServerPersistance.FIELD_PRODUCT_ID));
+			}
+			
+			DBClient client = DBClient.getInstance();
+			Map<String, BasicDBObject> productDetails = client.getProductDetails(productIDs);
+			for(String s:productDetails.keySet()){
+				System.out.println(productDetails.get(s));
+			}
+			
+			for(Object bid:localBids){
+				BasicDBObject bidObj = (BasicDBObject)bid;
+				BasicDBObject product = productDetails.get(bidObj.getString(AuctionServerPersistance.FIELD_PRODUCT_ID));
 				WinnerDetails winnerDetails = new WinnerDetails(bidObj.getDouble(AuctionServerPersistance.FIELD_BID),
-													bidObj.getString(AuctionServerPersistance.FIELD_SELLER_ID),
-													bidObj.getString(AuctionServerPersistance.FIELD_PRODUCT_ID));
+													product.getString(AuctionServer.FIELD_SELLER_ID),
+													product.getString(AuctionServerPersistance.FIELD_PRODUCT_ID),
+													product.getString(SellerDetails.FIELD_NAME),
+													product.getString(SellerDetails.FIELD_MODEL),
+													product.getString(SellerDetails.FIELD_ADDRESS),
+													product.getString(SellerDetails.FIELD_IMAGE));
 				localWinners.add(winnerDetails);
 			}
 			
 			for(Object bid:remoteBids){
 				BasicDBObject bidObj = (BasicDBObject)bid;
+				BasicDBObject product = productDetails.get(bidObj.getString(AuctionServerPersistance.FIELD_PRODUCT_ID));
 				WinnerDetails winnerDetails = new WinnerDetails(bidObj.getDouble(AuctionServerPersistance.FIELD_BID),
-													bidObj.getString(AuctionServerPersistance.FIELD_SELLER_ID),
-													bidObj.getString(AuctionServerPersistance.FIELD_PRODUCT_ID));
+													product.getString(AuctionServer.FIELD_SELLER_ID),
+													product.getString(AuctionServerPersistance.FIELD_PRODUCT_ID),
+													product.getString(SellerDetails.FIELD_NAME),
+													product.getString(SellerDetails.FIELD_ADDRESS),
+													product.getString(SellerDetails.FIELD_IMAGE));
 				remoteWinners.add(winnerDetails);
 			}	
 			
