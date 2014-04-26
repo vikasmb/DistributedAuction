@@ -188,8 +188,8 @@ public class UserPersistance {
 	
 	public static void main(String args[]){
 		UserPersistance userWriter = new UserPersistance("123");
-		//userWriter.registerUser();
+		userWriter.registerUser();
 		//userWriter.recordAuctionInit("123", "123_987654", new Date());
-		userWriter.recordAuctionEnd("123", "123_987654", new Date());
+		//userWriter.recordAuctionEnd("123", "123_987654", new Date());
 	}
 }
