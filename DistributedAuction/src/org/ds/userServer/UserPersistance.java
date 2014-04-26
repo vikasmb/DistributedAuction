@@ -119,7 +119,7 @@ public class UserPersistance {
 		}while(!updateMongo(query, update));
 	}
 		
-	private BasicDBList getAuctions(String userID){
+	public BasicDBList getAuctions(String userID){
 		BasicDBObject query = new BasicDBObject(FIELD_USER_ID, getUserID());
 		BasicDBObject projectedFields = new BasicDBObject(FIELD_AUCTIONS, 1)
 												.append(FIELD_VERSION, 1);
