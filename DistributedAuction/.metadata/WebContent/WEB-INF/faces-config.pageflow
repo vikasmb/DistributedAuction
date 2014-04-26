@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <pageflow:Pageflow xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:pageflow="http://www.sybase.com/suade/pageflow" id="pf13931224604910" configfile="/DistributedAuction/WebContent/WEB-INF/faces-config.xml">
-  <nodes xsi:type="pageflow:PFPage" name="index.xhtml" id="pf13943397957010" referenceLink="//@navigationRule.0/@fromViewId|" outlinks="pf13943397957011" path="/index.xhtml"/>
-  <nodes xsi:type="pageflow:PFPage" name="Register.xhtml" id="pf13943397957012" referenceLink="//@navigationRule.0/@navigationCase.0/@toViewId|" inlinks="pf13943397957011" path="/Register.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="index.xhtml" id="pf13943397957010" referenceLink="//@navigationRule.1/@fromViewId|" outlinks="pf13943397957011 pf13985304476250" path="/index.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="Register.xhtml" x="228" y="12" id="pf13943397957012" referenceLink="//@navigationRule.0/@navigationCase.0/@toViewId|" inlinks="pf13943397957011" path="/Register.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="BuyerCriteria.xhtml" x="24" y="216" id="pf13985304476261" referenceLink="//@navigationRule.1/@navigationCase.0/@toViewId|" inlinks="pf13985304476250" path="/BuyerCriteria.xhtml"/>
   <links id="pf13943397957011" target="pf13943397957012" source="pf13943397957010" outcome="register"/>
+  <links id="pf13985304476250" target="pf13985304476261" source="pf13943397957010" outcome="success"/>
 </pageflow:Pageflow>

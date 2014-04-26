@@ -28,7 +28,7 @@ import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
 
 //AuctionClient
-@ManagedBean
+@ManagedBean(name="auctionClient")
 @SessionScoped
 public class AuctionClient {
 	private String category;
@@ -36,10 +36,17 @@ public class AuctionClient {
 	private ClientResponse response;
 	@ManagedProperty(value = "#{sellerDetails}")
 	private SellerDetails activeUser;
+	@ManagedProperty(value = "#{buyerCriteria}")
+	private BuyerCriteria buyerCriteria;
 
 	public void setActiveUser(SellerDetails activeUser) {
 		System.out.println("Setting activeUser bean");
 		this.activeUser = activeUser;
+	}
+	
+	public void setBuyerCriteria(BuyerCriteria buyerCriteria) {
+		System.out.println("Setting buyerCriteria bean");
+		this.buyerCriteria = buyerCriteria;
 	}
 
 	public String getCategory() {
@@ -52,16 +59,33 @@ public class AuctionClient {
 	}
 
 	public void search() {
+		category=buyerCriteria.getCategory();
 		System.out.println("category set to" + category);
 		DBClient client = DBClient.getInstance();
-		BasicDBObject jsonAddr = client.getClusterAddress(category);
+		buyerCriteria.setBuyerID("buyer123");
 		// JSON.parse(jsonAddr);
-		FacesContext context = FacesContext.getCurrentInstance();
-
-		context.addMessage(null, new FacesMessage("Successful",
-				"Cluster address for category " + category + " is "
-						+ " ip with address " + jsonAddr.getString("ip")
-						+ " and port is " + jsonAddr.getInt("port")));
+//		FacesContext context = FacesContext.getCurrentInstance();
+//
+//		context.addMessage(null, new FacesMessage("Successful",
+//				"Cluster address for category " + category + " is "
+//						+ " ip with address " + jsonAddr.getString("ip")
+//						+ " and port is " + jsonAddr.getInt("port")));
+		ClientConfig config = new DefaultClientConfig();
+		Client remoteClient = Client.create(config);
+		DBClient dbClient = DBClient.getInstance();
+		BasicDBObject jsonAddr = dbClient.getClusterAddress(category); //TODO Replace with the actual service selection by the user
+		String restAddr="http://"+jsonAddr.getString("ip")+":"+jsonAddr.getInt("port")+jsonAddr.getString("path");
+		System.out.println("Contacting "+restAddr+" for invokeAuction");
+	
+		
+		WebResource webResource=remoteClient.resource(restAddr);
+		ClientResponse response=null;
+		try{
+			 response = webResource.type(MediaType.APPLICATION_JSON).post(ClientResponse.class,buyerCriteria);
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
 	}
 
 	public void register() {
@@ -117,5 +141,13 @@ public class AuctionClient {
 			long difference = System.currentTimeMillis() - startTime;
 			System.out.println("Latency: " + i + ", " + difference);
 		}
+	}
+
+	public SellerDetails getActiveUser() {
+		return activeUser;
+	}
+
+	public BuyerCriteria getBuyerCriteria() {
+		return buyerCriteria;
 	}
 }
