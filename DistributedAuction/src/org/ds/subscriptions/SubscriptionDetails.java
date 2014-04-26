@@ -7,21 +7,28 @@ public class SubscriptionDetails {
 	
 	private BuyerCriteria criteria;
 	private WinnerDetails winnerDetails;
+	private String auctionID;
 	
 	public BuyerCriteria getBuyerCriteria(){
 		return this.criteria;
+	}
+	
+	public String getAuctionID(){
+		return this.auctionID;
 	}
 	
 	public WinnerDetails getWinnerDetails(){
 		return this.winnerDetails;
 	}
 	
-	public SubscriptionDetails(BuyerCriteria criteria, WinnerDetails winnerDetails){
+	public SubscriptionDetails(String auctionID, BuyerCriteria criteria, WinnerDetails winnerDetails){
+		this.auctionID = auctionID;
 		this.criteria = criteria;
 		this.winnerDetails = winnerDetails;
 	}
 	
 	public void printDetails(){
+		System.out.println(getAuctionID());
 		getBuyerCriteria().printCriteria();
 		getWinnerDetails().printDetails();
 	}

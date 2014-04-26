@@ -89,7 +89,7 @@ public class SubscriptionSweeper {
 														product.getString(SellerDetails.FIELD_ADDRESS),
 														product.getString(SellerDetails.FIELD_IMAGE));
 				
-					deals.add(new SubscriptionDetails(criteria, winnerDetails));
+					deals.add(new SubscriptionDetails(auction.getString(AuctionServerPersistance.FIELD_AUCTION_ID), criteria, winnerDetails));
 				}
 			}
 			for(Object bid:remoteBids){
@@ -101,7 +101,7 @@ public class SubscriptionSweeper {
 													product.getString(SellerDetails.FIELD_NAME),
 													product.getString(SellerDetails.FIELD_ADDRESS),
 													product.getString(SellerDetails.FIELD_IMAGE));
-				deals.add(new SubscriptionDetails(criteria, winnerDetails));
+				deals.add(new SubscriptionDetails(auction.getString(AuctionServerPersistance.FIELD_AUCTION_ID), criteria, winnerDetails));
 			}	
 			
 			System.out.println("For auction: " + auction.getString(AuctionServerPersistance.FIELD_AUCTION_ID));
