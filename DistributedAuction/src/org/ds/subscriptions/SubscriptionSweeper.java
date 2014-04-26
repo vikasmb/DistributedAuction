@@ -29,8 +29,8 @@ public class SubscriptionSweeper {
 	 */
 	public static void main(String[] args) {
 		BuyerCriteria criteria = new BuyerCriteria("123",
-				DateUtil.getDate("2014-03-15T10:00:00"),
-				DateUtil.getDate("2014-03-15T11:00:00"), "LA");
+				DateUtil.getDate("2014-06-15T10:00:00"),
+				DateUtil.getDate("2014-06-15T11:00:00"), "LA");
 		
 		Date viewedUntil = null;
 		getSubscribedDeals(criteria, viewedUntil);
