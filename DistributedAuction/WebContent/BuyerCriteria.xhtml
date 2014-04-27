@@ -14,33 +14,86 @@
 </h:head>
 
 <h:body>
-	<h:form>
-		<p:panelGrid columns="2">
-			<h:outputText value="Select Category" />
+	<h:form id="homeForm">
+		<p:layout id="layout">
+			<p:layoutUnit position="west" resizable="true">
+				<p:panelGrid columns="2">
+					<h:outputText value="Select Category" />
 
-			<p:selectOneMenu value="#{buyerCriteria.category}" immediate="true">
-				<f:selectItem itemLabel="Select One" itemValue="" />
-				<f:selectItem itemLabel="Cars" itemValue="cars" />
-				<f:selectItem itemLabel="Hotels" itemValue="hotels" />
-				<f:selectItem itemLabel="Flights" itemValue="flights" />
-			</p:selectOneMenu>
-			
-			<h:outputText value="City" />
-               <p:inputText id="city" value="#{buyerCriteria.city}" immediate="true"/>
-               
-               <h:outputText value="From" />
-               <p:calendar value="#{buyerCriteria.neededFrom}" effect="slideDown" timeZone="GMT" pattern="MM/dd/yyyy hh:mm a"/>
-               
-               <h:outputText value="Till" />
-               <p:calendar value="#{buyerCriteria.neededUntil}" effect="slideDown" timeZone="GMT" pattern="MM/dd/yyyy hh:mm a"/>
+					<p:selectOneMenu value="#{buyerCriteria.category}" immediate="true">
+						<f:selectItem itemLabel="Select One" itemValue="" />
+						<f:selectItem itemLabel="Cars" itemValue="cars" />
+						<f:selectItem itemLabel="Hotels" itemValue="hotels" />
+						<f:selectItem itemLabel="Flights" itemValue="flights" />
+					</p:selectOneMenu>
 
-			<p:commandButton value="Search"
-				actionListener="${auctionClient.search}" ></p:commandButton>
-			<br />
+					<h:outputText value="City" />
+					<p:inputText id="city" value="#{buyerCriteria.city}"
+						immediate="true" />
 
-		</p:panelGrid>
+					<h:outputText value="From" />
+					<p:calendar value="#{buyerCriteria.neededFrom}" effect="slideDown"
+						timeZone="GMT" pattern="MM/dd/yyyy hh:mm a" />
 
-		<p:growl id="growl" showDetail="true" sticky="true" />
+					<h:outputText value="Till" />
+					<p:calendar value="#{buyerCriteria.neededUntil}" effect="slideDown"
+						timeZone="GMT" pattern="MM/dd/yyyy hh:mm a" />
+
+					<p:commandButton value="Search"
+						actionListener="#{auctionClient.search}"
+						update="peerTable,remoteTable"></p:commandButton>
+					<br />
+
+				</p:panelGrid>
+			</p:layoutUnit>
+			<p:layoutUnit position="center">
+				<p:dataTable id="peerTable" var="localRow" 
+					value="#{auctionClient.localBidders}" paginator="true" rows="5"
+					paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+					rowsPerPageTemplate="5,10,15">
+					<f:facet name="header">
+         		    Listings
+      	     </f:facet>
+
+					<p:column sortBy="name" headerText="Name">
+						<h:outputText value="#{localRow.name}" />
+					</p:column>
+
+					<p:column sortBy="model" headerText="Model">
+						<h:outputText value="#{localRow.model}" />
+					</p:column>
+
+					<p:column sortBy="address" headerText="Address">
+						<h:outputText value="#{localRow.address}" />
+					</p:column>
+
+					<p:column sortBy="image" headerText="Image">
+						<h:outputText value="#{localRow.image}" />
+					</p:column>
+				</p:dataTable>
+				<p:spacer height="20" />
+				<p:dataTable id="remoteTable" var="remoteRow"
+					value="#{auctionClient.remoteBidders}" paginator="true" rows="5"
+					paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+					rowsPerPageTemplate="5,10,15">
+					<f:facet name="header">
+         		    Corporate sellers
+      	     </f:facet>
+
+					<p:column sortBy="name" headerText="Name">
+						<h:outputText value="#{remoteRow.name}" />
+					</p:column>
+
+					<p:column sortBy="address" headerText="Address">
+						<h:outputText value="#{remoteRow.address}" />
+					</p:column>
+
+					<p:column sortBy="image" headerText="Image">
+						<h:outputText value="#{remoteRow.image}" />
+					</p:column>
+				</p:dataTable>
+			</p:layoutUnit>
+		</p:layout>
 	</h:form>
 </h:body>
 

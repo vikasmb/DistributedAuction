@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
@@ -42,6 +43,8 @@ public class AuctionClient {
 	private SellerDetails activeUser;
 	@ManagedProperty(value = "#{buyerCriteria}")
 	private BuyerCriteria buyerCriteria;
+	List<LocalSellerDetails> localBidders = new ArrayList<LocalSellerDetails>();
+	List<RemoteSellerDetails> remoteBidders = new ArrayList<RemoteSellerDetails>();
 
 	public void setActiveUser(SellerDetails activeUser) {
 		System.out.println("Setting activeUser bean");
@@ -82,21 +85,21 @@ public class AuctionClient {
 				+ jsonAddr.getInt("port")
 				+ "/DistributedAuction/rest/viewBidders";
 		System.out.println("Contacting " + restAddr + " for viewBidders");
-		BuyerCriteria criteria1 = new BuyerCriteria("123",
+		/*BuyerCriteria criteria1 = new BuyerCriteria("123",
 				DateUtil.getDate("2014-06-15T10:00:00"),
-				DateUtil.getDate("2014-06-15T11:00:00"), "LA");
+				DateUtil.getDate("2014-06-15T11:00:00"), "LA");*/
 		WebResource webResource = remoteClient.resource(restAddr);
 		ClientResponse response = null;
 		try {
 			response = webResource.type(MediaType.APPLICATION_JSON).post(
-					ClientResponse.class, criteria1);
+					ClientResponse.class, buyerCriteria);
 			System.out.println("###########IN CLIENT########");
 
 			ClientReadableBidderDetails detailsObj = response
 					.getEntity(ClientReadableBidderDetails.class);
-			List<LocalSellerDetails> localBidders = detailsObj
+			List<LocalSellerDetails> localBiddersDetails = detailsObj
 					.getLocalBidders();
-			List<RemoteSellerDetails> remoteBidders = detailsObj
+			List<RemoteSellerDetails> remoteBiddersDetails = detailsObj
 					.getRemoteBidders();
 			if (localBidders == null) {
 				System.out.println("Auction client found local bidders null");
@@ -105,22 +108,31 @@ public class AuctionClient {
 				System.out.println("Auction client found remote bidders null");
 			}
 			if (localBidders != null && remoteBidders != null) {
+				localBidders.clear();
+				localBidders.addAll(localBiddersDetails);
+				remoteBidders.clear();
+				remoteBidders.addAll(remoteBiddersDetails);
 				System.out.println("Auction client found "
 						+ localBidders.size() + " local sellers" + "and "
 						+ remoteBidders.size() + " remote sellers");
-				//LocalSellerDetails ls=localBidders.get(0);
-				//System.out.println("#######First local:"+ls.getName());
+				// LocalSellerDetails ls=localBidders.get(0);
+				// System.out.println("#######First local:"+ls.getName());
 			}
-			/*RemoteSellerDetails remoteSellerDetails = response
-					.getEntity(RemoteSellerDetails.class);
-			System.out.println("###########IN CLIENT########");
-			remoteSellerDetails.printDetails();*/
-			//System.out.println("Class received:"+response.getClass());
-			//System.out.println("Class received:"+response.get());
-			/*SellerDetails sellerDetails = response
-					.getEntity(SellerDetails.class);
-			System.out.println("Display name"+sellerDetails.getDisplayName());*/
-			
+			/*
+			 * RemoteSellerDetails remoteSellerDetails = response
+			 * .getEntity(RemoteSellerDetails.class);
+			 * System.out.println("###########IN CLIENT########");
+			 * remoteSellerDetails.printDetails();
+			 */
+			// System.out.println("Class received:"+response.getClass());
+			// System.out.println("Class received:"+response.get());
+			/*
+			 * SellerDetails sellerDetails = response
+			 * .getEntity(SellerDetails.class);
+			 * System.out.println("Display name"
+			 * +sellerDetails.getDisplayName());
+			 */
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -161,8 +173,8 @@ public class AuctionClient {
 
 		buyerCriteria.setNeededFrom(DateUtil.getDate("2014-06-15T10:00:00"));
 		buyerCriteria.setNeededUntil(DateUtil.getDate("2014-06-15T11:00:00"));
-		
-		for(int i = 1; i <= 1; i++){
+
+		for (int i = 1; i <= 1; i++) {
 			long startTime = System.currentTimeMillis();
 			ClientConfig config = new DefaultClientConfig();
 			Client client = Client.create(config);
@@ -205,5 +217,21 @@ public class AuctionClient {
 
 	public BuyerCriteria getBuyerCriteria() {
 		return buyerCriteria;
+	}
+
+	public List<LocalSellerDetails> getLocalBidders() {
+		return localBidders;
+	}
+
+	public void setLocalBidders(List<LocalSellerDetails> localBidders) {
+		this.localBidders = localBidders;
+	}
+
+	public List<RemoteSellerDetails> getRemoteBidders() {
+		return remoteBidders;
+	}
+
+	public void setRemoteBidders(List<RemoteSellerDetails> remoteBidders) {
+		this.remoteBidders = remoteBidders;
 	}
 }
