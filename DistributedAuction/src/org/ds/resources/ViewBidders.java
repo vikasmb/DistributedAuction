@@ -45,15 +45,15 @@ public class ViewBidders {
 		System.out.println("Needed till:"+DateUtil.getStringFromDate(criteria.getNeededUntil()));
 		BidderDetails detailsObj = client.getPotentialSellers(criteria.getCategory(), criteria.getCity(), DateUtil.getStringFromDate(criteria.getNeededFrom()),
 				DateUtil.getStringFromDate(criteria.getNeededUntil()), true);
-		/*ClientReadableBidderDetails obj=ClientReadableBidderDetails.convertToClientReadable(detailsObj);
+		ClientReadableBidderDetails obj=ClientReadableBidderDetails.convertToClientReadable(detailsObj);
 		//obj.printDetails();
 		System.out.println("REST returning local size"+obj.getLocalBidders().size());
-		System.out.println("REST returning remote size"+obj.getRemoteBidders().size());*/
+		System.out.println("REST returning remote size"+obj.getRemoteBidders().size());
 		
-		RemoteSellerDetails testObj = new RemoteSellerDetails("dummySellerID1","dummySellerID2","dummySellerID3","dummySellerID4","dummySellerID5" );
+		//RemoteSellerDetails testObj = new RemoteSellerDetails("dummySellerID1","dummySellerID2","dummySellerID3","dummySellerID4","dummySellerID5" );
         //SellerDetails testObj=new SellerDetails();
 		//testObj.printDetails();
         //testObj.setDisplayName("abc");
-		return Response.status(200).entity(testObj).build();
+		return Response.status(200).entity(obj).build();
 	}
 }

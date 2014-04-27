@@ -3,7 +3,7 @@ package org.ds.auction;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
-public class LocalSellerDetails extends SellerDetails {
+public class LocalSellerDetails {
 	public LocalSellerDetails() {
 		super();
 	}

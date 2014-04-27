@@ -90,7 +90,9 @@ public class AuctionClient {
 		try {
 			response = webResource.type(MediaType.APPLICATION_JSON).post(
 					ClientResponse.class, criteria1);
-			/*ClientReadableBidderDetails detailsObj = response
+			System.out.println("###########IN CLIENT########");
+
+			ClientReadableBidderDetails detailsObj = response
 					.getEntity(ClientReadableBidderDetails.class);
 			List<LocalSellerDetails> localBidders = detailsObj
 					.getLocalBidders();
@@ -108,11 +110,11 @@ public class AuctionClient {
 						+ remoteBidders.size() + " remote sellers");
 				//LocalSellerDetails ls=localBidders.get(0);
 				//System.out.println("#######First local:"+ls.getName());
-			}*/
-			RemoteSellerDetails remoteSellerDetails = response
+			}
+			/*RemoteSellerDetails remoteSellerDetails = response
 					.getEntity(RemoteSellerDetails.class);
 			System.out.println("###########IN CLIENT########");
-			remoteSellerDetails.printDetails();
+			remoteSellerDetails.printDetails();*/
 			//System.out.println("Class received:"+response.getClass());
 			//System.out.println("Class received:"+response.get());
 			/*SellerDetails sellerDetails = response
