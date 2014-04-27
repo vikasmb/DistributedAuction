@@ -7,7 +7,13 @@ public class LocalSellerDetails extends SellerDetails {
 	public LocalSellerDetails() {
 		super();
 	}
-
+	private String sellerID;
+	private String productID;
+	
+	private String name;
+	private String model;
+	private String address;
+	private String image;
 	private Double listPrice;
 	private Double minPrice;
 
@@ -36,5 +42,64 @@ public class LocalSellerDetails extends SellerDetails {
 		setModel(model);
 		setAddress(address);
 		setImage(image);
+	}
+
+	public String getSellerID() {
+		return sellerID;
+	}
+
+	public void setSellerID(String sellerID) {
+		this.sellerID = sellerID;
+	}
+
+	public String getProductID() {
+		return productID;
+	}
+
+	public void setProductID(String productID) {
+		this.productID = productID;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getModel() {
+		return model;
+	}
+
+	public void setModel(String model) {
+		this.model = model;
+	}
+
+	public String getAddress() {
+		return address;
+	}
+
+	public void setAddress(String address) {
+		this.address = address;
+	}
+
+	public String getImage() {
+		return image;
+	}
+
+	public void setImage(String image) {
+		this.image = image;
+	}
+
+	public void setListPrice(Double listPrice) {
+		this.listPrice = listPrice;
+	}
+
+	public void setMinPrice(Double minPrice) {
+		this.minPrice = minPrice;
+	}
+	public void printDetails(){
+		System.out.println("ProductID: " + getProductID() + ". SellerID: " + getSellerID());
 	}
 }
