@@ -14,7 +14,7 @@ import com.mongodb.MongoClient;
 public class AuctionViewer {
 	
 	public static void main(String args[]){
-		getAuctionResults("123_1398025840804");
+		getAuctionResults("123_1398545916355");
 		//getAuctionResults("123_1398025869321");
 	}
 	

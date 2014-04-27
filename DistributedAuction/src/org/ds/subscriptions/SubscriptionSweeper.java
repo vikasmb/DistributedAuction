@@ -29,8 +29,8 @@ public class SubscriptionSweeper {
 	 */
 	public static void main(String[] args) {
 		BuyerCriteria criteria = new BuyerCriteria("123",
-				DateUtil.getDate("2014-03-15T10:00:00"),
-				DateUtil.getDate("2014-03-15T11:00:00"), "LA");
+				DateUtil.getDate("2014-06-15T10:00:00"),
+				DateUtil.getDate("2014-06-15T11:00:00"), "LA");
 		
 		Date viewedUntil = null;
 		getSubscribedDeals(criteria, viewedUntil);
@@ -61,7 +61,9 @@ public class SubscriptionSweeper {
 			List<String> productIDs = new ArrayList<String>();
 			for(Object bid:localBids){
 				BasicDBObject bidObj = (BasicDBObject)bid;
-				productIDs.add(bidObj.getString(AuctionServerPersistance.FIELD_PRODUCT_ID));
+				if(!bidObj.getBoolean(AuctionServerPersistance.FIELD_CLAIMED)){
+					productIDs.add(bidObj.getString(AuctionServerPersistance.FIELD_PRODUCT_ID));
+				}
 			}
 			
 			for(Object bid: remoteBids){
@@ -77,15 +79,18 @@ public class SubscriptionSweeper {
 			
 			for(Object bid:localBids){
 				BasicDBObject bidObj = (BasicDBObject)bid;
-				BasicDBObject product = productDetails.get(bidObj.getString(AuctionServerPersistance.FIELD_PRODUCT_ID));
-				WinnerDetails winnerDetails = new WinnerDetails(bidObj.getDouble(AuctionServerPersistance.FIELD_BID),
-													product.getString(AuctionServer.FIELD_SELLER_ID),
-													product.getString(AuctionServerPersistance.FIELD_PRODUCT_ID),
-													product.getString(SellerDetails.FIELD_NAME),
-													product.getString(SellerDetails.FIELD_MODEL),
-													product.getString(SellerDetails.FIELD_ADDRESS),
-													product.getString(SellerDetails.FIELD_IMAGE));
-				deals.add(new SubscriptionDetails(criteria, winnerDetails));
+				if(!bidObj.getBoolean(AuctionServerPersistance.FIELD_CLAIMED)){
+					BasicDBObject product = productDetails.get(bidObj.getString(AuctionServerPersistance.FIELD_PRODUCT_ID));
+					WinnerDetails winnerDetails = new WinnerDetails(bidObj.getDouble(AuctionServerPersistance.FIELD_BID),
+														product.getString(AuctionServer.FIELD_SELLER_ID),
+														product.getString(AuctionServerPersistance.FIELD_PRODUCT_ID),
+														product.getString(SellerDetails.FIELD_NAME),
+														product.getString(SellerDetails.FIELD_MODEL),
+														product.getString(SellerDetails.FIELD_ADDRESS),
+														product.getString(SellerDetails.FIELD_IMAGE));
+				
+					deals.add(new SubscriptionDetails(auction.getString(AuctionServerPersistance.FIELD_AUCTION_ID), criteria, winnerDetails));
+				}
 			}
 			for(Object bid:remoteBids){
 				BasicDBObject bidObj = (BasicDBObject)bid;
@@ -96,7 +101,7 @@ public class SubscriptionSweeper {
 													product.getString(SellerDetails.FIELD_NAME),
 													product.getString(SellerDetails.FIELD_ADDRESS),
 													product.getString(SellerDetails.FIELD_IMAGE));
-				deals.add(new SubscriptionDetails(criteria, winnerDetails));
+				deals.add(new SubscriptionDetails(auction.getString(AuctionServerPersistance.FIELD_AUCTION_ID), criteria, winnerDetails));
 			}	
 			
 			System.out.println("For auction: " + auction.getString(AuctionServerPersistance.FIELD_AUCTION_ID));

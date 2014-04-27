@@ -208,7 +208,7 @@ public class AuctionServer {
 				}
 			}
 
-			if (winnersDetails != null) {
+			if (winnersDetails != null && winnersNum < MIN_WINNERS) {
 				winners.put(lastPrice, winnersDetails);
 			}
 		}
@@ -396,27 +396,35 @@ public class AuctionServer {
 					|| !areSame(currentResults, lastResults)) {
 				lastResults = currentResults;
 				System.out.println(remoteBidders);
-				RoundResults results = runRound(remoteBidders, lastResults,
-						false, roundNum);
-				currentResults = results.getBids();
-				remoteBidders = results.getRemoteBidders();
-
-				makeRemoteRoundEntry(roundNum, currentResults);
-				roundNum++;
+				if(remoteBidders.size() > 0) {
+					RoundResults results = runRound(remoteBidders, lastResults,
+							false, roundNum);
+					currentResults = results.getBids();
+					remoteBidders = results.getRemoteBidders();
+	
+					makeRemoteRoundEntry(roundNum, currentResults);
+					roundNum++;
+				} else {
+					break;
+				}
 			}
 
 			// we are ready for a last call because the bids have stabilized
 			numLastCalls++;
 			lastResults = currentResults;
-			RoundResults results = runRound(remoteBidders, lastResults, true,
-					roundNum);
-			currentResults = results.getBids();
-			remoteBidders = results.getRemoteBidders();
-
-			makeRemoteRoundEntry(roundNum, currentResults);
-			roundNum++;
-
-			lastCallSuccess = areSame(currentResults, lastResults);
+			if(remoteBidders.size() > 0) {
+				RoundResults results = runRound(remoteBidders, lastResults, true,
+						roundNum);
+				currentResults = results.getBids();
+				remoteBidders = results.getRemoteBidders();
+	
+				makeRemoteRoundEntry(roundNum, currentResults);
+				roundNum++;
+	
+				lastCallSuccess = areSame(currentResults, lastResults);
+			} else {
+				break;
+			}
 		}
 
 		System.out.println("Winners found: ");
@@ -549,6 +557,9 @@ public class AuctionServer {
 						continue; // Ignore as they would not be added to
 									// newBids or newRemoteBidders
 					}
+					if(remoteBidderDetails == null){
+						continue;
+					}
 					Double bidPrice = remoteBidderDetails.getPrice();
 					System.out.println("*******Bid price is: " + bidPrice);
 					if (bidPrice > 0) {
@@ -640,10 +651,13 @@ public class AuctionServer {
 				response = webResource.type(MediaType.APPLICATION_JSON).post(
 						ClientResponse.class, remoteDetails);
 				// System.out.println("Client recieved the status  of"+response.getStatus());
-				bidDetails = response.getEntity(BidDetails.class);
-				System.out.println("In round: " + roundNum
-						+ " with madeBid as " + bidDetails.getMadeBid()
-						+ " got back bid of price " + bidDetails.getBid());
+				if(response != null && response.getStatus() == 200){
+					bidDetails = response.getEntity(BidDetails.class);
+					System.out.println("In round: " + roundNum
+							+ " with madeBid as " + bidDetails.getMadeBid()
+							+ " got back bid of price " + bidDetails.getBid());
+				}
+				
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

@@ -28,6 +28,7 @@ public class ViewBidders {
 		BidderDetails detailsObj = client.getPotentialSellers(criteria.getCategory(), criteria.getCity(), DateUtil.getStringFromDate(criteria.getNeededFrom()),
 				DateUtil.getStringFromDate(criteria.getNeededUntil()), true);
 		ClientReadableBidderDetails bidderDetails=ClientReadableBidderDetails.convertToClientReadable(detailsObj);
+
 		bidderDetails.printDetails();
 //		String[] tzList=TimeZone.getAvailableIDs();
 //		for(String s:tzList){

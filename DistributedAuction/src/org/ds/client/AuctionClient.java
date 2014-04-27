@@ -156,10 +156,11 @@ public class AuctionClient {
 		BuyerCriteria buyerCriteria = new BuyerCriteria();
 		buyerCriteria.setBuyerID("buyer123");
 		buyerCriteria.setCity("LA");
-		buyerCriteria.setNeededFrom(DateUtil.getDate("2014-03-15T10:00:00"));
-		buyerCriteria.setNeededUntil(DateUtil.getDate("2014-03-15T11:00:00"));
 
-		for (int i = 1; i <= 1; i++) {
+		buyerCriteria.setNeededFrom(DateUtil.getDate("2014-06-15T10:00:00"));
+		buyerCriteria.setNeededUntil(DateUtil.getDate("2014-06-15T11:00:00"));
+		
+		for(int i = 1; i <= 1; i++){
 			long startTime = System.currentTimeMillis();
 			ClientConfig config = new DefaultClientConfig();
 			Client client = Client.create(config);

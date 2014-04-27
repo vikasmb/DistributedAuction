@@ -16,11 +16,10 @@ public class ClaimServer {
 	
 	public static void main(String[] args){
 		long startTime = System.currentTimeMillis();
-		String num = args[0];
-		ClaimServer server = new ClaimServer("123_1395772856232", "car" + num);
+		ClaimServer server = new ClaimServer("123_1398545770927", "Steve_Focus_8");
 		server.claim();
 		long difference = System.currentTimeMillis() - startTime;
-		System.out.println("Latency: " + num + ", " + difference);
+		System.out.println("Latency: " + difference);
 		return;
 	}
 	
@@ -156,9 +155,37 @@ public class ClaimServer {
 			result = attemptClaim();
 		} while(!result.isSuccess() && result.shouldTryAgain());
 		
+		if(result.isSuccess()) {
+			while(!markDealAsClaimedInAuction()){
+				//keep doing this till it succeeds
+			}
+		}
+		
 		return result.isSuccess();
 	}
 
+	private Boolean markDealAsClaimedInAuction(){
+		BasicDBObject auctionDetails = getAuctionDetails();
+		AuctionServerPersistance persistance = new AuctionServerPersistance(getBuyerCriteria(), 
+				getAuctionID(), auctionDetails.getInt(AuctionServerPersistance.FIELD_VERSION));
+		BasicDBObject localResults = (BasicDBObject)auctionDetails.get(AuctionServerPersistance.FIELD_LOCAL_RESULTS);
+		BasicDBList bids = (BasicDBList)localResults.get(AuctionServerPersistance.FIELD_BIDS);
+		BasicDBList modifiedBids = new BasicDBList();
+		for(Object bidObj:bids){
+			BasicDBObject bid = (BasicDBObject)bidObj;
+			if(bid.get(AuctionServerPersistance.FIELD_PRODUCT_ID).equals(getProductID())){
+				bid.append(AuctionServerPersistance.FIELD_CLAIMED, true);
+			}
+			modifiedBids.add(bid);
+		}
+		
+		localResults.remove(AuctionServerPersistance.FIELD_BIDS);
+		localResults.append(AuctionServerPersistance.FIELD_BIDS, modifiedBids);
+		
+		return persistance.updateOnClaim(localResults);
+		
+	}
+	
 	private ClaimResult attemptClaim(){
 		Boolean success = true;
 		String reason = "";
