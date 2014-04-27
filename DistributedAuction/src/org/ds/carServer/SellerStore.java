@@ -12,7 +12,7 @@ public class SellerStore {
 	 * @param inputData
 	 * @return success
 	 */
-	public Boolean handleSellerRegistration(SellerDetails sellerDetails){
+	public Boolean handleSellerRegistration(CarSellerDetails sellerDetails){
 		return registerSeller(sellerDetails);
 	}
 	
@@ -21,8 +21,8 @@ public class SellerStore {
 	 * @param inputData
 	 * @return the seller details object
 	 */
-	private SellerDetails extractSellerData(JsonObject inputData){
-		return new SellerDetails(inputData);
+	private CarSellerDetails extractSellerData(JsonObject inputData){
+		return new CarSellerDetails(inputData);
 	}
 	
 	/**
@@ -30,7 +30,7 @@ public class SellerStore {
 	 * @param sellerDetails
 	 * @return success
 	 */
-	private Boolean registerSeller(SellerDetails sellerDetails) {
+	private Boolean registerSeller(CarSellerDetails sellerDetails) {
 		DBClient mongoClient = DBClient.getInstance();
 		return mongoClient.persistSellerDetails(sellerDetails);
 	}
@@ -39,7 +39,7 @@ public class SellerStore {
 	 * debug printer
 	 * @param sellerDetails
 	 */
-	private void printSellerData(SellerDetails sellerDetails){
+	private void printSellerData(CarSellerDetails sellerDetails){
 		System.out.println(sellerDetails.getSellerName());
 		System.out.println(sellerDetails.getRemote());
 		System.out.println(sellerDetails.getCallback());

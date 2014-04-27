@@ -1,6 +1,10 @@
 package org.ds.auction;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.TimeZone;
 
 import com.mongodb.BasicDBObject;
 
@@ -44,7 +48,8 @@ public class BuyerCriteria {
 	private Date neededUntil;
 	private String city;
 	private String category;
-
+	
+    
 	public String getBuyerID() {
 		return this.buyerID;
 	}

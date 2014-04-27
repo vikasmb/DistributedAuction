@@ -10,9 +10,9 @@ import com.mongodb.BasicDBObject;
 
 //encapsulation and abstraction of seller details
 @XmlRootElement
-@ManagedBean(name="sellerDetails")
+@ManagedBean(name="sellerDetails1")
 @SessionScoped
-public class SellerDetails {
+public class CarSellerDetails {
 	
 	/**
 	 * Field names
@@ -61,14 +61,14 @@ public class SellerDetails {
 		return callback;
 	}
 	
-	public SellerDetails(){
+	public CarSellerDetails(){
 		super();
 	}
 	/**
 	 * Constructor
 	 * @param inputData
 	 */
-	public SellerDetails(JsonObject inputData) {
+	public CarSellerDetails(JsonObject inputData) {
 		if(inputData.containsKey(FIELD_NAME)){
 			setSellerName(inputData.getString(FIELD_NAME));
 		} else {

@@ -193,7 +193,7 @@ public class DBClient {
 	 * @param sellerDetails
 	 * @return success
 	 */
-	public Boolean persistSellerDetails(SellerDetails sellerDetails) {
+	public Boolean persistSellerDetails(CarSellerDetails sellerDetails) {
 		Boolean success = true;
 		DB db = mongoClient.getDB(CAR_VENDORS_DB);
 		if (db != null) {

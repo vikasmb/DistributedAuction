@@ -106,14 +106,14 @@ public class AuctionServer {
 		return this.auctionWriter;
 	}
 
-	private Boolean isResumingAuction(){
+	private Boolean isResumingAuction() {
 		return this.resumingAuction;
 	}
-	
-	private BasicDBObject getFailedAuctionDetails(){
+
+	private BasicDBObject getFailedAuctionDetails() {
 		return this.failedAuctionDetails;
 	}
-	
+
 	private List<BasicDBObject> getLocalBidders() {
 		return getBidderDetails().getLocalBidders();
 	}
@@ -127,17 +127,22 @@ public class AuctionServer {
 		setBidderDetails(bidderDetails);
 		setBuyerCriteria(buyerCriteria);
 
-		AuctionServerPersistance writer = new AuctionServerPersistance(getBuyerCriteria());
+		AuctionServerPersistance writer = new AuctionServerPersistance(
+				getBuyerCriteria());
 		setAuctionWriter(writer);
 		this.resumingAuction = false;
 	}
-	
+
 	public AuctionServer(BidderDetails bidderDetails,
-			BuyerCriteria buyerCriteria, String auctionID, BasicDBObject failedAuctionDetails) {
+			BuyerCriteria buyerCriteria, String auctionID,
+			BasicDBObject failedAuctionDetails) {
 		setBidderDetails(bidderDetails);
 		setBuyerCriteria(buyerCriteria);
 
-		AuctionServerPersistance writer = new AuctionServerPersistance(getBuyerCriteria(), auctionID, failedAuctionDetails.getInt(AuctionServerPersistance.FIELD_VERSION));
+		AuctionServerPersistance writer = new AuctionServerPersistance(
+				getBuyerCriteria(), auctionID,
+				failedAuctionDetails
+						.getInt(AuctionServerPersistance.FIELD_VERSION));
 		setAuctionWriter(writer);
 		this.resumingAuction = true;
 		this.failedAuctionDetails = failedAuctionDetails;
@@ -147,7 +152,7 @@ public class AuctionServer {
 		if (!isResumingAuction()) {
 			makeInitAuctionEntry();
 		}
-		
+
 		runLocalAuction();
 		runRemoteAuction();
 
@@ -155,10 +160,10 @@ public class AuctionServer {
 	}
 
 	private Boolean runLocalAuction() {
-		if(getLocalBidders().size() == 0){
+		if (getLocalBidders().size() == 0) {
 			return true;
 		}
-		
+
 		TreeMap<Double, List<LocalSellerDetails>> prices = getSortedListAndMinPrices();
 		System.out
 				.println("Sorted list and min prices obtained for local bidders");
@@ -181,7 +186,7 @@ public class AuctionServer {
 			// If this happens, that person can claim the list price
 			sellersDetails = prices.get(prices.firstKey());
 			Double price = sellersDetails.get(0).getListPrice();
-			winnersDetails = WinnerDetails.getWinnersDetails(price,
+			winnersDetails = WinnerDetails.getLocalWinnersDetails(price,
 					sellersDetails);
 			winners.put(price, winnersDetails);
 		} else {
@@ -196,8 +201,8 @@ public class AuctionServer {
 					break;
 				} else {
 					sellersDetails = prices.get(price);
-					winnersDetails = WinnerDetails.getWinnersDetails(price,
-							sellersDetails);
+					winnersDetails = WinnerDetails.getLocalWinnersDetails(
+							price, sellersDetails);
 					winnersNum += winnersDetails.size();
 					lastPrice = price;
 				}
@@ -215,7 +220,8 @@ public class AuctionServer {
 				System.out.println("Winner found: " + winner.getSellerID());
 			}
 		}
-		makeLocalWinnersEntry(winners); //changeit for simulating local round failure 
+		makeLocalWinnersEntry(winners); // changeit for simulating local round
+										// failure
 		return true;
 	}
 
@@ -322,34 +328,40 @@ public class AuctionServer {
 		}
 	}
 
-	private int getInitRoundNumber(){
+	private int getInitRoundNumber() {
 		int roundNum = 1;
-		if(getFailedAuctionDetails() != null){
-			BasicDBObject remoteResults = (BasicDBObject)getFailedAuctionDetails()
-											.get(AuctionServerPersistance.FIELD_REMOTE_RESULTS);
-			roundNum = remoteResults.getInt(AuctionServerPersistance.FIELD_ROUND_NUM) + 1;
-		}	
-		
+		if (getFailedAuctionDetails() != null) {
+			BasicDBObject remoteResults = (BasicDBObject) getFailedAuctionDetails()
+					.get(AuctionServerPersistance.FIELD_REMOTE_RESULTS);
+			roundNum = remoteResults
+					.getInt(AuctionServerPersistance.FIELD_ROUND_NUM) + 1;
+		}
+
 		return roundNum;
 	}
-	
-	private TreeMap<Double, List<WinnerDetails>> getInitLastResults(int roundNum){
+
+	private TreeMap<Double, List<WinnerDetails>> getInitLastResults(int roundNum) {
 		TreeMap<Double, List<WinnerDetails>> lastResults = null;
-		if(roundNum >= 1){
+		if (roundNum >= 1) {
 			lastResults = new TreeMap<Double, List<WinnerDetails>>();
-			if(getFailedAuctionDetails() != null){
-				BasicDBObject remoteResults = (BasicDBObject)getFailedAuctionDetails()
-												.get(AuctionServerPersistance.FIELD_REMOTE_RESULTS);
-				BasicDBList bids = (BasicDBList)remoteResults.get(AuctionServerPersistance.FIELD_BIDS);
-				for(Object bid: bids){
-					BasicDBObject bidDetails = (BasicDBObject)bid;
-					Double price = bidDetails.getDouble(AuctionServerPersistance.FIELD_BID);
-					WinnerDetails details = new WinnerDetails(price, 
-													bidDetails.getString(AuctionServerPersistance.FIELD_SELLER_ID),
-													bidDetails.getString(AuctionServerPersistance.FIELD_PRODUCT_ID));
-					
+			if (getFailedAuctionDetails() != null) {
+				BasicDBObject remoteResults = (BasicDBObject) getFailedAuctionDetails()
+						.get(AuctionServerPersistance.FIELD_REMOTE_RESULTS);
+				BasicDBList bids = (BasicDBList) remoteResults
+						.get(AuctionServerPersistance.FIELD_BIDS);
+				for (Object bid : bids) {
+					BasicDBObject bidDetails = (BasicDBObject) bid;
+					Double price = bidDetails
+							.getDouble(AuctionServerPersistance.FIELD_BID);
+					WinnerDetails details = new WinnerDetails(
+							price,
+							bidDetails
+									.getString(AuctionServerPersistance.FIELD_SELLER_ID),
+							bidDetails
+									.getString(AuctionServerPersistance.FIELD_PRODUCT_ID));
+
 					List<WinnerDetails> winnersDetails = null;
-					if(lastResults.containsKey(price)){
+					if (lastResults.containsKey(price)) {
 						winnersDetails = lastResults.get(price);
 					} else {
 						winnersDetails = new ArrayList<WinnerDetails>();
@@ -357,12 +369,12 @@ public class AuctionServer {
 					winnersDetails.add(details);
 					lastResults.put(price, winnersDetails);
 				}
-			}	
+			}
 		}
-		
+
 		return lastResults;
 	}
-	
+
 	private Boolean runRemoteAuction() {
 		// get the remote bidders
 		List<RemoteSellerDetails> remoteBidders = getPackagedRemoteBidders();
@@ -576,7 +588,8 @@ public class AuctionServer {
 			List<RemoteSellerDetails> sellersDetails = entry.getValue();
 
 			List<WinnerDetails> winnersDetails = WinnerDetails
-					.getWinnersDetails(price, sellersDetails);
+					.getRemoteWinnersDetails(price, sellersDetails);
+
 			winBids.put(price, winnersDetails);
 
 			winnersNum += winnersDetails.size();
@@ -734,19 +747,19 @@ public class AuctionServer {
 			TreeMap<Double, List<WinnerDetails>> winners) {
 		AuctionServerPersistance writer = getAuctionWriter();
 		return writer.persistLocalBidWinners(winners);
-		//return true;
+		// return true;
 	}
 
 	private Boolean makeRemoteRoundEntry(int roundNum,
 			TreeMap<Double, List<WinnerDetails>> winners) {
 		AuctionServerPersistance writer = getAuctionWriter();
 		return writer.persistRemoteRoundWinners(roundNum, winners);
-		//return true;
+		// return true;
 	}
 
 	private Boolean finishUpAuction() {
 		AuctionServerPersistance writer = getAuctionWriter();
 		return writer.finishUpAuction();
-		//return true;
+		// return true;
 	}
 }

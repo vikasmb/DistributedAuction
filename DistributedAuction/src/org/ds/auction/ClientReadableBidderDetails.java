@@ -3,11 +3,21 @@ package org.ds.auction;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+
 import com.mongodb.BasicDBObject;
 
+@XmlRootElement
 public class ClientReadableBidderDetails {
+	@XmlElement(name = "remoteBidders")
 	private List<RemoteSellerDetails> remoteBidders;
+	@XmlElement(name = "localBidders")
 	private List<LocalSellerDetails> localBidders;
+	
+	public ClientReadableBidderDetails(){
+		super();
+	}
 	
 	public List<RemoteSellerDetails> getRemoteBidders(){
 		return this.remoteBidders;

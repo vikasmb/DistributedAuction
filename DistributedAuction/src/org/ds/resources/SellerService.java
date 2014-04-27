@@ -14,7 +14,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.ds.auction.BidDetails;
-import org.ds.carServer.SellerDetails;
+import org.ds.carServer.CarSellerDetails;
 import org.ds.carServer.SellerStore;
 
 @Path("SellerService")
@@ -27,7 +27,7 @@ public class SellerService {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("/register")
-	public Response register(SellerDetails sellerObj) {
+	public Response register(CarSellerDetails sellerObj) {
 
 		System.out.println("Received Seller with name"
 				+ sellerObj.getSellerName());

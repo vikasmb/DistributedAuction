@@ -29,10 +29,10 @@
                <p:inputText id="city" value="#{buyerCriteria.city}" immediate="true"/>
                
                <h:outputText value="From" />
-               <p:calendar value="#{buyerCriteria.neededFrom}" pattern="MM/dd/yyyy hh:mm a"/>
+               <p:calendar value="#{buyerCriteria.neededFrom}" effect="slideDown" timeZone="GMT" pattern="MM/dd/yyyy hh:mm a"/>
                
                <h:outputText value="Till" />
-               <p:calendar value="#{buyerCriteria.neededUntil}" pattern="MM/dd/yyyy hh:mm a"/>
+               <p:calendar value="#{buyerCriteria.neededUntil}" effect="slideDown" timeZone="GMT" pattern="MM/dd/yyyy hh:mm a"/>
 
 			<p:commandButton value="Search"
 				actionListener="${auctionClient.search}" ></p:commandButton>

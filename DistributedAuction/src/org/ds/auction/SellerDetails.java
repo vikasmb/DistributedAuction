@@ -1,5 +1,8 @@
 package org.ds.auction;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
+@XmlRootElement
 public class SellerDetails {
 	
 	private String sellerID;
@@ -9,6 +12,7 @@ public class SellerDetails {
 	private String model;
 	private String address;
 	private String image;
+	private String displayName;
 	
 	public static String FIELD_NAME = "name";
 	public static String FIELD_MODEL = "model";
@@ -69,6 +73,14 @@ public class SellerDetails {
 	
 	public void printDetails(){
 		System.out.println("ProductID: " + getProductID() + ". SellerID: " + getSellerID());
+	}
+
+	public String getDisplayName() {
+		return displayName;
+	}
+
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
 	}
 	
 }
