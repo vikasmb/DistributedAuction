@@ -16,6 +16,7 @@ public class UserPersistance {
 	//main keys
 	public static String FIELD_USER_ID = "userID";
 	public static String FIELD_AUCTIONS = "auctions";
+	public static String FIELD_SUBSCRIPTIONS = "subscriptions";
 	public static String FIELD_VERSION = "version";
 	
 	//auctions keys
@@ -23,6 +24,11 @@ public class UserPersistance {
 	public static String FIELD_AUCTIONS_AUCTION_ID = "auctionID";
 	public static String FIELD_AUCTIONS_INITIATED_AT = "initiatedAt";
 	public static String FIELD_AUCTIONS_FINISHED_AT = "finishedAt";
+	
+	//subscription keys
+	public static String FIELD_SUBSCRIPTION_AUCTION_ID = "auctionID";
+	public static String FIELD_SUBSCRIPTION_CRITERIA = "criteria";
+	
 	
 	//category name
 	public static String CATEGORY_CARS = "Cars";
@@ -77,7 +83,26 @@ public class UserPersistance {
 	private BasicDBObject initUser(){
 		return new BasicDBObject(FIELD_USER_ID, getUserID())
 							.append(FIELD_AUCTIONS, new BasicDBList())
+							.append(FIELD_SUBSCRIPTIONS, new BasicDBList())
 							.append(FIELD_VERSION, incrementVersion());
+	}
+	
+	public void recordSubscription(String auctionID, BasicDBObject criteria){
+		BasicDBObject subscriptionEntry = new BasicDBObject(FIELD_SUBSCRIPTION_AUCTION_ID, auctionID)
+												.append(FIELD_SUBSCRIPTION_CRITERIA, criteria);
+		
+		BasicDBObject query;
+		BasicDBObject update;
+		do{
+			BasicDBList subscriptions = getSubscriptions(userID);
+			subscriptions.add(subscriptionEntry);
+			
+			query = new BasicDBObject(FIELD_USER_ID, getUserID())
+											.append(FIELD_VERSION, getVersion());
+			BasicDBObject updateFields = new BasicDBObject(FIELD_SUBSCRIPTIONS, subscriptions)
+													.append(FIELD_VERSION, incrementVersion());
+			update = new BasicDBObject("$set", updateFields);
+		}while(!updateMongo(query, update));
 	}
 	
 	public void recordAuctionInit(String userID, String auctionID, Date initiatedAt){
@@ -129,6 +154,18 @@ public class UserPersistance {
 		
 		this.version = userDetails.getInt(FIELD_VERSION);
 		return (BasicDBList)userDetails.get(FIELD_AUCTIONS);
+	}
+	
+	public BasicDBList getSubscriptions(String userID){
+		BasicDBObject query = new BasicDBObject(FIELD_USER_ID, getUserID());
+		BasicDBObject projectedFields = new BasicDBObject(FIELD_SUBSCRIPTIONS, 1)
+												.append(FIELD_VERSION, 1);
+		
+		DBCollection coll = getCollection();
+		BasicDBObject userDetails = (BasicDBObject)coll.findOne(query, projectedFields);
+		
+		this.version = userDetails.getInt(FIELD_VERSION);
+		return (BasicDBList)userDetails.get(FIELD_SUBSCRIPTIONS);
 	}
 	
 	private static MongoClient getMongoClient(){
