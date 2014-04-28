@@ -18,7 +18,8 @@ public class AuctionViewer {
 		//getAuctionResults("123_1398025869321");
 	}
 	
-	public static void getAuctionResults(String auctionID){
+	public static AuctionResults getAuctionResults(String auctionID){
+		AuctionResults results = null;
 		BasicDBObject auctionDetails = getAuctionDetails(auctionID);
 		if(auctionDetails != null){
 			BasicDBList localBids = (BasicDBList)((BasicDBObject)auctionDetails
@@ -90,9 +91,13 @@ public class AuctionViewer {
 				AuctionServerPersistance writer = new AuctionServerPersistance(criteria, auctionID, auctionDetails.getInt(AuctionServerPersistance.FIELD_VERSION));
 				writer.recordViewedAt();
 			}
+			
+			 results = new AuctionResults(remoteWinners, localWinners);
 		} else {
 			System.out.println("Auction still running!");
 		}
+		
+		return results;
 	}
 	
 	private static BasicDBObject getAuctionDetails(String auctionID){
