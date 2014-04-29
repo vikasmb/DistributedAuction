@@ -20,6 +20,10 @@ import org.ds.util.DateUtil;
 public class BuyerCriteria {
 	public BuyerCriteria() {
 		super();
+		category="cars";
+		city="LA";
+		neededFrom=DateUtil.getDate("2014-06-15T10:00:00");
+		neededUntil=DateUtil.getDate("2014-06-15T11:00:00");		
 	}
 
 	public BuyerCriteria(String buyerID, Date neededFrom, Date neededUntil,
