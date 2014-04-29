@@ -1,0 +1,72 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core">
+
+
+<h:head>
+	<meta content="text/html; charset=UTF-8" http-equiv="Content-type" />
+	<!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet"
+		href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css"></link>
+</h:head>
+
+<h:body>
+	<h:form id="homeForm">
+		<p:layout id="layout" fullPage="true">
+			<p:layoutUnit position="north" size="50">
+				<!-- Fixed navbar -->
+				<h:panelGroup layout="block"
+					styleClass="navbar navbar-default navbar-fixed-top">
+					<h:panelGroup layout="block" styleClass="container">
+						<h:panelGroup layout="block" styleClass="navbar-header">
+							<button type="button" class="navbar-toggle">
+								<h:panelGroup class="sr-only">Toggle navigation</h:panelGroup>
+								<h:panelGroup class="icon-bar"></h:panelGroup>
+								<h:panelGroup class="icon-bar"></h:panelGroup>
+								<h:panelGroup class="icon-bar"></h:panelGroup>
+							</button>
+							<h:commandLink class="navbar-brand" href="#">Distributed Auction</h:commandLink>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="navbar-collapse collapse">
+							<ul class="nav navbar-nav">
+								<li class="active"><h:commandLink action="goHome">Home</h:commandLink></li>
+								<li><h:commandLink action="viewAuctions">My Auctions</h:commandLink></li>
+								<li><h:commandLink action="viewSubscriptions">My Subscriptions</h:commandLink></li>
+							</ul>
+							<ul class="nav navbar-nav navbar-right">
+								<li><h:commandLink href="#">Logout</h:commandLink></li>
+							</ul>
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
+			</p:layoutUnit>
+			<p:layoutUnit position="west" resizable="true">
+				<h:panelGroup layout="block">
+					<p:dataTable id="auctionsTable" var="auctionRow"
+						value="#{listAuctions.auctionDetailsList}">
+						<f:facet name="header">
+	         		    	      Your auctions
+	      	     		</f:facet>
+	      	     		<p:column sortBy="category" headerText="Category">
+							<h:outputText value="#{auctionRow.category}" />
+						</p:column>
+	
+						<p:column sortBy="auctionId" headerText="AuctionId">
+							<h:commandLink value="#{auctionRow.auctionId}" />
+						</p:column>
+
+					</p:dataTable>
+				</h:panelGroup>
+			</p:layoutUnit>
+			<p:layoutUnit position="center" id="ctrLayout">
+			
+			</p:layoutUnit>
+		</p:layout>
+	</h:form>
+</h:body>
+</html>
