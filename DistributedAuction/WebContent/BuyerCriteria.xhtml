@@ -46,39 +46,35 @@
 			</p:layoutUnit>
 			<p:layoutUnit position="west" resizable="true">
 				<h:panelGroup layout="block">
-					<p:panelGrid columns="2">
-						<h:outputText value="Select Category" />
-	
+					<p style="text-align:center;">
 						<p:selectOneMenu required="true" value="#{buyerCriteria.category}"
 							immediate="true">
-							<f:selectItem itemLabel="Select One" itemValue="" />
+							<f:selectItem itemLabel="Category" itemValue="" />
 							<f:selectItem itemLabel="Cars" itemValue="cars" />
 							<f:selectItem itemLabel="Hotels" itemValue="hotels" />
 							<f:selectItem itemLabel="Flights" itemValue="flights" />
 						</p:selectOneMenu>
-	
-						<h:outputText value="City" />
-						<p:inputText required="true" id="city"
-							value="#{buyerCriteria.city}" immediate="true" />
-	
-						<h:outputText value="From" />
-						<p:calendar  value="#{buyerCriteria.neededFrom}"
+					</p>
+					<p style="text-align:center;">
+						<p:inputText required="true" id="city" placeholder="City"
+							 immediate="true" />
+					</p>
+					<p:panelGrid columns="2">
+						<p:calendar placeholder="Pickup"
 							effect="slideDown" timeZone="GMT" pattern="MM/dd/yyyy hh:mm a" />
 	
-						<h:outputText value="Till" />
-						<p:calendar  value="#{buyerCriteria.neededUntil}"
+						<p:calendar placeholder="Return"
 							effect="slideDown" timeZone="GMT" pattern="MM/dd/yyyy hh:mm a" />
 	
 						<p:commandButton value="Search"
 							actionListener="#{auctionClient.search}"
-							update="schdBtn,peerTable,remoteTable"></p:commandButton>
-						<br />
+							update="schdBtn,peerTable,remoteTable">
+						</p:commandButton>
 						
 						<p:commandButton value="Schedule Auction" id="schdBtn" disabled="#{!auctionClient.showSearchResults}"
 							action="#{auctionClient.scheduleAuction}"
-							update="peerTable,remoteTable"></p:commandButton>
-						<br />
-	
+							update="peerTable,remoteTable">
+						</p:commandButton>
 					</p:panelGrid>
 				</h:panelGroup>
 			</p:layoutUnit>

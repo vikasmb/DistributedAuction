@@ -1,6 +1,7 @@
 package org.ds.userServer;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.faces.bean.ManagedBean;
@@ -45,6 +46,7 @@ public class ListAuctions {
 									.getString(UserPersistance.FIELD_AUCTIONS_AUCTION_ID));
 		}
 
+		Collections.sort(auctionIDs, Collections.reverseOrder());
 		return auctionIDs;
 	}
 
