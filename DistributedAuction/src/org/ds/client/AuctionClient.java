@@ -66,7 +66,7 @@ public class AuctionClient {
 
 	}
 
-	public void scheduleAuction() {
+	public String scheduleAuction() {
 		category = buyerCriteria.getCategory();
 		buyerCriteria.setBuyerID("123");
 		ClientConfig config = new DefaultClientConfig();
@@ -89,6 +89,12 @@ public class AuctionClient {
 				+ response.getStatus() + " and response as "
 				+ response.getEntity(String.class));
 		System.out.println("Client exiting the rest call");
+		if(response.getStatus()==200){
+			return "viewAuctions";
+		}
+		else{
+			return "error";
+		}
 	}
 	
 	public void search() {

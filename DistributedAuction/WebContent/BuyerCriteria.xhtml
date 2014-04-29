@@ -34,8 +34,8 @@
 			        <h:panelGroup layout="block" styleClass="navbar-collapse collapse">
 			          <ul class="nav navbar-nav">
 			            <li class="active"><h:commandLink action="goHome">Home</h:commandLink></li>
-			            <li><h:commandLink action="viewAuctions">My Auctions</h:commandLink></li>
-			            <li><h:commandLink action="viewSubscriptions">My Subscriptions</h:commandLink></li>
+			            <li><h:link outcome="viewAuctions" immediate="true">My Auctions</h:link></li>
+			            <li><h:link outcome="viewSubscriptions">My Subscriptions</h:link></li>
 			          </ul>
 			          <ul class="nav navbar-nav navbar-right">
 			            <li><h:commandLink href="#">Logout</h:commandLink></li>
@@ -75,7 +75,7 @@
 						<br />
 						
 						<p:commandButton value="Schedule Auction" id="schdBtn" disabled="#{!auctionClient.showSearchResults}"
-							actionListener="#{auctionClient.scheduleAuction}"
+							action="#{auctionClient.scheduleAuction}"
 							update="peerTable,remoteTable"></p:commandButton>
 						<br />
 	
