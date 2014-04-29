@@ -11,100 +11,133 @@
 
 <h:head>
 	<meta content="text/html; charset=UTF-8" http-equiv="Content-type" />
+	<!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css"></link>
 </h:head>
 
 <h:body>
 	<h:form id="homeForm">
-		<p:layout id="layout">
+		<p:layout id="layout" fullPage="true">
+			<p:layoutUnit position="north" size="50">
+				<!-- Fixed navbar -->
+				<h:panelGroup layout="block" styleClass="navbar navbar-default navbar-fixed-top">
+			      <h:panelGroup layout="block" styleClass="container">
+			       <h:panelGroup layout="block" styleClass="navbar-header">
+			          <button type="button" class="navbar-toggle">
+			            <h:panelGroup class="sr-only">Toggle navigation</h:panelGroup>
+			            <h:panelGroup class="icon-bar"></h:panelGroup>
+			            <h:panelGroup class="icon-bar"></h:panelGroup>
+			            <h:panelGroup class="icon-bar"></h:panelGroup>
+			          </button>
+			          <h:commandLink class="navbar-brand" href="#">Distributed Auction</h:commandLink>
+			        </h:panelGroup>
+			        <h:panelGroup layout="block" styleClass="navbar-collapse collapse">
+			          <ul class="nav navbar-nav">
+			            <li class="active"><h:commandLink action="goHome">Home</h:commandLink></li>
+			            <li><h:commandLink action="viewAuctions">My Auctions</h:commandLink></li>
+			            <li><h:commandLink action="viewSubscriptions">My Subscriptions</h:commandLink></li>
+			          </ul>
+			          <ul class="nav navbar-nav navbar-right">
+			            <li><h:commandLink href="#">Logout</h:commandLink></li>
+			          </ul>
+			        </h:panelGroup>
+			      </h:panelGroup>
+			    </h:panelGroup>
+			</p:layoutUnit>
 			<p:layoutUnit position="west" resizable="true">
-				<p:panelGrid columns="2">
-					<h:outputText value="Select Category" />
-
-					<p:selectOneMenu required="true" value="#{buyerCriteria.category}"
-						immediate="true">
-						<f:selectItem itemLabel="Select One" itemValue="" />
-						<f:selectItem itemLabel="Cars" itemValue="cars" />
-						<f:selectItem itemLabel="Hotels" itemValue="hotels" />
-						<f:selectItem itemLabel="Flights" itemValue="flights" />
-					</p:selectOneMenu>
-
-					<h:outputText value="City" />
-					<p:inputText required="true" id="city"
-						value="#{buyerCriteria.city}" immediate="true" />
-
-					<h:outputText value="From" />
-					<p:calendar  value="#{buyerCriteria.neededFrom}"
-						effect="slideDown" timeZone="GMT" pattern="MM/dd/yyyy hh:mm a" />
-
-					<h:outputText value="Till" />
-					<p:calendar  value="#{buyerCriteria.neededUntil}"
-						effect="slideDown" timeZone="GMT" pattern="MM/dd/yyyy hh:mm a" />
-
-					<p:commandButton value="Search"
-						actionListener="#{auctionClient.search}"
-						update="schdBtn,peerTable,remoteTable"></p:commandButton>
-					<br />
-					
-					<p:commandButton value="Schedule Auction" id="schdBtn" disabled="#{!auctionClient.showSearchResults}"
-						actionListener="#{auctionClient.scheduleAuction}"
-						update="peerTable,remoteTable"></p:commandButton>
-					<br />
-
-				</p:panelGrid>
+				<h:panelGroup layout="block">
+					<p:panelGrid columns="2">
+						<h:outputText value="Select Category" />
+	
+						<p:selectOneMenu required="true" value="#{buyerCriteria.category}"
+							immediate="true">
+							<f:selectItem itemLabel="Select One" itemValue="" />
+							<f:selectItem itemLabel="Cars" itemValue="cars" />
+							<f:selectItem itemLabel="Hotels" itemValue="hotels" />
+							<f:selectItem itemLabel="Flights" itemValue="flights" />
+						</p:selectOneMenu>
+	
+						<h:outputText value="City" />
+						<p:inputText required="true" id="city"
+							value="#{buyerCriteria.city}" immediate="true" />
+	
+						<h:outputText value="From" />
+						<p:calendar  value="#{buyerCriteria.neededFrom}"
+							effect="slideDown" timeZone="GMT" pattern="MM/dd/yyyy hh:mm a" />
+	
+						<h:outputText value="Till" />
+						<p:calendar  value="#{buyerCriteria.neededUntil}"
+							effect="slideDown" timeZone="GMT" pattern="MM/dd/yyyy hh:mm a" />
+	
+						<p:commandButton value="Search"
+							actionListener="#{auctionClient.search}"
+							update="schdBtn,peerTable,remoteTable"></p:commandButton>
+						<br />
+						
+						<p:commandButton value="Schedule Auction" id="schdBtn" disabled="#{!auctionClient.showSearchResults}"
+							actionListener="#{auctionClient.scheduleAuction}"
+							update="peerTable,remoteTable"></p:commandButton>
+						<br />
+	
+					</p:panelGrid>
+				</h:panelGroup>
 			</p:layoutUnit>
 			<p:layoutUnit position="center" id="ctrLayout">
-
-				<p:dataTable id="peerTable" var="localRow"
-					visible="#{auctionClient.showSearchResults}"
-					value="#{auctionClient.localBidders}" paginator="true" rows="5"
-					paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-					rowsPerPageTemplate="5,10,15">
-					<f:facet name="header">
-         		    Listings
-      	     </f:facet>
-
-					<p:column sortBy="name" headerText="Name">
-						<h:outputText value="#{localRow.name}" />
-					</p:column>
-
-					<p:column sortBy="model" headerText="Model">
-						<h:outputText value="#{localRow.model}" />
-					</p:column>
-
-					<p:column sortBy="address" headerText="Address">
-						<h:outputText value="#{localRow.address}" />
-					</p:column>
-
-					<p:column sortBy="image" headerText="Image">
-						<h:outputText value="#{localRow.image}" />
-					</p:column>
-				</p:dataTable>
-				<p:spacer height="20" />
-				<p:dataTable id="remoteTable" var="remoteRow"
-					visible="#{auctionClient.showSearchResults}"
-					value="#{auctionClient.remoteBidders}" paginator="true" rows="5"
-					paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-					rowsPerPageTemplate="5,10,15">
-					<f:facet name="header">
-         		    Corporate sellers
-      	     </f:facet>
-
-					<p:column sortBy="name" headerText="Name">
-						<h:outputText value="#{remoteRow.name}" />
-					</p:column>
-
-					<p:column sortBy="address" headerText="Address">
-						<h:outputText value="#{remoteRow.address}" />
-					</p:column>
-
-					<p:column sortBy="image" headerText="Image">
-						<h:outputText value="#{remoteRow.image}" />
-					</p:column>
-				</p:dataTable>
-
+				<h:panelGroup layout="block">
+					<p:dataTable id="peerTable" var="localRow"
+						visible="#{auctionClient.showSearchResults}"
+						value="#{auctionClient.localBidders}" paginator="true" rows="5"
+						paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+						rowsPerPageTemplate="5,10,15">
+						<f:facet name="header">
+	         		    	Listings
+	      	     		</f:facet>
+	
+						<p:column sortBy="name" headerText="Name">
+							<h:outputText value="#{localRow.name}" />
+						</p:column>
+	
+						<p:column sortBy="model" headerText="Model">
+							<h:outputText value="#{localRow.model}" />
+						</p:column>
+	
+						<p:column sortBy="address" headerText="Address">
+							<h:outputText value="#{localRow.address}" />
+						</p:column>
+	
+						<p:column sortBy="image" headerText="Image">
+							<h:outputText value="#{localRow.image}" />
+						</p:column>
+					</p:dataTable>
+					<p:spacer height="20" />
+					<p:dataTable id="remoteTable" var="remoteRow"
+						visible="#{auctionClient.showSearchResults}"
+						value="#{auctionClient.remoteBidders}" paginator="true" rows="5"
+						paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+						rowsPerPageTemplate="5,10,15">
+						<f:facet name="header">
+	         		    	Corporate sellers
+	      	     		</f:facet>
+	
+						<p:column sortBy="name" headerText="Name">
+							<h:outputText value="#{remoteRow.name}" />
+						</p:column>
+	
+						<p:column sortBy="address" headerText="Address">
+							<h:outputText value="#{remoteRow.address}" />
+						</p:column>
+	
+						<p:column sortBy="image" headerText="Image">
+							<h:outputText value="#{remoteRow.image}" />
+						</p:column>
+					</p:dataTable>
+				</h:panelGroup>
 			</p:layoutUnit>
 		</p:layout>
 	</h:form>
+	<!-- Latest compiled and minified JavaScript -->
+	<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
 </h:body>
 
 <!--</ui:composition> -->
