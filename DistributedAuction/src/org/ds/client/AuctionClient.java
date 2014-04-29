@@ -45,6 +45,7 @@ public class AuctionClient {
 	private BuyerCriteria buyerCriteria;
 	List<LocalSellerDetails> localBidders = new ArrayList<LocalSellerDetails>();
 	List<RemoteSellerDetails> remoteBidders = new ArrayList<RemoteSellerDetails>();
+	private boolean showSearchResults;
 
 	public void setActiveUser(SellerDetails activeUser) {
 		System.out.println("Setting activeUser bean");
@@ -65,11 +66,35 @@ public class AuctionClient {
 
 	}
 
+	public void scheduleAuction() {
+		category = buyerCriteria.getCategory();
+		buyerCriteria.setBuyerID("123");
+		ClientConfig config = new DefaultClientConfig();
+		Client remoteClient = Client.create(config);
+		DBClient dbClient = DBClient.getInstance();
+		BasicDBObject jsonAddr = dbClient.getClusterAddress(category);
+		String restAddr = "http://" + jsonAddr.getString("ip") + ":"
+				+ jsonAddr.getInt("port")
+				+ "/DistributedAuction/rest/invokeAuction";
+		
+		WebResource webResource = remoteClient.resource(restAddr);
+		ClientResponse response = null;
+		try {
+			response = webResource.type(MediaType.APPLICATION_JSON).post(
+					ClientResponse.class, buyerCriteria);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		System.out.println("Client recieved the status  of"
+				+ response.getStatus() + " and response as "
+				+ response.getEntity(String.class));
+		System.out.println("Client exiting the rest call");
+	}
+	
 	public void search() {
 		category = buyerCriteria.getCategory();
 		System.out.println("category set to" + category);
-		DBClient client = DBClient.getInstance();
-		buyerCriteria.setBuyerID("buyer123");
+		buyerCriteria.setBuyerID("123");
 		// JSON.parse(jsonAddr);
 		// FacesContext context = FacesContext.getCurrentInstance();
 		//
@@ -85,9 +110,11 @@ public class AuctionClient {
 				+ jsonAddr.getInt("port")
 				+ "/DistributedAuction/rest/viewBidders";
 		System.out.println("Contacting " + restAddr + " for viewBidders");
-		/*BuyerCriteria criteria1 = new BuyerCriteria("123",
-				DateUtil.getDate("2014-06-15T10:00:00"),
-				DateUtil.getDate("2014-06-15T11:00:00"), "LA");*/
+		/*
+		 * BuyerCriteria criteria1 = new BuyerCriteria("123",
+		 * DateUtil.getDate("2014-06-15T10:00:00"),
+		 * DateUtil.getDate("2014-06-15T11:00:00"), "LA");
+		 */
 		WebResource webResource = remoteClient.resource(restAddr);
 		ClientResponse response = null;
 		try {
@@ -234,4 +261,21 @@ public class AuctionClient {
 	public void setRemoteBidders(List<RemoteSellerDetails> remoteBidders) {
 		this.remoteBidders = remoteBidders;
 	}
+
+	public boolean isShowSearchResults() {
+		if (getLocalBidders().size() > 0 || getRemoteBidders().size() > 0) {
+			System.out.println("*******TRUE*********");
+			showSearchResults=true;
+		} else {
+			System.out.println("*******FALSE*********");
+			showSearchResults= false;
+		}
+        return showSearchResults;
+	}
+
+	public void setShowSearchResults(boolean showSearchResults) {
+		this.showSearchResults = showSearchResults;
+	}
+	
+	
 }

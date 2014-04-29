@@ -20,7 +20,8 @@
 				<p:panelGrid columns="2">
 					<h:outputText value="Select Category" />
 
-					<p:selectOneMenu value="#{buyerCriteria.category}" immediate="true">
+					<p:selectOneMenu required="true" value="#{buyerCriteria.category}"
+						immediate="true">
 						<f:selectItem itemLabel="Select One" itemValue="" />
 						<f:selectItem itemLabel="Cars" itemValue="cars" />
 						<f:selectItem itemLabel="Hotels" itemValue="hotels" />
@@ -28,26 +29,33 @@
 					</p:selectOneMenu>
 
 					<h:outputText value="City" />
-					<p:inputText id="city" value="#{buyerCriteria.city}"
-						immediate="true" />
+					<p:inputText required="true" id="city"
+						value="#{buyerCriteria.city}" immediate="true" />
 
 					<h:outputText value="From" />
-					<p:calendar value="#{buyerCriteria.neededFrom}" effect="slideDown"
-						timeZone="GMT" pattern="MM/dd/yyyy hh:mm a" />
+					<p:calendar required="true" value="#{buyerCriteria.neededFrom}"
+						effect="slideDown" timeZone="GMT" pattern="MM/dd/yyyy hh:mm a" />
 
 					<h:outputText value="Till" />
-					<p:calendar value="#{buyerCriteria.neededUntil}" effect="slideDown"
-						timeZone="GMT" pattern="MM/dd/yyyy hh:mm a" />
+					<p:calendar required="true" value="#{buyerCriteria.neededUntil}"
+						effect="slideDown" timeZone="GMT" pattern="MM/dd/yyyy hh:mm a" />
 
 					<p:commandButton value="Search"
 						actionListener="#{auctionClient.search}"
+						update="schdBtn,peerTable,remoteTable"></p:commandButton>
+					<br />
+					
+					<p:commandButton value="Schedule Auction" id="schdBtn" disabled="#{!auctionClient.showSearchResults}"
+						actionListener="#{auctionClient.scheduleAuction}"
 						update="peerTable,remoteTable"></p:commandButton>
 					<br />
 
 				</p:panelGrid>
 			</p:layoutUnit>
-			<p:layoutUnit position="center">
-				<p:dataTable id="peerTable" var="localRow" 
+			<p:layoutUnit position="center" id="ctrLayout">
+
+				<p:dataTable id="peerTable" var="localRow"
+					visible="#{auctionClient.showSearchResults}"
 					value="#{auctionClient.localBidders}" paginator="true" rows="5"
 					paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
 					rowsPerPageTemplate="5,10,15">
@@ -73,6 +81,7 @@
 				</p:dataTable>
 				<p:spacer height="20" />
 				<p:dataTable id="remoteTable" var="remoteRow"
+					visible="#{auctionClient.showSearchResults}"
 					value="#{auctionClient.remoteBidders}" paginator="true" rows="5"
 					paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
 					rowsPerPageTemplate="5,10,15">
@@ -92,6 +101,7 @@
 						<h:outputText value="#{remoteRow.image}" />
 					</p:column>
 				</p:dataTable>
+
 			</p:layoutUnit>
 		</p:layout>
 	</h:form>
