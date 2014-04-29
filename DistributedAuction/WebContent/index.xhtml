@@ -11,27 +11,24 @@
 
 <h:head>
 	<meta content="text/html; charset=UTF-8" http-equiv="Content-type" />
+	<!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css"/>
+	<h:outputStylesheet library="css" name="signin.css"  />
 </h:head>
 
 <h:body>
-	<h:form>
-		<h:outputText>Welcome to Distributed Auction</h:outputText>
-		<p:separator id="separator" />
-		<p:commandLink value="New seller? Register here" action="register" />
-		<p:panelGrid columns="2">
-			<h:outputText value="userId" />
-			<p:inputText id="UserName" />
-
-			<h:outputText value="password" />
-			<p:password id="password" />
-
-			<p:commandButton value="Login" action="success"></p:commandButton>
-			<br />
-
-		</p:panelGrid>
-
-		<p:growl id="growl" showDetail="true" sticky="true" />
-	</h:form>
+	<h:panelGroup layout="block" styleClass="container">
+		<h:form styleClass="form-signin">
+			<h2 class="form-signin-heading">Please sign in</h2>
+			<!--<p:commandLink value="New seller? Register here" action="register" />-->
+			<p:inputText styleClass="form-control" id="UserName" />
+			<p:watermark for="UserName" value="User Name" />  
+			<p:password styleClass="form-control" id="password" />
+			<p:watermark for="password" value="Password" />  
+			<br/>
+			<p:commandButton styleClass="btn btn-lg btn-primary btn-block" value="Sign in" action="success"></p:commandButton>	
+		</h:form>
+	</h:panelGroup> <!-- /container -->
 </h:body>
 
 <!--</ui:composition> -->
