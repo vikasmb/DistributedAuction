@@ -26,8 +26,8 @@ public class UserPersistance {
 	public static String FIELD_AUCTIONS_FINISHED_AT = "finishedAt";
 	
 	//subscription keys
+	public static String FIELD_SUBSCRIPTIONS_CATEGORY = "category";
 	public static String FIELD_SUBSCRIPTION_AUCTION_ID = "auctionID";
-	public static String FIELD_SUBSCRIPTION_CRITERIA = "criteria";
 	
 	
 	//category name
@@ -87,9 +87,9 @@ public class UserPersistance {
 							.append(FIELD_VERSION, incrementVersion());
 	}
 	
-	public void recordSubscription(String auctionID, BasicDBObject criteria){
+	public void recordSubscription(String auctionID){
 		BasicDBObject subscriptionEntry = new BasicDBObject(FIELD_SUBSCRIPTION_AUCTION_ID, auctionID)
-												.append(FIELD_SUBSCRIPTION_CRITERIA, criteria);
+												.append(FIELD_SUBSCRIPTIONS_CATEGORY, CATEGORY_CARS);
 		
 		BasicDBObject query;
 		BasicDBObject update;

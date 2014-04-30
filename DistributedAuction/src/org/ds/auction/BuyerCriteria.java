@@ -101,6 +101,10 @@ public class BuyerCriteria {
 	}
 
 	public String getCategory() {
+		if(category == null || category.equals("")){
+			this.category = "cars";
+		}
+		
 		return category;
 	}
 

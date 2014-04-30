@@ -3,7 +3,7 @@ package org.ds.subscriptions;
 import org.ds.auction.BuyerCriteria;
 import org.ds.auction.WinnerDetails;
 
-public class SubscriptionDetails {
+public class SubscriptionDeal {
 	
 	private BuyerCriteria criteria;
 	private WinnerDetails winnerDetails;
@@ -21,7 +21,7 @@ public class SubscriptionDetails {
 		return this.winnerDetails;
 	}
 	
-	public SubscriptionDetails(String auctionID, BuyerCriteria criteria, WinnerDetails winnerDetails){
+	public SubscriptionDeal(String auctionID, BuyerCriteria criteria, WinnerDetails winnerDetails){
 		this.auctionID = auctionID;
 		this.criteria = criteria;
 		this.winnerDetails = winnerDetails;

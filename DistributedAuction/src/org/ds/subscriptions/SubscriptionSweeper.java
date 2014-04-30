@@ -13,10 +13,12 @@ import org.ds.auction.BuyerCriteria;
 import org.ds.auction.SellerDetails;
 import org.ds.auction.WinnerDetails;
 import org.ds.client.DBClient;
+import org.ds.userServer.ListSubscriptions;
 import org.ds.util.DateUtil;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
+import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.MongoClient;
@@ -28,35 +30,59 @@ public class SubscriptionSweeper {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		BuyerCriteria criteria = new BuyerCriteria("123",
-				DateUtil.getDate("2014-06-15T10:00:00"),
-				DateUtil.getDate("2014-06-15T11:00:00"), "LA");
-		
+		List<String> subscriptions = ListSubscriptions.getUserSubscriptions("123");
 		Date viewedUntil = null;
-		getSubscribedDeals(criteria, viewedUntil);
+		for(String subscription:subscriptions){
+			String auctionID = subscription.split(":")[1]; 
+			getSubscriptionResults(auctionID, viewedUntil);
+		}
 	}
 	
-	private static DBClient getDBClient(){
-		DBClient dbClient = DBClient.getInstance();
-		return dbClient;
-	}
-	private static MongoClient getMongoClient(){
-		DBClient dbClient =getDBClient();
-		MongoClient mongoClient = dbClient.getMongoClient();
+	public static List <SubscriptionDeal> getSubscriptionResults(String auctionID, Date viewedUntil){
+		BasicDBObject auctionData = getAuctionData(auctionID);
+		BasicDBObject criteriaBSON = (BasicDBObject)auctionData.get(AuctionServerPersistance.FIELD_BUYER_CRITERIA);
+		BuyerCriteria criteria = new BuyerCriteria(criteriaBSON);
+		criteria.printCriteria();
 		
-		return mongoClient;
+		
+		return getSubscribedDeals(auctionID, criteria, viewedUntil);
 	}
 	
-	private static void getSubscribedDeals(BuyerCriteria criteria, Date viewedUntil){		
-		List<BasicDBObject> subscribedAuctions = getSubscribedAuctions(criteria, viewedUntil);
-		for(BasicDBObject auction:subscribedAuctions){
+	public static BasicDBObject getAuctionData(String auctionID){
+		BasicDBObject query = new BasicDBObject(AuctionServerPersistance.FIELD_AUCTION_ID, auctionID);		
+		DBCursor cursor;
+		BasicDBObject auctionData = null;
+		DBCollection coll = getMongoClient().getDB(DBClient.CAR_VENDORS_DB).getCollection(DBClient.AUCTIONS_DETAILS);
+		if (coll != null) {
+			cursor = coll.find(query);
+			try {
+				while (cursor.hasNext()) {
+					auctionData = (BasicDBObject) cursor.next();
+				}
+			} finally {
+				cursor.close();
+			}
+		} else {
+			System.out.println("Failed to get collection: "
+					+ DBClient.AUCTIONS_DETAILS);
+		}
+		return auctionData;		
+	}
+	
+	private static List <SubscriptionDeal> getSubscribedDeals(String auctionID, BuyerCriteria criteria, Date viewedUntil){		
+		List<BasicDBObject> qualifyingAuctions = getQualifyingAuctions(criteria, viewedUntil);
+		List <SubscriptionDeal> deals = new ArrayList<SubscriptionDeal>();
+		
+		for(BasicDBObject auction:qualifyingAuctions){
+			if(auctionID.equals(auction.getString(AuctionServerPersistance.FIELD_AUCTION_ID))){
+				continue;
+			}
 			BasicDBList localBids = (BasicDBList)((BasicDBObject)auction
 					.get(AuctionServerPersistance.FIELD_LOCAL_RESULTS))
 					.get(AuctionServerPersistance.FIELD_BIDS);
 			BasicDBList remoteBids = (BasicDBList)((BasicDBObject)auction
 					.get(AuctionServerPersistance.FIELD_REMOTE_RESULTS))
 					.get(AuctionServerPersistance.FIELD_BIDS);
-			List <SubscriptionDetails> deals = new ArrayList<SubscriptionDetails>();
 			
 			List<String> productIDs = new ArrayList<String>();
 			for(Object bid:localBids){
@@ -73,9 +99,9 @@ public class SubscriptionSweeper {
 			
 			DBClient client = DBClient.getInstance();
 			Map<String, BasicDBObject> productDetails = client.getProductDetails(productIDs);
-			for(String s:productDetails.keySet()){
+			/*for(String s:productDetails.keySet()){
 				System.out.println(productDetails.get(s));
-			}
+			}*/
 			
 			for(Object bid:localBids){
 				BasicDBObject bidObj = (BasicDBObject)bid;
@@ -89,7 +115,7 @@ public class SubscriptionSweeper {
 														product.getString(SellerDetails.FIELD_ADDRESS),
 														product.getString(SellerDetails.FIELD_IMAGE));
 				
-					deals.add(new SubscriptionDetails(auction.getString(AuctionServerPersistance.FIELD_AUCTION_ID), criteria, winnerDetails));
+					deals.add(new SubscriptionDeal(auction.getString(AuctionServerPersistance.FIELD_AUCTION_ID), criteria, winnerDetails));
 				}
 			}
 			for(Object bid:remoteBids){
@@ -101,35 +127,20 @@ public class SubscriptionSweeper {
 													product.getString(SellerDetails.FIELD_NAME),
 													product.getString(SellerDetails.FIELD_ADDRESS),
 													product.getString(SellerDetails.FIELD_IMAGE));
-				deals.add(new SubscriptionDetails(auction.getString(AuctionServerPersistance.FIELD_AUCTION_ID), criteria, winnerDetails));
+				deals.add(new SubscriptionDeal(auction.getString(AuctionServerPersistance.FIELD_AUCTION_ID), criteria, winnerDetails));
 			}	
 			
 			System.out.println("For auction: " + auction.getString(AuctionServerPersistance.FIELD_AUCTION_ID));
-			for(SubscriptionDetails deal:deals){
+			/*for(SubscriptionDetails deal:deals){
 				deal.printDetails();
-			}
+			}*/
 		}
 		System.out.println("Done");
+		return deals;
 	}
 	
-	private static BasicDBObject getSubscribedAuctionsQuery(BuyerCriteria criteria, Date viewedUntil){
-		if(viewedUntil == null) {
-			Calendar cal = Calendar.getInstance();
-	        cal.setTimeZone(TimeZone.getTimeZone("GMT"));
-	        cal.add(Calendar.MINUTE, -ACCEPT_BUFFER);
-	        viewedUntil = cal.getTime();
-		}
-        BasicDBObject query = new BasicDBObject(AuctionServerPersistance.FIELD_STATUS, AuctionServer.STATUS_FINISHED)
-        							.append(AuctionServerPersistance.FIELD_VIEWED_AT, new BasicDBObject("$lte", viewedUntil))
-        							.append(AuctionServerPersistance.FIELD_BUYER_CRITERIA + "." + BuyerCriteria.FIELD_CITY, criteria.getCity())
-        							.append(AuctionServerPersistance.FIELD_BUYER_CRITERIA + "." + BuyerCriteria.FIELD_NEEDED_FROM, criteria.getNeededFrom())
-        							.append(AuctionServerPersistance.FIELD_BUYER_CRITERIA + "." + BuyerCriteria.FIELD_NEEDED_UNTIL, criteria.getNeededUntil());
-        
-        return query;
-	}
-	
-	private static List<BasicDBObject> getSubscribedAuctions(BuyerCriteria criteria, Date viewedUntil){
-		BasicDBObject query = getSubscribedAuctionsQuery(criteria, viewedUntil);
+	private static List<BasicDBObject> getQualifyingAuctions(BuyerCriteria criteria, Date viewedUntil){
+		BasicDBObject query = getQualifyingAuctionsQuery(criteria, viewedUntil);
 		
 		DBCollection coll = getMongoClient().getDB(DBClient.CAR_VENDORS_DB).getCollection(DBClient.AUCTIONS_DETAILS);
        
@@ -146,5 +157,32 @@ public class SubscriptionSweeper {
 		}
         
         return subscribedAuctions;
+	}
+	
+	private static BasicDBObject getQualifyingAuctionsQuery(BuyerCriteria criteria, Date viewedUntil){
+		if(viewedUntil == null) {
+			Calendar cal = Calendar.getInstance();
+	        cal.setTimeZone(TimeZone.getTimeZone("GMT"));
+	        cal.add(Calendar.MINUTE, -ACCEPT_BUFFER);
+	        viewedUntil = cal.getTime();
+		}
+        BasicDBObject query = new BasicDBObject(AuctionServerPersistance.FIELD_STATUS, AuctionServer.STATUS_FINISHED)
+        							.append(AuctionServerPersistance.FIELD_VIEWED_AT, new BasicDBObject("$lte", viewedUntil))
+        							.append(AuctionServerPersistance.FIELD_BUYER_CRITERIA + "." + BuyerCriteria.FIELD_CITY, criteria.getCity())
+        							.append(AuctionServerPersistance.FIELD_BUYER_CRITERIA + "." + BuyerCriteria.FIELD_NEEDED_FROM, criteria.getNeededFrom())
+        							.append(AuctionServerPersistance.FIELD_BUYER_CRITERIA + "." + BuyerCriteria.FIELD_NEEDED_UNTIL, criteria.getNeededUntil());
+        
+        return query;
+	}
+	
+	private static DBClient getDBClient(){
+		DBClient dbClient = DBClient.getInstance();
+		return dbClient;
+	}
+	private static MongoClient getMongoClient(){
+		DBClient dbClient =getDBClient();
+		MongoClient mongoClient = dbClient.getMongoClient();
+		
+		return mongoClient;
 	}
 }
