@@ -55,16 +55,70 @@
 	      	     		<p:column sortBy="category" headerText="Category">
 							<h:outputText value="#{auctionRow.category}" />
 						</p:column>
-	
+	<!--  -->
 						<p:column sortBy="auctionId" headerText="AuctionId">
-							<h:commandLink value="#{auctionRow.auctionId}" />
+							<p:commandLink update=":homeForm:peerTable,:homeForm:remoteTable"  value="#{auctionRow.auctionId}" actionListener="#{auctionViewer.populateWinnerList1}"/>
 						</p:column>
 
 					</p:dataTable>
 				</h:panelGroup>
 			</p:layoutUnit>
 			<p:layoutUnit position="center" id="ctrLayout">
-			
+			<p:dataTable id="peerTable" var="localRow"
+						
+						value="#{auctionViewer.localWinners}" paginator="true" rows="5"
+						paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+						rowsPerPageTemplate="5,10,15">
+						<f:facet name="header">
+	         		    	Listings
+	      	     		</f:facet>
+	
+						<p:column sortBy="name" headerText="Name">
+							<h:outputText value="#{localRow.name}" />
+						</p:column>
+	
+						<p:column sortBy="model" headerText="Model">
+							<h:outputText value="#{localRow.model}" />
+						</p:column>
+	
+						<p:column sortBy="address" headerText="Address">
+							<h:outputText value="#{localRow.address}" />
+						</p:column>
+	
+						<p:column sortBy="image" headerText="Image">
+							<h:outputText value="#{localRow.image}" />
+						</p:column>
+						
+						<p:column sortBy="price" headerText="Price">
+							<h:outputText value="#{localRow.price}" />
+						</p:column>
+					</p:dataTable>
+					<p:spacer height="20" />
+					<p:dataTable id="remoteTable" var="remoteRow"
+						
+						value="#{auctionViewer.remoteWinners}" paginator="true" rows="5"
+						paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+						rowsPerPageTemplate="5,10,15">
+						<f:facet name="header">
+	         		    	Corporate sellers
+	      	     		</f:facet>
+	
+						<p:column sortBy="name" headerText="Name">
+							<h:outputText value="#{remoteRow.name}" />
+						</p:column>
+	
+						<p:column sortBy="address" headerText="Address">
+							<h:outputText value="#{remoteRow.address}" />
+						</p:column>
+	
+						<p:column sortBy="image" headerText="Image">
+							<h:outputText value="#{remoteRow.image}" />
+						</p:column>
+						
+						<p:column sortBy="price" headerText="Price">
+							<h:outputText value="#{remoteRow.price}" />
+						</p:column>
+					</p:dataTable>
 			</p:layoutUnit>
 		</p:layout>
 	</h:form>
