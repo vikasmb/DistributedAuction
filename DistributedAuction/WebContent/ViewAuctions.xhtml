@@ -34,8 +34,8 @@
 						</h:panelGroup>
 						<h:panelGroup layout="block" styleClass="navbar-collapse collapse">
 							<ul class="nav navbar-nav">
-								<li class="active"><h:commandLink action="goHome">Home</h:commandLink></li>
-								<li><h:commandLink action="viewAuctions">My Auctions</h:commandLink></li>
+								<li ><h:commandLink action="goHome">Home</h:commandLink></li>
+								<li class="active"><h:commandLink action="viewAuctions">My Auctions</h:commandLink></li>
 								<li><h:commandLink action="viewSubscriptions">My Subscriptions</h:commandLink></li>
 							</ul>
 							<ul class="nav navbar-nav navbar-right">
@@ -55,7 +55,7 @@
 	      	     		<p:column sortBy="category" headerText="Category">
 							<h:outputText value="#{auctionRow.category}" />
 						</p:column>
-	<!--  -->
+	
 						<p:column sortBy="auctionId" headerText="AuctionId">
 							<p:commandLink update=":homeForm:peerTable,:homeForm:remoteTable"  value="#{auctionRow.auctionId}" actionListener="#{auctionViewer.populateWinnerList1}"/>
 						</p:column>
