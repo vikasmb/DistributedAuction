@@ -31,6 +31,8 @@ import com.sun.jersey.api.client.config.DefaultClientConfig;
 public class AuctionViewer {
 	private List<WinnerDetails> remoteWinners = new ArrayList<WinnerDetails>();
 	private List<WinnerDetails> localWinners = new ArrayList<WinnerDetails>();
+	private Boolean claimed = false;
+	
 	@ManagedProperty(value = "#{buyerCriteria}")
 	private BuyerCriteria buyerCriteria;
 	private String currentAuctionKey;
@@ -52,19 +54,22 @@ public class AuctionViewer {
 		if (results != null) {
 			localWinners.addAll(results.getLocalWinners());
 			remoteWinners.addAll(results.getRemoteWinners());
+			claimed = results.getClaimed();
 		}
 		//System.out.println("Received auctionId: " + detail.getValue());
 		//System.out.println("Received category: " + buyerCriteria.getCategory());
 	}
 
 	public static void main(String args[]) {
-		getAuctionResults("123_1398545916355");
+		AuctionResults results = getAuctionResults("123_1398545916352");
+		results.printDetails();
 		// getAuctionResults("123_1398025869321");
 	}
 
 	public static AuctionResults getAuctionResults(String auctionID) {
 		AuctionResults results = null;
 		BasicDBObject auctionDetails = getAuctionDetails(auctionID);
+		Boolean atLeastOneDealClaimed = false;
 		if (auctionDetails != null) {
 			BasicDBList localBids = (BasicDBList) ((BasicDBObject) auctionDetails
 					.get(AuctionServerPersistance.FIELD_LOCAL_RESULTS))
@@ -81,20 +86,28 @@ public class AuctionViewer {
 				BasicDBObject bidObj = (BasicDBObject) bid;
 				productIDs.add(bidObj
 						.getString(AuctionServerPersistance.FIELD_PRODUCT_ID));
+				if(bidObj.containsField(AuctionServerPersistance.FIELD_CLAIMED) 
+						&& bidObj.getBoolean(AuctionServerPersistance.FIELD_CLAIMED)){
+					atLeastOneDealClaimed = true;
+				}
 			}
 
 			for (Object bid : remoteBids) {
 				BasicDBObject bidObj = (BasicDBObject) bid;
 				productIDs.add(bidObj
 						.getString(AuctionServerPersistance.FIELD_PRODUCT_ID));
+				if(bidObj.containsField(AuctionServerPersistance.FIELD_CLAIMED) 
+						&& bidObj.getBoolean(AuctionServerPersistance.FIELD_CLAIMED)){
+					atLeastOneDealClaimed = true;
+				}
 			}
 
 			DBClient client = DBClient.getInstance();
 			Map<String, BasicDBObject> productDetails = client
 					.getProductDetails(productIDs);
-			for (String s : productDetails.keySet()) {
+			/*for (String s : productDetails.keySet()) {
 				System.out.println(productDetails.get(s));
-			}
+			}*/
 
 			for (Object bid : localBids) {
 				BasicDBObject bidObj = (BasicDBObject) bid;
@@ -125,7 +138,7 @@ public class AuctionViewer {
 				remoteWinners.add(winnerDetails);
 			}
 
-			System.out
+			/*System.out
 					.println("For auction: "
 							+ auctionDetails
 									.getString(AuctionServerPersistance.FIELD_AUCTION_ID));
@@ -137,7 +150,7 @@ public class AuctionViewer {
 			System.out.println("Remote winners");
 			for (WinnerDetails winner : remoteWinners) {
 				winner.printDetails();
-			}
+			}*/
 
 			if (!auctionDetails
 					.containsField(AuctionServerPersistance.FIELD_VIEWED_AT)) {
@@ -152,7 +165,7 @@ public class AuctionViewer {
 				writer.recordViewedAt();
 			}
 
-			results = new AuctionResults(remoteWinners, localWinners);
+			results = new AuctionResults(remoteWinners, localWinners, atLeastOneDealClaimed);
 		} else {
 			System.out.println("Auction still running!");
 		}
@@ -205,6 +218,15 @@ public class AuctionViewer {
 
 	public void setBuyerCriteria(BuyerCriteria buyerCriteria) {
 		this.buyerCriteria = buyerCriteria;
+	}
+	
+	public Boolean getClaimed() {
+		return claimed;
+	}
+
+	public void setClaimed(Boolean claimed) {
+		this.claimed = claimed;
+
 	}
 	
 	public void claimAuction(WinnerDetails auctionObj) {

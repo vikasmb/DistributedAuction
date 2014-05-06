@@ -6,6 +6,7 @@ import java.util.List;
 public class AuctionResults {
 	private List<WinnerDetails> remoteWinners;
 	private List<WinnerDetails> localWinners;
+	private Boolean claimed;
 	
 	public AuctionResults(){
 		super();
@@ -19,9 +20,15 @@ public class AuctionResults {
 		return this.localWinners;
 	}
 	
-	public AuctionResults(List<WinnerDetails> remoteWinners, List<WinnerDetails> localWinners) {
+	public Boolean getClaimed() {
+		return claimed;
+	}
+
+	
+	public AuctionResults(List<WinnerDetails> remoteWinners, List<WinnerDetails> localWinners, Boolean atLeastOneDealClaimed) {
 		this.remoteWinners = remoteWinners;
 		this.localWinners = localWinners;
+		this.claimed = atLeastOneDealClaimed;
 	}
 	
 	public void printDetails(){
@@ -34,5 +41,7 @@ public class AuctionResults {
 		for(WinnerDetails remoteWinner:this.remoteWinners){
 			remoteWinner.printDetails();
 		}
+		
+		System.out.println("Claimed = " + this.claimed);
 	}
 }
