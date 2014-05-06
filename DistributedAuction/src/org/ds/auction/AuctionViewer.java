@@ -4,10 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
+import javax.faces.bean.SessionScoped;
 import javax.faces.component.html.HtmlCommandLink;
+import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
+import javax.ws.rs.core.MediaType;
 
 import org.ds.client.DBClient;
 import org.ds.userServer.AuctionDetails;
@@ -16,8 +20,14 @@ import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.MongoClient;
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.api.client.config.ClientConfig;
+import com.sun.jersey.api.client.config.DefaultClientConfig;
 
 @ManagedBean
+@SessionScoped
 public class AuctionViewer {
 	private List<WinnerDetails> remoteWinners = new ArrayList<WinnerDetails>();
 	private List<WinnerDetails> localWinners = new ArrayList<WinnerDetails>();
@@ -25,6 +35,7 @@ public class AuctionViewer {
 	
 	@ManagedProperty(value = "#{buyerCriteria}")
 	private BuyerCriteria buyerCriteria;
+	private String currentAuctionKey;
 
 	public AuctionViewer() {
 
@@ -38,8 +49,8 @@ public class AuctionViewer {
 		HtmlCommandLink detail = (HtmlCommandLink) auctionevt.getSource();
 		String userId = "123"; // TODO Replace with session's user id
 		String auctionId = (String) detail.getValue();
-		String auctionKey = userId + "_" + auctionId;
-		AuctionResults results = getAuctionResults(auctionKey);
+		currentAuctionKey = userId + "_" + auctionId;
+		AuctionResults results = getAuctionResults(currentAuctionKey);
 		if (results != null) {
 			localWinners.addAll(results.getLocalWinners());
 			remoteWinners.addAll(results.getRemoteWinners());
@@ -215,5 +226,77 @@ public class AuctionViewer {
 
 	public void setClaimed(Boolean claimed) {
 		this.claimed = claimed;
+
+	}
+	
+	public void claimAuction(WinnerDetails auctionObj) {
+        System.out.println("In claim auction with currentAuctionkey as "+currentAuctionKey+"and product as "+auctionObj.getProductID());
+        System.out.println("In claim auction");
+        ClaimDetails claimDetailsObj=new ClaimDetails();
+        claimDetailsObj.setAuctionId(currentAuctionKey);
+        claimDetailsObj.setProductId(auctionObj.getProductID());
+        ClientConfig config = new DefaultClientConfig();
+        Client remoteClient = Client.create(config);
+		DBClient dbClient = DBClient.getInstance();
+		BasicDBObject jsonAddr = dbClient.getClusterAddress("cars");
+		String restAddr = "http://" + jsonAddr.getString("ip") + ":"
+				+ jsonAddr.getInt("port")
+				+ "/DistributedAuction/rest/claimAuction";
+		System.out.println("Contacting " + restAddr + " for claiming auction");
+		WebResource webResource = remoteClient.resource(restAddr);
+		ClientResponse response = null;
+		try {
+			response = webResource.type(MediaType.APPLICATION_JSON).post(
+					ClientResponse.class, claimDetailsObj);
+			String isSuccess = response.getEntity(String.class);
+			FacesMessage message=null;
+			if(isSuccess.equals("true")){
+			message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Claim successfully completed !!! ", null);
+			}
+			else{
+				message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Claim failed !!! ", null);
+			}
+			FacesContext.getCurrentInstance().addMessage(null, message);
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+	
+	public void claimSubscriptionAuction() {
+        System.out.println("In claim subscription");
+        SubscriptionAuctionDetails obj=new SubscriptionAuctionDetails();
+        System.out.println("Current auction key:"+currentAuctionKey);
+        obj.setAuctionId(currentAuctionKey);
+        obj.setUserId("123");//TODO Set user id
+        if(currentAuctionKey==null){
+        	return;
+        }
+        ClientConfig config = new DefaultClientConfig();
+        Client remoteClient = Client.create(config);
+		DBClient dbClient = DBClient.getInstance();
+		BasicDBObject jsonAddr = dbClient.getClusterAddress("cars");
+		String restAddr = "http://" + jsonAddr.getString("ip") + ":"
+				+ jsonAddr.getInt("port")
+				+ "/DistributedAuction/rest/claimSubscriptionAuction";
+		System.out.println("Contacting " + restAddr + " for claiming subscription");
+		WebResource webResource = remoteClient.resource(restAddr);
+		ClientResponse response = null;
+		try {
+			response = webResource.type(MediaType.APPLICATION_JSON).post(
+					ClientResponse.class, obj);
+			String isSuccess = response.getEntity(String.class);
+			FacesMessage message=null;
+			if(isSuccess.equals("success")){
+			message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Successfully subscribed !!! ", null);
+			}
+			else{
+				message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Subscription failed !!! ", null);
+			}
+			FacesContext.getCurrentInstance().addMessage(null, message);
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
 	}
 }
