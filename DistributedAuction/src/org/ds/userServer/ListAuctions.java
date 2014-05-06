@@ -55,7 +55,6 @@ public class ListAuctions {
 	
 
 	public List<AuctionDetails> getAuctionDetailsList() {
-		if (auctionDetailsList == null) {
 			auctionDetailsList = new ArrayList<AuctionDetails>();
 			List<String> auctions = getUserAuctions(buyerCriteria.getBuyerID());
 			for (String auction : auctions) {
@@ -65,7 +64,6 @@ public class ListAuctions {
 				auctionDetailsList.add(obj);
 
 			}
-		}
 		return auctionDetailsList;
 	}
 

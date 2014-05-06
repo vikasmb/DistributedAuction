@@ -27,7 +27,7 @@ public class ListSubscriptions {
 	}
 
 	public static List<String> getUserSubscriptions(String userID) {
-		userID="123";
+		userID = "123";
 		UserPersistance persistance = new UserPersistance(userID);
 		BasicDBList subscriptions = persistance.getSubscriptions();
 
@@ -46,24 +46,25 @@ public class ListSubscriptions {
 		return subscriptionIDs;
 	}
 
-	
-
 	public List<SubscriptionDetails> getSubscriptionsDetailsList() {
-		if (subscriptionsDetailsList == null) {
-			subscriptionsDetailsList = new ArrayList<SubscriptionDetails>();
-			List<String> subscriptions = getUserSubscriptions("123");//TODO Replace with user id
-			for (String subscription : subscriptions) {
-				String[] splitParts = subscription.split(":");
-				SubscriptionDetails obj = new SubscriptionDetails(splitParts[0],
-						splitParts[1].split("_")[1]);
-				subscriptionsDetailsList.add(obj);
 
-			}
+		subscriptionsDetailsList = new ArrayList<SubscriptionDetails>();
+		List<String> subscriptions = getUserSubscriptions("123");// TODO Replace
+																	// with user
+																	// id
+		for (String subscription : subscriptions) {
+			String[] splitParts = subscription.split(":");
+			SubscriptionDetails obj = new SubscriptionDetails(splitParts[0],
+					splitParts[1].split("_")[1]);
+			subscriptionsDetailsList.add(obj);
+
 		}
+
 		return subscriptionsDetailsList;
 	}
 
-	public void setAuctionDetailsList(List<SubscriptionDetails> subscriptionDetailsList) {
+	public void setAuctionDetailsList(
+			List<SubscriptionDetails> subscriptionDetailsList) {
 		this.subscriptionsDetailsList = subscriptionDetailsList;
 	}
 
