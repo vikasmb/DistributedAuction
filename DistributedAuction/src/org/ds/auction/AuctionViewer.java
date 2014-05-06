@@ -46,6 +46,10 @@ public class AuctionViewer {
 	}
 
 	public void populateWinnerList1(ActionEvent auctionevt) {
+		localWinners.clear();
+		remoteWinners.clear();
+		claimed = false;
+		
 		HtmlCommandLink detail = (HtmlCommandLink) auctionevt.getSource();
 		String userId = "123"; // TODO Replace with session's user id
 		String auctionId = (String) detail.getValue();

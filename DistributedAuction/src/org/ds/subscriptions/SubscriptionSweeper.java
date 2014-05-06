@@ -258,6 +258,8 @@ public class SubscriptionSweeper {
 	}
 	
 	public void populateSubscriberdeals(ActionEvent auctionevt) {
+		getDeals().clear();
+		
 		HtmlCommandLink detail = (HtmlCommandLink) auctionevt.getSource();
 		String userId = "123"; // TODO Replace with session's user id
 		
