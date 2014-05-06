@@ -12,7 +12,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.ds.auction.BuyerCriteria;
-import org.ds.carServer.CarSellerDetails;
 import org.ds.util.DateUtil;
 
 @Path("/invokeAuction")
