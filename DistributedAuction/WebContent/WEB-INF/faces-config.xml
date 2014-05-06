@@ -22,36 +22,22 @@
 		</navigation-case>
 	</navigation-rule>
 	<navigation-rule>
-		<display-name>BuyerCriteria.xhtml</display-name>
+		<display-name>Rule3</display-name>
 		<from-view-id>*</from-view-id>
 		<navigation-case>
 			<from-outcome>viewAuctions</from-outcome>
 			<to-view-id>/ViewAuctions.xhtml</to-view-id>
 		</navigation-case>
-	</navigation-rule>
-	<navigation-rule>
-		<display-name>BuyerCriteria.xhtml</display-name>
-		<from-view-id>*</from-view-id>
 		<navigation-case>
 			<from-outcome>viewSubscriptions</from-outcome>
 			<to-view-id>/Subscriptions.xhtml</to-view-id>
 		</navigation-case>
-	</navigation-rule>
-	<navigation-rule>
-		<display-name>ViewAuctions.xhtml</display-name>
-		<from-view-id>/ViewAuctions.xhtml</from-view-id>
 		<navigation-case>
 			<from-outcome>goHome</from-outcome>
 			<to-view-id>/BuyerCriteria.xhtml</to-view-id>
 		</navigation-case>
 	</navigation-rule>
-	<navigation-rule>
-		<display-name>Subscriptions.xhtml</display-name>
-		<from-view-id>/Subscriptions.xhtml</from-view-id>
-		<navigation-case>
-			<from-outcome>goHome</from-outcome>
-			<to-view-id>/BuyerCriteria.xhtml</to-view-id>
-		</navigation-case>
-	</navigation-rule>
+	
+	
 
 </faces-config>

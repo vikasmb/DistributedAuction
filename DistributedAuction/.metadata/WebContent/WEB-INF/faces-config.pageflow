@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <pageflow:Pageflow xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:pageflow="http://www.sybase.com/suade/pageflow" id="pf13931224604910" configfile="/DistributedAuction/WebContent/WEB-INF/faces-config.xml">
-  <nodes xsi:type="pageflow:PFPage" name="index.xhtml" y="48" id="pf13943397957010" referenceLink="//@navigationRule.4/@fromViewId|" outlinks="pf13943397957011 pf13985304476250" path="/index.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="index.xhtml" y="48" id="pf13943397957010" referenceLink="//@navigationRule.1/@fromViewId|" outlinks="pf13943397957011 pf13985304476250" path="/index.xhtml"/>
   <nodes xsi:type="pageflow:PFPage" name="Register.xhtml" x="468" y="24" id="pf13943397957012" referenceLink="//@navigationRule.0/@navigationCase.0/@toViewId|" inlinks="pf13943397957011" path="/Register.xhtml"/>
-  <nodes xsi:type="pageflow:PFPage" name="BuyerCriteria.xhtml" x="504" y="432" id="pf13985304476261" referenceLink="//@navigationRule.5/@navigationCase.0/@toViewId|" inlinks="pf13985304476250 pf139933341485319 pf139933342094520" path="/BuyerCriteria.xhtml"/>
-  <nodes xsi:type="pageflow:PFPage" name="BuyerCriteria.xhtml" x="396" y="120" id="pf13993329202069" referenceLink="//@navigationRule.5/@fromViewId|" outlinks="pf139933292020610 pf139933292020611" path="*"/>
-  <nodes xsi:type="pageflow:PFPage" name="ViewAuctions.xhtml" x="24" y="187" id="pf139933292020612" referenceLink="//@navigationRule.4/@fromViewId|" outlinks="pf139933341485319" inlinks="pf139933292020610" path="/ViewAuctions.xhtml"/>
-  <nodes xsi:type="pageflow:PFPage" name="Subscriptions.xhtml" x="24" y="408" id="pf139933292020613" referenceLink="//@navigationRule.5/@fromViewId|" outlinks="pf139933342094520" inlinks="pf139933292020611" path="/Subscriptions.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="BuyerCriteria.xhtml" x="504" y="432" id="pf13985304476261" referenceLink="//@navigationRule.4/@navigationCase.0/@toViewId|" inlinks="pf13985304476250 pf13993536308340" path="/BuyerCriteria.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="Rule3" x="732" y="72" id="pf13993329202069" referenceLink="//@navigationRule.4/@fromViewId|" outlinks="pf139933292020610 pf139933292020611 pf13993536308340" path="*"/>
+  <nodes xsi:type="pageflow:PFPage" name="ViewAuctions.xhtml" x="24" y="187" id="pf139933292020612" referenceLink="//@navigationRule.2/@navigationCase.0/@toViewId|" inlinks="pf139933292020610" path="/ViewAuctions.xhtml"/>
+  <nodes xsi:type="pageflow:PFPage" name="Subscriptions.xhtml" x="24" y="408" id="pf139933292020613" referenceLink="//@navigationRule.3/@navigationCase.0/@toViewId|" inlinks="pf139933292020611" path="/Subscriptions.xhtml"/>
   <links id="pf13943397957011" target="pf13943397957012" source="pf13943397957010" outcome="register"/>
   <links id="pf13985304476250" target="pf13985304476261" source="pf13943397957010" outcome="success"/>
   <links id="pf139933292020610" target="pf139933292020612" source="pf13993329202069" outcome="viewAuctions"/>
   <links id="pf139933292020611" target="pf139933292020613" source="pf13993329202069" outcome="viewSubscriptions"/>
-  <links id="pf139933341485319" target="pf13985304476261" source="pf139933292020612" outcome="goHome"/>
-  <links id="pf139933342094520" target="pf13985304476261" source="pf139933292020613" outcome="goHome"/>
+  <links id="pf13993536308340" target="pf13985304476261" source="pf13993329202069" outcome="goHome"/>
 </pageflow:Pageflow>
