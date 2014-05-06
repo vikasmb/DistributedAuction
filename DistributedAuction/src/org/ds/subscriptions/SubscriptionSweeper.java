@@ -7,15 +7,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
+import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.component.html.HtmlCommandLink;
+import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
+import javax.ws.rs.core.MediaType;
 
 import org.ds.auction.AuctionResults;
 import org.ds.auction.AuctionServer;
 import org.ds.auction.AuctionServerPersistance;
 import org.ds.auction.BuyerCriteria;
+import org.ds.auction.ClaimDetails;
 import org.ds.auction.SellerDetails;
 import org.ds.auction.WinnerDetails;
 import org.ds.client.DBClient;
@@ -28,6 +32,11 @@ import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.MongoClient;
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.api.client.config.ClientConfig;
+import com.sun.jersey.api.client.config.DefaultClientConfig;
 
 @ManagedBean
 @SessionScoped
@@ -251,11 +260,48 @@ public class SubscriptionSweeper {
 	public void populateSubscriberdeals(ActionEvent auctionevt) {
 		HtmlCommandLink detail = (HtmlCommandLink) auctionevt.getSource();
 		String userId = "123"; // TODO Replace with session's user id
+		
 		String auctionId = (String) detail.getValue();
 		String auctionKey = userId + "_" + auctionId;
+		System.out.println("Current auction id:"+auctionKey);
 		List<SubscriptionDeal> subsDeals = getSubscriptionResults(auctionKey, null);
 		if (subsDeals != null) {
 			getDeals().addAll(subsDeals);			
 		}		
 	}
+	
+	public void claimAuction(SubscriptionDeal auctionObj) {
+        
+        ClaimDetails claimDetailsObj=new ClaimDetails();
+        System.out.println("Claiming auction id:"+auctionObj.getAuctionID());
+        claimDetailsObj.setAuctionId(auctionObj.getAuctionID());
+        claimDetailsObj.setProductId(auctionObj.getWinnerDetails().getProductID());
+        ClientConfig config = new DefaultClientConfig();
+        Client remoteClient = Client.create(config);
+		DBClient dbClient = DBClient.getInstance();
+		BasicDBObject jsonAddr = dbClient.getClusterAddress("cars");
+		String restAddr = "http://" + jsonAddr.getString("ip") + ":"
+				+ jsonAddr.getInt("port")
+				+ "/DistributedAuction/rest/claimAuction";
+		System.out.println("Contacting " + restAddr + " for claiming auction");
+		WebResource webResource = remoteClient.resource(restAddr);
+		ClientResponse response = null;
+		try {
+			response = webResource.type(MediaType.APPLICATION_JSON).post(
+					ClientResponse.class, claimDetailsObj);
+			String isSuccess = response.getEntity(String.class);
+			FacesMessage message=null;
+			if(isSuccess.equals("true")){
+			message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Claim successfully completed !!! ", null);
+			}
+			else{
+				message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Claim failed !!! ", null);
+			}
+			FacesContext.getCurrentInstance().addMessage(null, message);
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+	
 }

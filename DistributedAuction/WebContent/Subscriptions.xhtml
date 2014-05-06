@@ -34,9 +34,10 @@
 						</h:panelGroup>
 						<h:panelGroup layout="block" styleClass="navbar-collapse collapse">
 							<ul class="nav navbar-nav">
-								<li ><h:commandLink action="goHome">Home</h:commandLink></li>
+								<li><h:commandLink action="goHome">Home</h:commandLink></li>
 								<li><h:commandLink action="viewAuctions">My Auctions</h:commandLink></li>
-								<li class="active"><h:commandLink action="viewSubscriptions">My Subscriptions</h:commandLink></li>
+								<li class="active"><h:commandLink
+										action="viewSubscriptions">My Subscriptions</h:commandLink></li>
 							</ul>
 							<ul class="nav navbar-nav navbar-right">
 								<li><h:commandLink href="#">Logout</h:commandLink></li>
@@ -52,45 +53,54 @@
 						<f:facet name="header">
 	         		    	      Your auctions
 	      	     		</f:facet>
-	      	     		<p:column sortBy="category" headerText="Category">
+						<p:column sortBy="category" headerText="Category">
 							<h:outputText value="#{subscriptionRow.category}" />
 						</p:column>
-	
+
 						<p:column sortBy="auctionId" headerText="AuctionId">
-							<p:commandLink update=":homeForm:subsDetailsTable"  value="#{subscriptionRow.auctionId}" actionListener="#{subscriptionSweeper.populateSubscriberdeals}"/>
+							<p:commandLink update=":homeForm:subsDetailsTable"
+								value="#{subscriptionRow.auctionId}"
+								actionListener="#{subscriptionSweeper.populateSubscriberdeals}" />
 						</p:column>
 
 					</p:dataTable>
 				</h:panelGroup>
 			</p:layoutUnit>
 			<p:layoutUnit position="center" id="ctrLayout">
-			<p:dataTable id="subsDetailsTable" var="deal"						
-						value="#{subscriptionSweeper.deals}">
-						<f:facet name="header">
+				<p:messages id="messages">
+					<p:effect type="pulsate" event="load" delay="200" />
+				</p:messages>
+				<p:dataTable id="subsDetailsTable" var="deal"
+					value="#{subscriptionSweeper.deals}">
+					<f:facet name="header">
 	         		           	Subscribed deals
 	      	     		</f:facet>
-	
-						<p:column sortBy="name" headerText="Name">
-							<h:outputText value="#{deal.winnerDetails.name}" />
-						</p:column>
-	
-						<p:column sortBy="model" headerText="Model">
-							<h:outputText value="#{deal.winnerDetails.model}" />
-						</p:column>
-	
-						<p:column sortBy="address" headerText="Address">
-							<h:outputText value="#{deal.winnerDetails.address}" />
-						</p:column>
-	
-						<p:column sortBy="image" headerText="Image">
-							<h:outputText value="#{deal.winnerDetails.image}" />
-						</p:column>
-						
-						<p:column sortBy="price" headerText="Price">
-							<h:outputText value="#{deal.winnerDetails.price}" />
-						</p:column>
-					</p:dataTable>					
-				
+
+					<p:column sortBy="name" headerText="Name">
+						<h:outputText value="#{deal.winnerDetails.name}" />
+					</p:column>
+
+					<p:column sortBy="model" headerText="Model">
+						<h:outputText value="#{deal.winnerDetails.model}" />
+					</p:column>
+
+					<p:column sortBy="address" headerText="Address">
+						<h:outputText value="#{deal.winnerDetails.address}" />
+					</p:column>
+
+					<p:column sortBy="image" headerText="Image">
+						<h:outputText value="#{deal.winnerDetails.image}" />
+					</p:column>
+
+					<p:column sortBy="price" headerText="Price">
+						<h:outputText value="#{deal.winnerDetails.price}" />
+					</p:column>
+					<p:column headerText="Claim deal">
+						<p:commandButton style="float:center;" update=":homeForm:messages"
+							value="Claim this deal !!!"
+							actionListener="#{subscriptionSweeper.claimAuction(deal)}" />
+					</p:column>
+				</p:dataTable>
 			</p:layoutUnit>
 		</p:layout>
 	</h:form>
