@@ -17,6 +17,7 @@ public class UserPersistance {
 	public static String FIELD_USER_ID = "userID";
 	public static String FIELD_AUCTIONS = "auctions";
 	public static String FIELD_SUBSCRIPTIONS = "subscriptions";
+	public static String FIELD_PRODUCTS = "products";
 	public static String FIELD_VERSION = "version";
 	
 	//auctions keys
@@ -28,6 +29,10 @@ public class UserPersistance {
 	//subscription keys
 	public static String FIELD_SUBSCRIPTIONS_CATEGORY = "category";
 	public static String FIELD_SUBSCRIPTION_AUCTION_ID = "auctionID";
+	
+	//product keys
+	public static String FIELD_PRODUCTS_CATEGORY = "category";
+	public static String FIELD_PRODUCTS_PRODUCT_ID = "productID";
 	
 	
 	//category name
@@ -84,6 +89,7 @@ public class UserPersistance {
 		return new BasicDBObject(FIELD_USER_ID, getUserID())
 							.append(FIELD_AUCTIONS, new BasicDBList())
 							.append(FIELD_SUBSCRIPTIONS, new BasicDBList())
+							.append(FIELD_PRODUCTS, new BasicDBList())
 							.append(FIELD_VERSION, incrementVersion());
 	}
 	
@@ -94,7 +100,7 @@ public class UserPersistance {
 		BasicDBObject query;
 		BasicDBObject update;
 		do{
-			BasicDBList subscriptions = getSubscriptions(userID);
+			BasicDBList subscriptions = getSubscriptions();
 			subscriptions.add(subscriptionEntry);
 			
 			query = new BasicDBObject(FIELD_USER_ID, getUserID())
@@ -105,14 +111,32 @@ public class UserPersistance {
 		}while(!updateMongo(query, update));
 	}
 	
-	public void recordAuctionInit(String userID, String auctionID, Date initiatedAt){
+	public void recordProduct(String productID){
+		BasicDBObject productEntry = new BasicDBObject(FIELD_PRODUCTS_PRODUCT_ID, productID)
+												.append(FIELD_PRODUCTS_CATEGORY, CATEGORY_CARS);
+		
+		BasicDBObject query;
+		BasicDBObject update;
+		do{
+			BasicDBList products = getProducts();
+			products.add(productEntry);
+			
+			query = new BasicDBObject(FIELD_USER_ID, getUserID())
+											.append(FIELD_VERSION, getVersion());
+			BasicDBObject updateFields = new BasicDBObject(FIELD_PRODUCTS, products)
+													.append(FIELD_VERSION, incrementVersion());
+			update = new BasicDBObject("$set", updateFields);
+		}while(!updateMongo(query, update));
+	}
+	
+	public void recordAuctionInit(String auctionID, Date initiatedAt){
 		BasicDBObject auctionEntry = new BasicDBObject(FIELD_AUCTIONS_CATEGORY, CATEGORY_CARS)
 												.append(FIELD_AUCTIONS_AUCTION_ID, auctionID)
 												.append(FIELD_AUCTIONS_INITIATED_AT, initiatedAt);
 		BasicDBObject query;
 		BasicDBObject update;
 		do{
-			BasicDBList auctions = getAuctions(userID);
+			BasicDBList auctions = getAuctions();
 			auctions.add(auctionEntry);
 			
 			query = new BasicDBObject(FIELD_USER_ID, getUserID())
@@ -123,11 +147,11 @@ public class UserPersistance {
 		}while(!updateMongo(query, update));
 	}
 	
-	public void recordAuctionEnd(String userID, String auctionID, Date finishedAt){
+	public void recordAuctionEnd(String auctionID, Date finishedAt){
 		BasicDBObject query;
 		BasicDBObject update;
 		do{
-			BasicDBList auctions = getAuctions(userID);
+			BasicDBList auctions = getAuctions();
 			for(Object auctionObj:auctions){
 				BasicDBObject auction = (BasicDBObject)auctionObj;
 				if(auction.get(FIELD_AUCTIONS_AUCTION_ID).equals(auctionID)){
@@ -144,7 +168,7 @@ public class UserPersistance {
 		}while(!updateMongo(query, update));
 	}
 		
-	public BasicDBList getAuctions(String userID){
+	public BasicDBList getAuctions(){
 		BasicDBObject query = new BasicDBObject(FIELD_USER_ID, getUserID());
 		BasicDBObject projectedFields = new BasicDBObject(FIELD_AUCTIONS, 1)
 												.append(FIELD_VERSION, 1);
@@ -156,7 +180,7 @@ public class UserPersistance {
 		return (BasicDBList)userDetails.get(FIELD_AUCTIONS);
 	}
 	
-	public BasicDBList getSubscriptions(String userID){
+	public BasicDBList getSubscriptions(){
 		BasicDBObject query = new BasicDBObject(FIELD_USER_ID, getUserID());
 		BasicDBObject projectedFields = new BasicDBObject(FIELD_SUBSCRIPTIONS, 1)
 												.append(FIELD_VERSION, 1);
@@ -166,6 +190,18 @@ public class UserPersistance {
 		
 		this.version = userDetails.getInt(FIELD_VERSION);
 		return (BasicDBList)userDetails.get(FIELD_SUBSCRIPTIONS);
+	}
+	
+	public BasicDBList getProducts(){
+		BasicDBObject query = new BasicDBObject(FIELD_USER_ID, getUserID());
+		BasicDBObject projectedFields = new BasicDBObject(FIELD_PRODUCTS, 1)
+												.append(FIELD_VERSION, 1);
+		
+		DBCollection coll = getCollection();
+		BasicDBObject userDetails = (BasicDBObject)coll.findOne(query, projectedFields);
+		
+		this.version = userDetails.getInt(FIELD_VERSION);
+		return (BasicDBList)userDetails.get(FIELD_PRODUCTS);
 	}
 	
 	private static MongoClient getMongoClient(){

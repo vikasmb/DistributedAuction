@@ -3,6 +3,7 @@ package org.ds.resources;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
@@ -166,6 +167,41 @@ public class SellerService {
 				responseBid.setMadeBid(true);
 			}
 		}
+		return Response.status(200).entity(responseBid).build();
+	}
+	
+	@POST
+	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Path("/riggedExample")
+	public Response riggedExample(RemoteAuctionDetails auctionDetails) { // BuyerCriteria,OldBids
+																			// and
+																			// auctionId
+
+		System.out.println("Processing auction of id"
+				+ auctionDetails.getAuctionId() + " in round"
+				+ auctionDetails.getRoundNumber());
+		
+		Map<Integer, Double> bids = new HashMap<Integer, Double>();
+		bids.put(1, 80.0);
+		bids.put(2, 70.0);
+		bids.put(3, 60.0);
+		bids.put(4, 50.0);
+		bids.put(5, 40.0);
+		
+		int maxEntryIndex = 5;
+		
+		BidDetails responseBid = new BidDetails();
+		if(bids.containsKey(auctionDetails.getRoundNumber())){
+			responseBid.setBid(bids.get(auctionDetails.getRoundNumber()));
+		} else {
+			responseBid.setBid(bids.get(maxEntryIndex));
+		}
+		
+		if(responseBid.getBid() > 0){
+			responseBid.setMadeBid(true);
+		}
+		
 		return Response.status(200).entity(responseBid).build();
 	}
 }

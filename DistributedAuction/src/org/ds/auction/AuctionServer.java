@@ -56,13 +56,15 @@ public class AuctionServer {
 	public static String LIST_LOCAL_BIDDERS = "local";
 	public static String LIST_REMOTE_BIDDERS = "remote";
 
-	public static String FIELD_BUYER_PRICE_DETAILS = "prices";
+	public static String FIELD_PRICE_DETAILS = "prices";
 	public static String FIELD_HOUR = "hour";
 	public static String FIELD_LIST_PRICE = "listPrice";
 	public static String FIELD_MIN_PRICE = "minPrice";
 	public static String FIELD_SELLER_ID = "userId";
 	public static String FIELD_PRODUCT_ID = "productId";
 	public static String FIELD_REMOTE_ADDRESS = "remote";
+	public static String FIELD_CITY = "city";
+	public static String FIELD_VERSION = "version";
 
 	public static String STATUS_RUNNING = "running";
 	public static String STATUS_FINISHED = "finished";
@@ -190,11 +192,12 @@ public class AuctionServer {
 					sellersDetails);
 			winners.put(price, winnersDetails);
 		} else {
-			int winnersNum = 0;
+			int winnersNum = 0;	
 			Set<Double> minPrices = prices.keySet();
 			for (Double price : minPrices) {
 				if (winnersDetails != null) {
 					winners.put(price - 1.0, winnersDetails);
+					winnersNum += winnersDetails.size();
 				}
 
 				if (winnersNum >= MIN_WINNERS) {
@@ -203,7 +206,6 @@ public class AuctionServer {
 					sellersDetails = prices.get(price);
 					winnersDetails = WinnerDetails.getLocalWinnersDetails(
 							price, sellersDetails);
-					winnersNum += winnersDetails.size();
 					lastPrice = price;
 				}
 			}
@@ -283,7 +285,7 @@ public class AuctionServer {
 		@Override
 		public LocalSellerDetails call() throws Exception {
 			BasicDBList pricesByHour = (BasicDBList) localBidder
-					.get(FIELD_BUYER_PRICE_DETAILS);
+					.get(FIELD_PRICE_DETAILS);
 			Date startHour = getBuyerCriteria().getNeededFrom();
 			Date endHour = getBuyerCriteria().getNeededUntil();
 

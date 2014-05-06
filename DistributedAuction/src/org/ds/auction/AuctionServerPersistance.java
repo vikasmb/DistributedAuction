@@ -140,7 +140,7 @@ public class AuctionServerPersistance {
 		String status = AuctionServer.STATUS_RUNNING;
 		RoundResults remoteResults = new RoundResults(0, new TreeMap<Double, List<WinnerDetails>>());
 		
-		getUserWriter().recordAuctionInit(buyerID, getAuctionID(), initiatedAt);
+		getUserWriter().recordAuctionInit(getAuctionID(), initiatedAt);
 		
 		BasicDBObject entry = new BasicDBObject(FIELD_AUCTION_ID, getAuctionID())
 												.append(FIELD_STATUS, status)
@@ -222,7 +222,7 @@ public class AuctionServerPersistance {
 		
 		String status = AuctionServer.STATUS_FINISHED;
 		
-		getUserWriter().recordAuctionEnd(getBuyerCriteria().getBuyerID(), getAuctionID(), finishedAt);
+		getUserWriter().recordAuctionEnd(getAuctionID(), finishedAt);
 		
 		BasicDBObject entry = new BasicDBObject(FIELD_FINISHED_AT, finishedAt)
 													.append(FIELD_STATUS, status)

@@ -24,7 +24,7 @@ public class ListSubscriptions {
 	public static List<String> getUserSubscriptions(String userID) {
 		userID="123";
 		UserPersistance persistance = new UserPersistance(userID);
-		BasicDBList subscriptions = persistance.getSubscriptions(userID);
+		BasicDBList subscriptions = persistance.getSubscriptions();
 
 		List<String> subscriptionIDs = new ArrayList<String>();
 		for (Object subscriptionObj : subscriptions) {
