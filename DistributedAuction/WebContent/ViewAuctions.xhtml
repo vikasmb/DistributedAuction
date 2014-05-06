@@ -13,6 +13,7 @@
 	<!-- Latest compiled and minified CSS -->
 	<link rel="stylesheet"
 		href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css"></link>
+	<h:outputStylesheet library="css" name="misc.css"  />
 </h:head>
 
 <h:body>
@@ -20,30 +21,29 @@
 		<p:layout id="layout" fullPage="true">
 			<p:layoutUnit position="north" size="50">
 				<!-- Fixed navbar -->
-				<h:panelGroup layout="block"
-					styleClass="navbar navbar-default navbar-fixed-top">
-					<h:panelGroup layout="block" styleClass="container">
-						<h:panelGroup layout="block" styleClass="navbar-header">
-							<button type="button" class="navbar-toggle">
-								<h:panelGroup class="sr-only">Toggle navigation</h:panelGroup>
-								<h:panelGroup class="icon-bar"></h:panelGroup>
-								<h:panelGroup class="icon-bar"></h:panelGroup>
-								<h:panelGroup class="icon-bar"></h:panelGroup>
-							</button>
-							<h:link class="navbar-brand">Distributed Auction</h:link>
-						</h:panelGroup>
-						<h:panelGroup layout="block" styleClass="navbar-collapse collapse">
-							<ul class="nav navbar-nav">
-								<li><h:link outcome="goHome">Home</h:link></li>
-								<li class="active"><h:link outcome="viewAuctions">My Auctions</h:link></li>
-								<li><h:link outcome="viewSubscriptions">My Subscriptions</h:link></li>
-							</ul>
-							<ul class="nav navbar-nav navbar-right">
-								<li><h:commandLink href="#">Logout</h:commandLink></li>
-							</ul>
-						</h:panelGroup>
-					</h:panelGroup>
-				</h:panelGroup>
+				<h:panelGroup layout="block" styleClass="navbar navbar-default navbar-fixed-top">
+			      <h:panelGroup layout="block" styleClass="container">
+			       <h:panelGroup layout="block" styleClass="navbar-header">
+			          <button type="button" class="navbar-toggle">
+			            <h:panelGroup class="sr-only">Toggle navigation</h:panelGroup>
+			            <h:panelGroup class="icon-bar"></h:panelGroup>
+			            <h:panelGroup class="icon-bar"></h:panelGroup>
+			            <h:panelGroup class="icon-bar"></h:panelGroup>
+			          </button>
+			          <p:commandButton styleClass="navbar-brand buttonAsLink" value="Distributed Auction"></p:commandButton>
+			        </h:panelGroup>
+			        <h:panelGroup layout="block" styleClass="navbar-collapse collapse">
+			          <ul class="nav navbar-nav">
+			            <li><p:commandButton styleClass="buttonAsLink" value="Home" action="goHome"></p:commandButton></li>
+			            <li><p:commandButton styleClass="buttonAsLink" action="viewAuctions" value="My Auctions" immediate="true"></p:commandButton></li>
+			            <li><p:commandButton styleClass="buttonAsLink" action="viewSubscriptions" value="My Subscriptions" immediate="true"></p:commandButton></li>
+			          </ul>
+			          <ul class="nav navbar-nav navbar-right">
+			            <li><h:commandLink href="#">Logout</h:commandLink></li>
+			          </ul>
+			        </h:panelGroup>
+			      </h:panelGroup>
+			    </h:panelGroup>
 			</p:layoutUnit>
 			<p:layoutUnit position="west" resizable="true">
 				<h:panelGroup layout="block">
