@@ -42,6 +42,9 @@ public class DBClient {
 	// instance variables
 	private static DBClient _instance;
 	private MongoClient mongoClient;
+	
+	private String mongoIP = "10.0.0.20";
+	private int mongoPort = 27017;
 
 	public MongoClient getMongoClient(){
 		return this.mongoClient;
@@ -53,7 +56,7 @@ public class DBClient {
 	private DBClient() {
 		try {
 			mongoClient = new MongoClient(Arrays.asList(new ServerAddress(
-					"10.0.0.20", 27017)));
+					mongoIP, mongoPort)));
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
