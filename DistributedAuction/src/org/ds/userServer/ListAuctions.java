@@ -6,6 +6,7 @@ import java.util.List;
 
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
+import javax.faces.bean.SessionScoped;
 
 import org.ds.auction.BuyerCriteria;
 
@@ -13,6 +14,7 @@ import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 
 @ManagedBean
+@SessionScoped
 public class ListAuctions {
 	private List<AuctionDetails> auctionDetailsList;
 	@ManagedProperty(value = "#{buyerCriteria}")

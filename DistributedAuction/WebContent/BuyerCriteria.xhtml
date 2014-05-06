@@ -56,17 +56,17 @@
 						</p:selectOneMenu>
 					</p>
 					<p style="text-align:center;">
-						<p:inputText required="true" id="city" placeholder="City"
+						<p:inputText required="true" id="city" placeholder="City" value="#{buyerCriteria.city}"
 							 immediate="true" />
 					</p>
 					<p:panelGrid columns="2">
-						<p:calendar placeholder="Pickup"
+						<p:calendar placeholder="Pickup" value="#{buyerCriteria.neededFrom}"
 							effect="slideDown" timeZone="GMT" pattern="MM/dd/yyyy hh:mm a" />
 	
-						<p:calendar placeholder="Return"
+						<p:calendar placeholder="Return" value="#{buyerCriteria.neededUntil}"
 							effect="slideDown" timeZone="GMT" pattern="MM/dd/yyyy hh:mm a" />
 	
-						<p:commandButton value="Search"
+						<p:commandButton value="Search" 
 							actionListener="#{auctionClient.search}"
 							update="schdBtn,peerTable,remoteTable">
 						</p:commandButton>

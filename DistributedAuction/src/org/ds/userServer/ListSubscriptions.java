@@ -4,11 +4,16 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import javax.faces.bean.ManagedBean;
+import javax.faces.bean.SessionScoped;
+
 import org.ds.auction.BuyerCriteria;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 
+@ManagedBean
+@SessionScoped
 public class ListSubscriptions {
 	private List<SubscriptionDetails> subscriptionsDetailsList;
 	private BuyerCriteria buyerCriteria;
@@ -46,7 +51,7 @@ public class ListSubscriptions {
 	public List<SubscriptionDetails> getSubscriptionsDetailsList() {
 		if (subscriptionsDetailsList == null) {
 			subscriptionsDetailsList = new ArrayList<SubscriptionDetails>();
-			List<String> subscriptions = getUserSubscriptions(buyerCriteria.getBuyerID());
+			List<String> subscriptions = getUserSubscriptions("123");//TODO Replace with user id
 			for (String subscription : subscriptions) {
 				String[] splitParts = subscription.split(":");
 				SubscriptionDetails obj = new SubscriptionDetails(splitParts[0],
