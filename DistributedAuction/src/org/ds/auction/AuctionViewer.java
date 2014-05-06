@@ -240,4 +240,41 @@ public class AuctionViewer {
 			e.printStackTrace();
 		}
 	}
+	
+	public void claimSubscriptionAuction() {
+        System.out.println("In claim subscription");
+        SubscriptionAuctionDetails obj=new SubscriptionAuctionDetails();
+        System.out.println("Current auction key:"+currentAuctionKey);
+        obj.setAuctionId(currentAuctionKey);
+        obj.setUserId("123");//TODO Set user id
+        if(currentAuctionKey==null){
+        	return;
+        }
+        ClientConfig config = new DefaultClientConfig();
+        Client remoteClient = Client.create(config);
+		DBClient dbClient = DBClient.getInstance();
+		BasicDBObject jsonAddr = dbClient.getClusterAddress("cars");
+		String restAddr = "http://" + jsonAddr.getString("ip") + ":"
+				+ jsonAddr.getInt("port")
+				+ "/DistributedAuction/rest/claimSubscriptionAuction";
+		System.out.println("Contacting " + restAddr + " for claiming subscription");
+		WebResource webResource = remoteClient.resource(restAddr);
+		ClientResponse response = null;
+		try {
+			response = webResource.type(MediaType.APPLICATION_JSON).post(
+					ClientResponse.class, obj);
+			String isSuccess = response.getEntity(String.class);
+			FacesMessage message=null;
+			if(isSuccess.equals("success")){
+			message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Successfully subscribed !!! ", null);
+			}
+			else{
+				message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Subscription failed !!! ", null);
+			}
+			FacesContext.getCurrentInstance().addMessage(null, message);
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
+	}
 }

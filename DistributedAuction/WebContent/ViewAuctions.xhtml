@@ -126,11 +126,12 @@
 						<h:outputText value="#{remoteRow.price}" />
 					</p:column>
 					<p:column headerText="Claim deal">
-						<p:commandButton value="Claim this deal !!!"  update=":homeForm:messages"
+						<p:commandButton style="float:center;" value="Claim this deal !!!"  update=":homeForm:messages"
 							actionListener="#{auctionViewer.claimAuction(remoteRow)}" />
 					</p:column>
 				</p:dataTable>
-			</p:layoutUnit>
+				<p:commandButton style="float:left;" actionListener="#{auctionViewer.claimSubscriptionAuction}"  update=":homeForm:messages" value="Subscribe" />
+			</p:layoutUnit>			
 		</p:layout>
 	</h:form>
 </h:body>
