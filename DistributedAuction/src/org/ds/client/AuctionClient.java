@@ -37,20 +37,14 @@ import com.sun.jersey.api.client.config.DefaultClientConfig;
 @SessionScoped
 public class AuctionClient {
 	private String category;
-	private Client client;
-	private ClientResponse response;
-	@ManagedProperty(value = "#{sellerDetails}")
-	private SellerDetails activeUser;
+	
 	@ManagedProperty(value = "#{buyerCriteria}")
 	private BuyerCriteria buyerCriteria;
 	List<LocalSellerDetails> localBidders = new ArrayList<LocalSellerDetails>();
 	List<RemoteSellerDetails> remoteBidders = new ArrayList<RemoteSellerDetails>();
 	private boolean showSearchResults;
 
-	public void setActiveUser(SellerDetails activeUser) {
-		System.out.println("Setting activeUser bean");
-		this.activeUser = activeUser;
-	}
+	
 
 	public void setBuyerCriteria(BuyerCriteria buyerCriteria) {
 		System.out.println("Setting buyerCriteria bean");
@@ -171,7 +165,7 @@ public class AuctionClient {
 		}
 	}
 
-	public void register() {
+	/*public void register() {
 		if (activeUser != null) {
 			ClientConfig config = new DefaultClientConfig();
 			client = Client.create(config);
@@ -197,7 +191,7 @@ public class AuctionClient {
 			// activeUser.getSellerName());
 		} else
 			System.out.println("null");
-	}
+	}*/
 
 	public static void main(String[] args) {
 		BuyerCriteria buyerCriteria = new BuyerCriteria();
@@ -244,10 +238,7 @@ public class AuctionClient {
 		}
 	}
 
-	public SellerDetails getActiveUser() {
-		return activeUser;
-	}
-
+	
 	public BuyerCriteria getBuyerCriteria() {
 		return buyerCriteria;
 	}

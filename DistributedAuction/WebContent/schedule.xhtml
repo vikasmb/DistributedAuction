@@ -5,7 +5,9 @@
 	xmlns:p="http://primefaces.org/ui"
 	xmlns:ui="http://java.sun.com/jsf/facelets"
 	xmlns:h="http://java.sun.com/jsf/html"
-	xmlns:f="http://java.sun.com/jsf/core">
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:fn="http://java.sun.com/jsp/jstl/functions">
 
 	<h:head>
 		<meta content="text/html; charset=UTF-8" http-equiv="Content-type" />
@@ -28,20 +30,26 @@
 		        <p:ajax event="eventResize" listener="#{scheduleController.onEventResize}" update="messages" />
 		 
 		    </p:schedule>
-		 
-		    <p:dialog widgetVar="eventDialog" header="Event Details" showEffect="clip" hideEffect="clip">
+		       
+		    <p:dialog widgetVar="eventDialog" header="Select availability" showEffect="clip" hideEffect="clip">
+		      <c:set var="dateParts" value="${fn:split(scheduleController.event.title, ',')}" />
 		        <h:panelGrid id="eventDetails" columns="2">
-		            <h:outputLabel for="title" value="Title:" />
-		            <p:inputText id="title" value="#{scheduleController.event.title}" required="true"/>
+		            <h:outputLabel for="listPrice" value="List Price" />
+		            <p:inputText id="listPrice" value="#{dateParts[0]}" required="true"/>
+		            
+		            <h:outputLabel for="minPrice" value="Min Price" />
+		            <p:inputText id="minPrice" value="#{dateParts[1]}" required="true"/>
+		            
+		       
 		 
 		            <h:outputLabel for="from" value="From:" />
-		            <p:inputMask id="from" value="#{scheduleController.event.startDate}" mask="99/99/9999">
-		                <f:convertDateTime pattern="dd/MM/yyyy" />
+		            <p:inputMask id="from" value="#{scheduleController.event.startDate}" mask="99/99/9999 99:99">
+		                <f:convertDateTime pattern="dd/MM/yyyy hh:mm" />
 		            </p:inputMask>
 		 
 		            <h:outputLabel for="to" value="To:" />
-		            <p:inputMask id="to" value="#{scheduleController.event.endDate}" mask="99/99/9999">
-		                <f:convertDateTime pattern="dd/MM/yyyy" />
+		            <p:inputMask id="to" value="#{scheduleController.event.endDate}" mask="99/99/9999 99:99">
+		                <f:convertDateTime pattern="dd/MM/yyyy hh:mm" />
 		            </p:inputMask>
 		 
 		            <h:outputLabel for="allDay" value="All Day:" />
