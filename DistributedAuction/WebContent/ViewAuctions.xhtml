@@ -90,7 +90,7 @@
 					</p:column>
 
 					<p:column sortBy="image" headerText="Image">
-						<h:outputText value="#{localRow.image}" />
+						<h:graphicImage library="images" name="#{localRow.image}" width="100" height="100"/>
 					</p:column>
 
 					<p:column sortBy="price" headerText="Price">
@@ -119,7 +119,7 @@
 					</p:column>
 
 					<p:column sortBy="image" headerText="Image">
-						<h:outputText value="#{remoteRow.image}" />
+						<h:graphicImage library="images" name="#{remoteRow.image}" width="100" height="100"/>
 					</p:column>
 
 					<p:column sortBy="price" headerText="Price">
