@@ -9,6 +9,7 @@ import java.util.TimeZone;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
+import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.SessionScoped;
 import javax.faces.component.html.HtmlCommandLink;
 import javax.faces.context.FacesContext;
@@ -21,6 +22,7 @@ import org.ds.auction.AuctionServerPersistance;
 import org.ds.auction.BuyerCriteria;
 import org.ds.auction.ClaimDetails;
 import org.ds.auction.SellerDetails;
+import org.ds.auction.UserDetails;
 import org.ds.auction.WinnerDetails;
 import org.ds.client.DBClient;
 import org.ds.userServer.ListSubscriptions;
@@ -44,6 +46,8 @@ public class SubscriptionSweeper {
 	public static int ACCEPT_BUFFER = 10;
 	public static int RESULTS_LIMIT = 10;
 	private List<SubscriptionDeal> deals;
+	@ManagedProperty(value = "#{userDetails}")
+	private UserDetails userObj;
 
 	public SubscriptionSweeper() {
 
@@ -261,8 +265,7 @@ public class SubscriptionSweeper {
 		getDeals().clear();
 		
 		HtmlCommandLink detail = (HtmlCommandLink) auctionevt.getSource();
-		String userId = "123"; // TODO Replace with session's user id
-		
+		String userId = getUserObj().getName(); 
 		String auctionId = (String) detail.getValue();
 		String auctionKey = userId + "_" + auctionId;
 		System.out.println("Current auction id:"+auctionKey);
@@ -304,6 +307,14 @@ public class SubscriptionSweeper {
 		catch(Exception e){
 			e.printStackTrace();
 		}
+	}
+
+	public UserDetails getUserObj() {
+		return userObj;
+	}
+
+	public void setUserObj(UserDetails userObj) {
+		this.userObj = userObj;
 	}
 	
 }

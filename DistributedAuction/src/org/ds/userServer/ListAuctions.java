@@ -9,6 +9,7 @@ import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.SessionScoped;
 
 import org.ds.auction.BuyerCriteria;
+import org.ds.auction.UserDetails;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
@@ -17,6 +18,8 @@ import com.mongodb.BasicDBObject;
 @SessionScoped
 public class ListAuctions {
 	private List<AuctionDetails> auctionDetailsList;
+	@ManagedProperty(value = "#{userDetails}")
+	private UserDetails userObj;
 	@ManagedProperty(value = "#{buyerCriteria}")
 	private BuyerCriteria buyerCriteria;
 
@@ -56,7 +59,7 @@ public class ListAuctions {
 
 	public List<AuctionDetails> getAuctionDetailsList() {
 			auctionDetailsList = new ArrayList<AuctionDetails>();
-			List<String> auctions = getUserAuctions(buyerCriteria.getBuyerID());
+			List<String> auctions = getUserAuctions(getUserObj().getName());
 			for (String auction : auctions) {
 				String[] splitParts = auction.split(":");
 				AuctionDetails obj = new AuctionDetails(splitParts[0],
@@ -77,6 +80,14 @@ public class ListAuctions {
 
 	public void setBuyerCriteria(BuyerCriteria buyerCriteria) {
 		this.buyerCriteria = buyerCriteria;
+	}
+
+	public UserDetails getUserObj() {
+		return userObj;
+	}
+
+	public void setUserObj(UserDetails userObj) {
+		this.userObj = userObj;
 	}
 
 }

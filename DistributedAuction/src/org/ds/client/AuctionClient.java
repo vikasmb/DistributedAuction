@@ -44,7 +44,15 @@ public class AuctionClient {
 	List<RemoteSellerDetails> remoteBidders = new ArrayList<RemoteSellerDetails>();
 	private boolean showSearchResults;
 
-	
+	public void init() {
+		System.out.println("*****Init called");
+		/*if(localBidders!=null){
+			localBidders.clear();
+		}
+		if(remoteBidders!=null){
+			remoteBidders.clear();
+		}*/
+	}
 
 	public void setBuyerCriteria(BuyerCriteria buyerCriteria) {
 		System.out.println("Setting buyerCriteria bean");

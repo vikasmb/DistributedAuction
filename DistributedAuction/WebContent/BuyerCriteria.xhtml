@@ -7,8 +7,9 @@
 	xmlns:h="http://java.sun.com/jsf/html"
 	xmlns:f="http://java.sun.com/jsf/core">
 
-<!-- <ui:composition template="/WEB-INF/templates/BasicTemplate.html">-->
-
+<f:metadata>
+	<f:event type="preRenderView" listener="#{auctionClient.init}" />
+</f:metadata>
 <h:head>
 	<meta content="text/html; charset=UTF-8" http-equiv="Content-type" />
 	<!-- Latest compiled and minified CSS -->
@@ -67,7 +68,7 @@
 						<p:calendar placeholder="Return" value="#{buyerCriteria.neededUntil}"
 							effect="slideDown" timeZone="GMT" pattern="MM/dd/yyyy hh:mm a" />
 	
-						<p:commandButton value="Search" 
+						<p:commandButton value="Search"  ajax="true"
 							actionListener="#{auctionClient.search}"
 							update="schdBtn,peerTable,remoteTable">
 						</p:commandButton>

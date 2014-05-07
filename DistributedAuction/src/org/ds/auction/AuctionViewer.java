@@ -32,7 +32,8 @@ public class AuctionViewer {
 	private List<WinnerDetails> remoteWinners = new ArrayList<WinnerDetails>();
 	private List<WinnerDetails> localWinners = new ArrayList<WinnerDetails>();
 	private Boolean claimed = false;
-	
+	@ManagedProperty(value = "#{userDetails}")
+	private UserDetails userObj;
 	@ManagedProperty(value = "#{buyerCriteria}")
 	private BuyerCriteria buyerCriteria;
 	private String currentAuctionKey;
@@ -51,7 +52,7 @@ public class AuctionViewer {
 		claimed = false;
 		
 		HtmlCommandLink detail = (HtmlCommandLink) auctionevt.getSource();
-		String userId = "123"; // TODO Replace with session's user id
+		String userId = getUserObj().getName(); 
 		String auctionId = (String) detail.getValue();
 		currentAuctionKey = userId + "_" + auctionId;
 		AuctionResults results = getAuctionResults(currentAuctionKey);
@@ -272,7 +273,7 @@ public class AuctionViewer {
         SubscriptionAuctionDetails obj=new SubscriptionAuctionDetails();
         System.out.println("Current auction key:"+currentAuctionKey);
         obj.setAuctionId(currentAuctionKey);
-        obj.setUserId("123");//TODO Set user id
+        obj.setUserId(getUserObj().getName());
         if(currentAuctionKey==null){
         	return;
         }
@@ -302,5 +303,13 @@ public class AuctionViewer {
 		catch(Exception e){
 			e.printStackTrace();
 		}
+	}
+
+	public UserDetails getUserObj() {
+		return userObj;
+	}
+
+	public void setUserObj(UserDetails userObj) {
+		this.userObj = userObj;
 	}
 }

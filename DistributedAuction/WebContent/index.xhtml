@@ -21,9 +21,9 @@
 		<h:form styleClass="form-signin">
 			<h2 class="form-signin-heading">Please sign in</h2>
 			<!--<p:commandLink value="New seller? Register here" action="register" />-->
-			<p:inputText styleClass="form-control" id="UserName" />
+			<p:inputText styleClass="form-control" id="UserName"  value="#{userDetails.name}" required="true"/>
 			<p:watermark for="UserName" value="User Name" />  
-			<p:password styleClass="form-control" id="password" />
+			<p:password styleClass="form-control" id="password"  value="#{userDetails.password}"/>
 			<p:watermark for="password" value="Password" />  
 			<br/>
 			<p:commandButton styleClass="btn btn-lg btn-primary btn-block" value="Sign in" action="success"></p:commandButton>	
