@@ -90,7 +90,7 @@
 					rowsPerPageTemplate="5,10,15">
 					<f:facet name="header">
 						<h:outputText
-							value="Listings for #{auctionViewer.auctionDisplayHeaderKey}" />
+							value="Listings results for #{auctionViewer.auctionDisplayHeaderKey}" />
 					</f:facet>
 
 					<p:column sortBy="name" headerText="Name">
@@ -127,7 +127,7 @@
 					rowsPerPageTemplate="5,10,15">
 					<f:facet name="header">
 						<h:outputText
-							value="Corporate sellers for #{auctionViewer.auctionDisplayHeaderKey}" />
+							value="Corporate sellers results for #{auctionViewer.auctionDisplayHeaderKey}" />
 
 					</f:facet>
 
@@ -136,7 +136,10 @@
 					</p:column>
 
 					<p:column sortBy="address" headerText="Website">
-						<h:outputText value="#{remoteRow.address}" />
+						<h:outputLink value="#{remoteRow.address}" target="_blank">
+							<h:outputText
+								value="#{remoteRow.address}" />
+						</h:outputLink>
 					</p:column>
 
 					<p:column sortBy="image" headerText="Image"
