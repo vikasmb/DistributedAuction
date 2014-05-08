@@ -43,7 +43,7 @@ public class DBClient {
 	private static DBClient _instance;
 	private MongoClient mongoClient;
 	
-	private String mongoIP = "10.0.0.20";
+	private String mongoIP = "127.0.0.1";
 	private int mongoPort = 27017;
 
 	public MongoClient getMongoClient(){
@@ -69,9 +69,12 @@ public class DBClient {
 	 * @return instance of DB Client
 	 */
 	public static DBClient getInstance() {
+		long startTime = System.currentTimeMillis();
 		if (_instance == null) {
 			_instance = new DBClient();
 		}
+		long difference = System.currentTimeMillis() - startTime;
+		System.out.println("Connection open Latency: " + difference);
 		return _instance;
 	}
 

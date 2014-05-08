@@ -3,6 +3,7 @@ package org.ds.userServer;
 import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.TimeZone;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
@@ -104,6 +105,7 @@ public class ScheduleController implements Serializable {
 		t.set(Calendar.YEAR, 2014);
 		t.set(Calendar.AM_PM, Calendar.AM);
 		t.set(Calendar.HOUR, 7);
+		t.set(Calendar.MINUTE, 0);
 
 		return t.getTime();
 	}
@@ -115,6 +117,7 @@ public class ScheduleController implements Serializable {
 		t.set(Calendar.YEAR, 2014);
 		t.set(Calendar.AM_PM, Calendar.AM);
 		t.set(Calendar.HOUR, 8);
+		t.set(Calendar.MINUTE, 0);
 
 		return t.getTime();
 	}
@@ -126,6 +129,7 @@ public class ScheduleController implements Serializable {
 		t.set(Calendar.YEAR, 2014);
 		t.set(Calendar.AM_PM, Calendar.AM);
 		t.set(Calendar.HOUR, 9);
+		t.set(Calendar.MINUTE, 0);
 
 		return t.getTime();
 	}
@@ -137,6 +141,7 @@ public class ScheduleController implements Serializable {
 		t.set(Calendar.YEAR, 2014);
 		t.set(Calendar.AM_PM, Calendar.AM);
 		t.set(Calendar.HOUR, 10);
+		t.set(Calendar.MINUTE, 0);
 
 		return t.getTime();
 	}
@@ -148,6 +153,7 @@ public class ScheduleController implements Serializable {
 		t.set(Calendar.YEAR, 2014);
 		t.set(Calendar.AM_PM, Calendar.AM);
 		t.set(Calendar.HOUR, 1);
+		t.set(Calendar.MINUTE, 0);
 
 		return t.getTime();
 	}
@@ -159,6 +165,7 @@ public class ScheduleController implements Serializable {
 		t.set(Calendar.YEAR, 2014);
 		t.set(Calendar.AM_PM, Calendar.PM);
 		t.set(Calendar.HOUR, 12);
+		t.set(Calendar.MINUTE, 0);
 
 		return t.getTime();
 	}
@@ -170,6 +177,7 @@ public class ScheduleController implements Serializable {
 		t.set(Calendar.YEAR, 2014);
 		t.set(Calendar.AM_PM, Calendar.PM);
 		t.set(Calendar.HOUR, 1);
+		t.set(Calendar.MINUTE, 0);
 
 		return t.getTime();
 	}
