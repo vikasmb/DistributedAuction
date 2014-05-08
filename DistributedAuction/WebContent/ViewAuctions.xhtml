@@ -53,6 +53,11 @@
 			</p:layoutUnit>
 			<p:layoutUnit position="west" resizable="true">
 				<h:panelGroup layout="block">
+					<h:panelGroup layout="block" style="text-align: right;">
+						<p:commandButton style="height:20px; font-size:50%;" value="Reload Auction List" id="reloadAuctions"
+								update="auctionsTable">
+						</p:commandButton>
+					</h:panelGroup>
 					<p:dataTable id="auctionsTable" var="auctionRow"
 						value="#{listAuctions.auctionDetailsList}">
 						<f:facet name="header">
