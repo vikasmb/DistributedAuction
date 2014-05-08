@@ -282,5 +282,9 @@ public class AuctionClient {
 		this.showSearchResults = showSearchResults;
 	}
 	
+	public void clearResults(){
+		localBidders.clear();
+		remoteBidders.clear();
+	}
 	
 }

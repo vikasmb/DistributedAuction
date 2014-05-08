@@ -350,6 +350,8 @@ public class AuctionViewer {
 		}
 		return auctionDisplayHeaderKey;
 	}
+	
+	
 
 	public void setAuctionDisplayHeaderKey(String auctionDisplayHeaderKey) {
 		this.auctionDisplayHeaderKey = auctionDisplayHeaderKey;

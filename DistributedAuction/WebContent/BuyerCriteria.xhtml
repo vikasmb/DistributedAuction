@@ -13,8 +13,9 @@
 <h:head>
 	<meta content="text/html; charset=UTF-8" http-equiv="Content-type" />
 	<!-- Latest compiled and minified CSS -->
-	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css"></link>
-	<h:outputStylesheet library="css" name="misc.css"  />
+	<link rel="stylesheet"
+		href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css"></link>
+	<h:outputStylesheet library="css" name="misc.css" />
 </h:head>
 
 <h:body>
@@ -22,33 +23,39 @@
 		<p:layout id="layout" fullPage="true">
 			<p:layoutUnit position="north" size="50">
 				<!-- Fixed navbar -->
-				<h:panelGroup layout="block" styleClass="navbar navbar-default navbar-fixed-top">
-			      <h:panelGroup layout="block" styleClass="container">
-			       <h:panelGroup layout="block" styleClass="navbar-header">
-			          <button type="button" class="navbar-toggle">
-			            <h:panelGroup class="sr-only">Toggle navigation</h:panelGroup>
-			            <h:panelGroup class="icon-bar"></h:panelGroup>
-			            <h:panelGroup class="icon-bar"></h:panelGroup>
-			            <h:panelGroup class="icon-bar"></h:panelGroup>
-			          </button>
-			          <p:commandButton styleClass="navbar-brand buttonAsLink" value="Distributed Auction"></p:commandButton>
-			        </h:panelGroup>
-			        <h:panelGroup layout="block" styleClass="navbar-collapse collapse">
-			          <ul class="nav navbar-nav">
-			            <li><p:commandButton styleClass="buttonAsLink" value="Home" action="goHome"></p:commandButton></li>
-			            <li><p:commandButton styleClass="buttonAsLink" action="viewAuctions" value="My Auctions" immediate="true"></p:commandButton></li>
-			            <li><p:commandButton styleClass="buttonAsLink" action="viewSubscriptions" value="My Subscriptions" immediate="true"></p:commandButton></li>
-			          </ul>
-			          <ul class="nav navbar-nav navbar-right">
-			            <li><h:commandLink href="#">Logout</h:commandLink></li>
-			          </ul>
-			        </h:panelGroup>
-			      </h:panelGroup>
-			    </h:panelGroup>
+				<h:panelGroup layout="block"
+					styleClass="navbar navbar-default navbar-fixed-top">
+					<h:panelGroup layout="block" styleClass="container">
+						<h:panelGroup layout="block" styleClass="navbar-header">
+							<button type="button" class="navbar-toggle">
+								<h:panelGroup class="sr-only">Toggle navigation</h:panelGroup>
+								<h:panelGroup class="icon-bar"></h:panelGroup>
+								<h:panelGroup class="icon-bar"></h:panelGroup>
+								<h:panelGroup class="icon-bar"></h:panelGroup>
+							</button>
+							<p:commandButton styleClass="navbar-brand buttonAsLink"
+								value="Distributed Auction"></p:commandButton>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="navbar-collapse collapse">
+							<ul class="nav navbar-nav">
+								<li><p:commandButton styleClass="buttonAsLink" value="Home"
+										action="goHome"></p:commandButton></li>
+								<li><p:commandButton styleClass="buttonAsLink"
+										action="viewAuctions" value="My Auctions" immediate="true"></p:commandButton></li>
+								<li><p:commandButton styleClass="buttonAsLink"
+										action="viewSubscriptions" value="My Subscriptions"
+										immediate="true"></p:commandButton></li>
+							</ul>
+							<ul class="nav navbar-nav navbar-right">
+								<li><h:commandLink href="#">Logout</h:commandLink></li>
+							</ul>
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
 			</p:layoutUnit>
 			<p:layoutUnit position="west" resizable="true">
 				<h:panelGroup layout="block">
-					<p style="text-align:center;">
+					<p style="text-align: center;">
 						<p:selectOneMenu required="true" value="#{buyerCriteria.category}"
 							immediate="true">
 							<f:selectItem itemLabel="Category" itemValue="" />
@@ -57,23 +64,26 @@
 							<f:selectItem itemLabel="Flights" itemValue="flights" />
 						</p:selectOneMenu>
 					</p>
-					<p style="text-align:center;">
-						<p:inputText required="true" id="city" placeholder="City" value="#{buyerCriteria.city}"
-							 immediate="true" />
+					<p style="text-align: center;">
+						<p:inputText required="true" id="city" placeholder="City"
+							value="#{buyerCriteria.city}" immediate="true" />
 					</p>
 					<p:panelGrid columns="2">
-						<p:calendar placeholder="Pickup" value="#{buyerCriteria.neededFrom}"
-							effect="slideDown" timeZone="GMT" pattern="MM/dd/yyyy hh:mm a" />
-	
-						<p:calendar placeholder="Return" value="#{buyerCriteria.neededUntil}"
-							effect="slideDown" timeZone="GMT" pattern="MM/dd/yyyy hh:mm a" />
-	
-						<p:commandButton value="Search"  ajax="true"
+						<p:calendar placeholder="Pickup"
+							value="#{buyerCriteria.neededFrom}" effect="slideDown"
+							timeZone="GMT" pattern="MM/dd/yyyy hh:mm a" />
+
+						<p:calendar placeholder="Return"
+							value="#{buyerCriteria.neededUntil}" effect="slideDown"
+							timeZone="GMT" pattern="MM/dd/yyyy hh:mm a" />
+
+						<p:commandButton value="Search" ajax="true"
 							actionListener="#{auctionClient.search}"
 							update="schdBtn,peerTable,remoteTable">
 						</p:commandButton>
-						
-						<p:commandButton value="Schedule Auction" id="schdBtn" disabled="#{!auctionClient.showSearchResults}"
+
+						<p:commandButton value="Schedule Auction" id="schdBtn"
+							disabled="#{!auctionClient.showSearchResults}"
 							action="#{auctionClient.scheduleAuction}"
 							update="peerTable,remoteTable">
 						</p:commandButton>
@@ -90,21 +100,23 @@
 						<f:facet name="header">
 	         		    	Listings
 	      	     		</f:facet>
-	
+
 						<p:column sortBy="name" headerText="Name">
 							<h:outputText value="#{localRow.name}" />
 						</p:column>
-	
+
 						<p:column sortBy="model" headerText="Model">
 							<h:outputText value="#{localRow.model}" />
 						</p:column>
-	
+
 						<p:column sortBy="address" headerText="Address">
 							<h:outputText value="#{localRow.address}" />
 						</p:column>
-	
-						<p:column sortBy="image" headerText="Image" style="text-align: center">
-							<h:graphicImage library="images" name="#{localRow.image}" width="100" height="100"/>
+
+						<p:column sortBy="image" headerText="Image"
+							style="text-align: center">
+							<h:graphicImage library="images" name="#{localRow.image}"
+								width="100" height="100" />
 						</p:column>
 					</p:dataTable>
 					<p:spacer height="20" />
@@ -116,26 +128,33 @@
 						<f:facet name="header">
 	         		    	Corporate sellers
 	      	     		</f:facet>
-	
+
 						<p:column sortBy="name" headerText="Name">
 							<h:outputText value="#{remoteRow.name}" />
 						</p:column>
-	
+
 						<p:column sortBy="address" headerText="Address">
 							<h:outputText value="#{remoteRow.address}" />
 						</p:column>
-	
-						<p:column sortBy="image" headerText="Image" style="text-align: center">
-							<h:graphicImage library="images" name="#{remoteRow.image}" width="100" height="100"/>
+
+						<p:column sortBy="image" headerText="Image"
+							style="text-align: center">
+							<h:graphicImage library="images" name="#{remoteRow.image}"
+								width="100" height="100" />
 						</p:column>
 					</p:dataTable>
 				</h:panelGroup>
+				<p:commandButton style="float:right;height:20px; font-size:70%;"
+					actionListener="#{auctionClient.clearResults}" 
+					update="peerTable,remoteTable" value="Clear results" />
 			</p:layoutUnit>
 		</p:layout>
 	</h:form>
 	<!-- Latest compiled and minified JavaScript -->
-	<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+	<script
+		src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+	<script
+		src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
 </h:body>
 
 <!--</ui:composition> -->
