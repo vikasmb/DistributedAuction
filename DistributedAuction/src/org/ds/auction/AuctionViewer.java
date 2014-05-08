@@ -1,8 +1,12 @@
 package org.ds.auction;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
@@ -32,6 +36,7 @@ public class AuctionViewer {
 	private List<WinnerDetails> remoteWinners = new ArrayList<WinnerDetails>();
 	private List<WinnerDetails> localWinners = new ArrayList<WinnerDetails>();
 	private Boolean claimed = false;
+	private String auctionDisplayHeaderKey = "";
 	@ManagedProperty(value = "#{userDetails}")
 	private UserDetails userObj;
 	@ManagedProperty(value = "#{buyerCriteria}")
@@ -50,10 +55,14 @@ public class AuctionViewer {
 		localWinners.clear();
 		remoteWinners.clear();
 		claimed = false;
-		
+
 		HtmlCommandLink detail = (HtmlCommandLink) auctionevt.getSource();
-		String userId = getUserObj().getName(); 
-		String auctionId = (String) detail.getValue();
+		Map<String, Object> attributes = auctionevt.getComponent()
+				.getAttributes();
+		String auctionId = (String) attributes.get("timeStamp");
+		System.out.println("Attribute found:" + auctionId);
+		String userId = getUserObj().getName();
+		// String auctionId = (String) detail.getValue();
 		currentAuctionKey = userId + "_" + auctionId;
 		AuctionResults results = getAuctionResults(currentAuctionKey);
 		if (results != null) {
@@ -61,8 +70,9 @@ public class AuctionViewer {
 			remoteWinners.addAll(results.getRemoteWinners());
 			claimed = results.getClaimed();
 		}
-		//System.out.println("Received auctionId: " + detail.getValue());
-		//System.out.println("Received category: " + buyerCriteria.getCategory());
+		// System.out.println("Received auctionId: " + detail.getValue());
+		// System.out.println("Received category: " +
+		// buyerCriteria.getCategory());
 	}
 
 	public static void main(String args[]) {
@@ -91,8 +101,10 @@ public class AuctionViewer {
 				BasicDBObject bidObj = (BasicDBObject) bid;
 				productIDs.add(bidObj
 						.getString(AuctionServerPersistance.FIELD_PRODUCT_ID));
-				if(bidObj.containsField(AuctionServerPersistance.FIELD_CLAIMED) 
-						&& bidObj.getBoolean(AuctionServerPersistance.FIELD_CLAIMED)){
+				if (bidObj
+						.containsField(AuctionServerPersistance.FIELD_CLAIMED)
+						&& bidObj
+								.getBoolean(AuctionServerPersistance.FIELD_CLAIMED)) {
 					atLeastOneDealClaimed = true;
 				}
 			}
@@ -101,8 +113,10 @@ public class AuctionViewer {
 				BasicDBObject bidObj = (BasicDBObject) bid;
 				productIDs.add(bidObj
 						.getString(AuctionServerPersistance.FIELD_PRODUCT_ID));
-				if(bidObj.containsField(AuctionServerPersistance.FIELD_CLAIMED) 
-						&& bidObj.getBoolean(AuctionServerPersistance.FIELD_CLAIMED)){
+				if (bidObj
+						.containsField(AuctionServerPersistance.FIELD_CLAIMED)
+						&& bidObj
+								.getBoolean(AuctionServerPersistance.FIELD_CLAIMED)) {
 					atLeastOneDealClaimed = true;
 				}
 			}
@@ -110,9 +124,10 @@ public class AuctionViewer {
 			DBClient client = DBClient.getInstance();
 			Map<String, BasicDBObject> productDetails = client
 					.getProductDetails(productIDs);
-			/*for (String s : productDetails.keySet()) {
-				System.out.println(productDetails.get(s));
-			}*/
+			/*
+			 * for (String s : productDetails.keySet()) {
+			 * System.out.println(productDetails.get(s)); }
+			 */
 
 			for (Object bid : localBids) {
 				BasicDBObject bidObj = (BasicDBObject) bid;
@@ -143,19 +158,15 @@ public class AuctionViewer {
 				remoteWinners.add(winnerDetails);
 			}
 
-			/*System.out
-					.println("For auction: "
-							+ auctionDetails
-									.getString(AuctionServerPersistance.FIELD_AUCTION_ID));
-			System.out.println("Local winners");
-			for (WinnerDetails winner : localWinners) {
-				winner.printDetails();
-			}
-
-			System.out.println("Remote winners");
-			for (WinnerDetails winner : remoteWinners) {
-				winner.printDetails();
-			}*/
+			/*
+			 * System.out .println("For auction: " + auctionDetails
+			 * .getString(AuctionServerPersistance.FIELD_AUCTION_ID));
+			 * System.out.println("Local winners"); for (WinnerDetails winner :
+			 * localWinners) { winner.printDetails(); }
+			 * 
+			 * System.out.println("Remote winners"); for (WinnerDetails winner :
+			 * remoteWinners) { winner.printDetails(); }
+			 */
 
 			if (!auctionDetails
 					.containsField(AuctionServerPersistance.FIELD_VIEWED_AT)) {
@@ -170,7 +181,8 @@ public class AuctionViewer {
 				writer.recordViewedAt();
 			}
 
-			results = new AuctionResults(remoteWinners, localWinners, atLeastOneDealClaimed);
+			results = new AuctionResults(remoteWinners, localWinners,
+					atLeastOneDealClaimed);
 		} else {
 			System.out.println("Auction still running!");
 		}
@@ -224,7 +236,7 @@ public class AuctionViewer {
 	public void setBuyerCriteria(BuyerCriteria buyerCriteria) {
 		this.buyerCriteria = buyerCriteria;
 	}
-	
+
 	public Boolean getClaimed() {
 		return claimed;
 	}
@@ -233,15 +245,17 @@ public class AuctionViewer {
 		this.claimed = claimed;
 
 	}
-	
+
 	public void claimAuction(WinnerDetails auctionObj) {
-        System.out.println("In claim auction with currentAuctionkey as "+currentAuctionKey+"and product as "+auctionObj.getProductID());
-        System.out.println("In claim auction");
-        ClaimDetails claimDetailsObj=new ClaimDetails();
-        claimDetailsObj.setAuctionId(currentAuctionKey);
-        claimDetailsObj.setProductId(auctionObj.getProductID());
-        ClientConfig config = new DefaultClientConfig();
-        Client remoteClient = Client.create(config);
+		System.out.println("In claim auction with currentAuctionkey as "
+				+ currentAuctionKey + "and product as "
+				+ auctionObj.getProductID());
+		System.out.println("In claim auction");
+		ClaimDetails claimDetailsObj = new ClaimDetails();
+		claimDetailsObj.setAuctionId(currentAuctionKey);
+		claimDetailsObj.setProductId(auctionObj.getProductID());
+		ClientConfig config = new DefaultClientConfig();
+		Client remoteClient = Client.create(config);
 		DBClient dbClient = DBClient.getInstance();
 		BasicDBObject jsonAddr = dbClient.getClusterAddress("cars");
 		String restAddr = "http://" + jsonAddr.getString("ip") + ":"
@@ -254,62 +268,90 @@ public class AuctionViewer {
 			response = webResource.type(MediaType.APPLICATION_JSON).post(
 					ClientResponse.class, claimDetailsObj);
 			String isSuccess = response.getEntity(String.class);
-			FacesMessage message=null;
-			if(isSuccess.equals("true")){
-			message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Claim successfully completed !!! ", null);
-			}
-			else{
-				message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Claim failed !!! ", null);
+			FacesMessage message = null;
+			if (isSuccess.equals("true")) {
+				message = new FacesMessage(FacesMessage.SEVERITY_INFO,
+						"Claim successfully completed !!! ", null);
+			} else {
+				message = new FacesMessage(FacesMessage.SEVERITY_INFO,
+						"Claim failed !!! ", null);
 			}
 			FacesContext.getCurrentInstance().addMessage(null, message);
-		}
-		catch(Exception e){
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void claimSubscriptionAuction() {
-        System.out.println("In claim subscription");
-        SubscriptionAuctionDetails obj=new SubscriptionAuctionDetails();
-        System.out.println("Current auction key:"+currentAuctionKey);
-        obj.setAuctionId(currentAuctionKey);
-        obj.setUserId(getUserObj().getName());
-        if(currentAuctionKey==null){
-        	return;
-        }
-        ClientConfig config = new DefaultClientConfig();
-        Client remoteClient = Client.create(config);
+		System.out.println("In claim subscription");
+		SubscriptionAuctionDetails obj = new SubscriptionAuctionDetails();
+		System.out.println("Current auction key:" + currentAuctionKey);
+		obj.setAuctionId(currentAuctionKey);
+		obj.setUserId(getUserObj().getName());
+		if (currentAuctionKey == null) {
+			return;
+		}
+		ClientConfig config = new DefaultClientConfig();
+		Client remoteClient = Client.create(config);
 		DBClient dbClient = DBClient.getInstance();
 		BasicDBObject jsonAddr = dbClient.getClusterAddress("cars");
 		String restAddr = "http://" + jsonAddr.getString("ip") + ":"
 				+ jsonAddr.getInt("port")
 				+ "/DistributedAuction/rest/claimSubscriptionAuction";
-		System.out.println("Contacting " + restAddr + " for claiming subscription");
+		System.out.println("Contacting " + restAddr
+				+ " for claiming subscription");
 		WebResource webResource = remoteClient.resource(restAddr);
 		ClientResponse response = null;
 		try {
 			response = webResource.type(MediaType.APPLICATION_JSON).post(
 					ClientResponse.class, obj);
 			String isSuccess = response.getEntity(String.class);
-			FacesMessage message=null;
-			if(isSuccess.equals("success")){
-			message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Successfully subscribed !!! ", null);
-			}
-			else{
-				message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Subscription failed !!! ", null);
+			FacesMessage message = null;
+			if (isSuccess.equals("success")) {
+				message = new FacesMessage(FacesMessage.SEVERITY_INFO,
+						"Successfully subscribed !!! ", null);
+			} else {
+				message = new FacesMessage(FacesMessage.SEVERITY_INFO,
+						"Subscription failed !!! ", null);
 			}
 			FacesContext.getCurrentInstance().addMessage(null, message);
-		}
-		catch(Exception e){
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
+	
 	public UserDetails getUserObj() {
 		return userObj;
 	}
 
 	public void setUserObj(UserDetails userObj) {
 		this.userObj = userObj;
+	}
+
+	public String getCurrentAuctionKey() {
+		return currentAuctionKey;
+	}
+
+	public void setCurrentAuctionKey(String currentAuctionKey) {
+		this.currentAuctionKey = currentAuctionKey;
+	}
+
+	public String getAuctionDisplayHeaderKey() {
+
+		auctionDisplayHeaderKey = "";
+		if (currentAuctionKey != null && !currentAuctionKey.equals("")) {
+			long epoch = Long.parseLong(currentAuctionKey.split("_")[1]);
+			Date dateObj = new Date(epoch);
+			// System.out.println(DateUtil.getUserDisplayString(expiry));
+			DateFormat formatter = new SimpleDateFormat("MM/dd/yyyy HH:mm");
+			formatter.setTimeZone(TimeZone.getTimeZone("GMT-5:00"));
+			auctionDisplayHeaderKey = formatter.format(dateObj);
+		}
+		return auctionDisplayHeaderKey;
+	}
+
+	public void setAuctionDisplayHeaderKey(String auctionDisplayHeaderKey) {
+		this.auctionDisplayHeaderKey = auctionDisplayHeaderKey;
 	}
 }

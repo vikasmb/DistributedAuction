@@ -13,7 +13,7 @@
 	<!-- Latest compiled and minified CSS -->
 	<link rel="stylesheet"
 		href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css"></link>
-	<h:outputStylesheet library="css" name="misc.css"  />
+	<h:outputStylesheet library="css" name="misc.css" />
 </h:head>
 
 <h:body>
@@ -21,29 +21,35 @@
 		<p:layout id="layout" fullPage="true">
 			<p:layoutUnit position="north" size="50">
 				<!-- Fixed navbar -->
-				<h:panelGroup layout="block" styleClass="navbar navbar-default navbar-fixed-top">
-			      <h:panelGroup layout="block" styleClass="container">
-			       <h:panelGroup layout="block" styleClass="navbar-header">
-			          <button type="button" class="navbar-toggle">
-			            <h:panelGroup class="sr-only">Toggle navigation</h:panelGroup>
-			            <h:panelGroup class="icon-bar"></h:panelGroup>
-			            <h:panelGroup class="icon-bar"></h:panelGroup>
-			            <h:panelGroup class="icon-bar"></h:panelGroup>
-			          </button>
-			          <p:commandButton styleClass="navbar-brand buttonAsLink" value="Distributed Auction"></p:commandButton>
-			        </h:panelGroup>
-			        <h:panelGroup layout="block" styleClass="navbar-collapse collapse">
-			          <ul class="nav navbar-nav">
-			            <li><p:commandButton styleClass="buttonAsLink" value="Home" action="goHome"></p:commandButton></li>
-			            <li><p:commandButton styleClass="buttonAsLink" action="viewAuctions" value="My Auctions" immediate="true"></p:commandButton></li>
-			            <li><p:commandButton styleClass="buttonAsLink" action="viewSubscriptions" value="My Subscriptions" immediate="true"></p:commandButton></li>
-			          </ul>
-			          <ul class="nav navbar-nav navbar-right">
-			            <li><h:commandLink href="#">Logout</h:commandLink></li>
-			          </ul>
-			        </h:panelGroup>
-			      </h:panelGroup>
-			    </h:panelGroup>
+				<h:panelGroup layout="block"
+					styleClass="navbar navbar-default navbar-fixed-top">
+					<h:panelGroup layout="block" styleClass="container">
+						<h:panelGroup layout="block" styleClass="navbar-header">
+							<button type="button" class="navbar-toggle">
+								<h:panelGroup class="sr-only">Toggle navigation</h:panelGroup>
+								<h:panelGroup class="icon-bar"></h:panelGroup>
+								<h:panelGroup class="icon-bar"></h:panelGroup>
+								<h:panelGroup class="icon-bar"></h:panelGroup>
+							</button>
+							<p:commandButton styleClass="navbar-brand buttonAsLink"
+								value="Distributed Auction"></p:commandButton>
+						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="navbar-collapse collapse">
+							<ul class="nav navbar-nav">
+								<li><p:commandButton styleClass="buttonAsLink" value="Home"
+										action="goHome"></p:commandButton></li>
+								<li><p:commandButton styleClass="buttonAsLink"
+										action="viewAuctions" value="My Auctions" immediate="true"></p:commandButton></li>
+								<li><p:commandButton styleClass="buttonAsLink"
+										action="viewSubscriptions" value="My Subscriptions"
+										immediate="true"></p:commandButton></li>
+							</ul>
+							<ul class="nav navbar-nav navbar-right">
+								<li><h:commandLink href="#">Logout</h:commandLink></li>
+							</ul>
+						</h:panelGroup>
+					</h:panelGroup>
+				</h:panelGroup>
 			</p:layoutUnit>
 			<p:layoutUnit position="west" resizable="true">
 				<h:panelGroup layout="block">
@@ -58,8 +64,11 @@
 
 						<p:column sortBy="auctionId" headerText="AuctionId">
 							<p:commandLink update=":homeForm:peerTable,:homeForm:remoteTable"
-								value="#{auctionRow.auctionId}"
-								actionListener="#{auctionViewer.populateWinnerList1}" />
+								value="#{auctionRow.displayString}"
+								actionListener="#{auctionViewer.populateWinnerList1}">
+								<f:attribute name="timeStamp" value="#{auctionRow.auctionId}" />
+							</p:commandLink>
+
 						</p:column>
 
 					</p:dataTable>
@@ -74,8 +83,9 @@
 					paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
 					rowsPerPageTemplate="5,10,15">
 					<f:facet name="header">
-	         		    	Listings
-	      	     		</f:facet>
+						<h:outputText
+							value="Listings for #{auctionViewer.auctionDisplayHeaderKey}" />
+					</f:facet>
 
 					<p:column sortBy="name" headerText="Name">
 						<h:outputText value="#{localRow.name}" />
@@ -89,15 +99,18 @@
 						<h:outputText value="#{localRow.address}" />
 					</p:column>
 
-					<p:column sortBy="image" headerText="Image">
-						<h:graphicImage library="images" name="#{localRow.image}" width="100" height="100"/>
+					<p:column sortBy="image" headerText="Image"
+						style="text-align: center">
+						<h:graphicImage library="images" name="#{localRow.image}"
+							width="100" height="100" />
 					</p:column>
 
 					<p:column sortBy="price" headerText="Price">
 						<h:outputText value="#{localRow.price}" />
 					</p:column>
-					<p:column headerText="Claim deal">
-						<p:commandButton value="Claim this deal !!!" update=":homeForm:messages"
+					<p:column headerText="Claim deal" style="text-align: center">
+						<p:commandButton value="Claim this deal !!!"
+							update=":homeForm:messages"
 							actionListener="#{auctionViewer.claimAuction(localRow)}" />
 					</p:column>
 				</p:dataTable>
@@ -107,8 +120,10 @@
 					paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
 					rowsPerPageTemplate="5,10,15">
 					<f:facet name="header">
-	         		    	Corporate sellers
-	      	     		</f:facet>
+						<h:outputText
+							value="Corporate sellers for #{auctionViewer.auctionDisplayHeaderKey}" />
+
+					</f:facet>
 
 					<p:column sortBy="name" headerText="Name">
 						<h:outputText value="#{remoteRow.name}" />
@@ -118,20 +133,25 @@
 						<h:outputText value="#{remoteRow.address}" />
 					</p:column>
 
-					<p:column sortBy="image" headerText="Image">
-						<h:graphicImage library="images" name="#{remoteRow.image}" width="100" height="100"/>
+					<p:column sortBy="image" headerText="Image"
+						style="text-align: center">
+						<h:graphicImage library="images" name="#{remoteRow.image}"
+							width="100" height="100" />
 					</p:column>
 
 					<p:column sortBy="price" headerText="Price">
 						<h:outputText value="#{remoteRow.price}" />
 					</p:column>
-					<p:column headerText="Claim deal">
-						<p:commandButton style="float:center;" value="Claim this deal !!!"  update=":homeForm:messages"
+					<p:column headerText="Claim deal" style="text-align: center">
+						<p:commandButton style="float:center;" value="Claim this deal !!!"
+							update=":homeForm:messages"
 							actionListener="#{auctionViewer.claimAuction(remoteRow)}" />
 					</p:column>
 				</p:dataTable>
-				<p:commandButton style="float:left;" actionListener="#{auctionViewer.claimSubscriptionAuction}"  update=":homeForm:messages" value="Subscribe" />
-			</p:layoutUnit>			
+				<p:commandButton style="float:left;"
+					actionListener="#{auctionViewer.claimSubscriptionAuction}"
+					update=":homeForm:messages" value="Subscribe" />
+			</p:layoutUnit>
 		</p:layout>
 	</h:form>
 </h:body>

@@ -26,4 +26,17 @@ public class DateUtil {
 		dateStr = formatter.format(dateObj);
 		return dateStr;
 	}
+	
+	public static String getUserDisplayString(String epochString) {
+		long epoch = Long.parseLong( epochString );
+		Date dateObj = new Date( epoch);
+		//System.out.println(DateUtil.getUserDisplayString(expiry));
+		DateFormat formatter = new SimpleDateFormat("MM/dd/yyyy HH:mm");
+		formatter.setTimeZone(TimeZone.getTimeZone("GMT-5:00"));
+		String dateStr = null;
+		dateStr = formatter.format(dateObj);
+		return dateStr;
+	}
+	
+	
 }

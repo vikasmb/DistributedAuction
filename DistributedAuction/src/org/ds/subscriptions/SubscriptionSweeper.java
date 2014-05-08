@@ -1,5 +1,7 @@
 package org.ds.subscriptions;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -46,6 +48,9 @@ public class SubscriptionSweeper {
 	public static int ACCEPT_BUFFER = 10;
 	public static int RESULTS_LIMIT = 10;
 	private List<SubscriptionDeal> deals;
+	private String auctionKey;
+	private String auctionDisplayHeaderKey = "";
+
 	@ManagedProperty(value = "#{userDetails}")
 	private UserDetails userObj;
 
@@ -252,7 +257,7 @@ public class SubscriptionSweeper {
 
 	public List<SubscriptionDeal> getDeals() {
 		if (deals == null) {
-			deals = new ArrayList<SubscriptionDeal>();			
+			deals = new ArrayList<SubscriptionDeal>();
 		}
 		return deals;
 	}
@@ -260,29 +265,33 @@ public class SubscriptionSweeper {
 	public void setDeals(List<SubscriptionDeal> deals) {
 		this.deals = deals;
 	}
-	
+
 	public void populateSubscriberdeals(ActionEvent auctionevt) {
 		getDeals().clear();
-		
+
 		HtmlCommandLink detail = (HtmlCommandLink) auctionevt.getSource();
-		String userId = getUserObj().getName(); 
-		String auctionId = (String) detail.getValue();
-		String auctionKey = userId + "_" + auctionId;
-		System.out.println("Current auction id:"+auctionKey);
-		List<SubscriptionDeal> subsDeals = getSubscriptionResults(auctionKey, null);
+		Map<String, Object> attributes = auctionevt.getComponent()
+				.getAttributes();
+		String auctionId = (String) attributes.get("timeStamp");
+		String userId = getUserObj().getName();
+		auctionKey = userId + "_" + auctionId;
+		System.out.println("Current auction id:" + auctionKey);
+		List<SubscriptionDeal> subsDeals = getSubscriptionResults(auctionKey,
+				null);
 		if (subsDeals != null) {
-			getDeals().addAll(subsDeals);			
-		}		
+			getDeals().addAll(subsDeals);
+		}
 	}
-	
+
 	public void claimAuction(SubscriptionDeal auctionObj) {
-        
-        ClaimDetails claimDetailsObj=new ClaimDetails();
-        System.out.println("Claiming auction id:"+auctionObj.getAuctionID());
-        claimDetailsObj.setAuctionId(auctionObj.getAuctionID());
-        claimDetailsObj.setProductId(auctionObj.getWinnerDetails().getProductID());
-        ClientConfig config = new DefaultClientConfig();
-        Client remoteClient = Client.create(config);
+
+		ClaimDetails claimDetailsObj = new ClaimDetails();
+		System.out.println("Claiming auction id:" + auctionObj.getAuctionID());
+		claimDetailsObj.setAuctionId(auctionObj.getAuctionID());
+		claimDetailsObj.setProductId(auctionObj.getWinnerDetails()
+				.getProductID());
+		ClientConfig config = new DefaultClientConfig();
+		Client remoteClient = Client.create(config);
 		DBClient dbClient = DBClient.getInstance();
 		BasicDBObject jsonAddr = dbClient.getClusterAddress("cars");
 		String restAddr = "http://" + jsonAddr.getString("ip") + ":"
@@ -295,16 +304,16 @@ public class SubscriptionSweeper {
 			response = webResource.type(MediaType.APPLICATION_JSON).post(
 					ClientResponse.class, claimDetailsObj);
 			String isSuccess = response.getEntity(String.class);
-			FacesMessage message=null;
-			if(isSuccess.equals("true")){
-			message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Claim successfully completed !!! ", null);
-			}
-			else{
-				message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Claim failed !!! ", null);
+			FacesMessage message = null;
+			if (isSuccess.equals("true")) {
+				message = new FacesMessage(FacesMessage.SEVERITY_INFO,
+						"Claim successfully completed !!! ", null);
+			} else {
+				message = new FacesMessage(FacesMessage.SEVERITY_INFO,
+						"Claim failed !!! ", null);
 			}
 			FacesContext.getCurrentInstance().addMessage(null, message);
-		}
-		catch(Exception e){
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
@@ -316,5 +325,22 @@ public class SubscriptionSweeper {
 	public void setUserObj(UserDetails userObj) {
 		this.userObj = userObj;
 	}
-	
+
+	public String getAuctionDisplayHeaderKey() {
+		auctionDisplayHeaderKey = "";
+		if (auctionKey != null && !auctionKey.equals("")) {
+			long epoch = Long.parseLong(auctionKey.split("_")[1]);
+			Date dateObj = new Date(epoch);
+			// System.out.println(DateUtil.getUserDisplayString(expiry));
+			DateFormat formatter = new SimpleDateFormat("MM/dd/yyyy HH:mm");
+			formatter.setTimeZone(TimeZone.getTimeZone("GMT-5:00"));
+			auctionDisplayHeaderKey = formatter.format(dateObj);
+		}
+		return auctionDisplayHeaderKey;
+	}
+
+	public void setAuctionDisplayHeaderKey(String auctionDisplayHeaderKey) {
+		this.auctionDisplayHeaderKey = auctionDisplayHeaderKey;
+	}
+
 }

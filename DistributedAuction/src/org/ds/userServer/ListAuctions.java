@@ -2,6 +2,7 @@ package org.ds.userServer;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import javax.faces.bean.ManagedBean;
@@ -10,6 +11,7 @@ import javax.faces.bean.SessionScoped;
 
 import org.ds.auction.BuyerCriteria;
 import org.ds.auction.UserDetails;
+import org.ds.util.DateUtil;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
@@ -25,10 +27,11 @@ public class ListAuctions {
 
 	public static void main(String args[]) {
 		String userID = "123";
-		List<String> auctionIDs = getUserAuctions(userID);
+		/*List<String> auctionIDs = getUserAuctions(userID);
 		for (String id : auctionIDs) {
 			System.out.println(id);
-		}
+		}*/
+		//String epochString = "1399441302177";	
 	}
 
 	public ListAuctions() {

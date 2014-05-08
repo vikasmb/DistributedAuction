@@ -58,8 +58,10 @@
 
 						<p:column sortBy="auctionId" headerText="AuctionId">
 							<p:commandLink update=":homeForm:subsDetailsTable"
-								value="#{subscriptionRow.auctionId}"
-								actionListener="#{subscriptionSweeper.populateSubscriberdeals}" />
+								value="#{subscriptionRow.displayString}"
+								actionListener="#{subscriptionSweeper.populateSubscriberdeals}" >
+								<f:attribute name="timeStamp" value="#{subscriptionRow.auctionId}" />
+								</p:commandLink>
 						</p:column>
 
 					</p:dataTable>
@@ -72,8 +74,8 @@
 				<p:dataTable id="subsDetailsTable" var="deal"
 					value="#{subscriptionSweeper.deals}">
 					<f:facet name="header">
-	         		           	Subscribed deals
-	      	     		</f:facet>
+					<h:outputText	value="Subscribed deals for auction #{subscriptionSweeper.auctionDisplayHeaderKey}" />
+	         				</f:facet>
 
 					<p:column sortBy="name" headerText="Name">
 						<h:outputText value="#{deal.winnerDetails.name}" />
@@ -87,14 +89,14 @@
 						<h:outputText value="#{deal.winnerDetails.address}" />
 					</p:column>
 
-					<p:column sortBy="image" headerText="Image">
+					<p:column sortBy="image" headerText="Image" style="text-align: center">
 						<h:graphicImage library="images" name="#{deal.winnerDetails.image}" width="100" height="100"/>
 					</p:column>
 
 					<p:column sortBy="price" headerText="Price">
 						<h:outputText value="#{deal.winnerDetails.price}" />
 					</p:column>
-					<p:column headerText="Claim deal">
+					<p:column headerText="Claim deal" style="text-align: center">
 						<p:commandButton style="float:center;" update=":homeForm:messages"
 							value="Claim this deal !!!"
 							actionListener="#{subscriptionSweeper.claimAuction(deal)}" />
