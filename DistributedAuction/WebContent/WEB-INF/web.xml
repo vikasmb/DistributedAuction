@@ -42,6 +42,7 @@
 		<param-name>javax.faces.STATE_SAVING_METHOD</param-name>
 		<param-value>client</param-value>
 	</context-param>
+	
 	<context-param>
 		<description>
 	This parameter tells MyFaces if javascript code should be allowed in
@@ -82,6 +83,9 @@
 		<param-name>org.apache.myfaces.AUTO_SCROLL</param-name>
 		<param-value>true</param-value>
 	</context-param>
+	<session-config>
+            <session-timeout>0</session-timeout> 
+      </session-config>
 	<listener>
 		<listener-class>org.apache.myfaces.webapp.StartupServletContextListener</listener-class>
 	</listener>

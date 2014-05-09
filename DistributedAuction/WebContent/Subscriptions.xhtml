@@ -102,6 +102,9 @@
 							actionListener="#{subscriptionSweeper.claimAuction(deal)}" />
 					</p:column>
 				</p:dataTable>
+				<p:commandButton style="float:right;height:20px; font-size:70%;"
+					actionListener="#{subscriptionSweeper.clearResults}" 
+					update="subsDetailsTable" value="Clear results" />
 			</p:layoutUnit>
 		</p:layout>
 	</h:form>

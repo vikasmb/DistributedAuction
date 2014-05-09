@@ -344,5 +344,9 @@ public class SubscriptionSweeper {
 	public void setAuctionDisplayHeaderKey(String auctionDisplayHeaderKey) {
 		this.auctionDisplayHeaderKey = auctionDisplayHeaderKey;
 	}
+	
+	public void clearResults(){
+		deals.clear();		
+	}
 
 }

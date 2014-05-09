@@ -252,11 +252,11 @@ public class SellerService {
 				+ auctionDetails.getRoundNumber());
 		
 		Map<Integer, Double> bids = new HashMap<Integer, Double>();
-		bids.put(1, 80.0);
-		bids.put(2, 70.0);
-		bids.put(3, 60.0);
-		bids.put(4, 50.0);
-		bids.put(5, 40.0);
+		bids.put(1, 100.0);
+		bids.put(2, 90.0);
+		bids.put(3, 80.0);
+		bids.put(4, 70.0);
+		bids.put(5, 60.0);
 		
 		int maxEntryIndex = 5;
 		
@@ -287,11 +287,11 @@ public class SellerService {
 				+ auctionDetails.getRoundNumber());
 		
 		Map<Integer, Double> bids = new HashMap<Integer, Double>();
-		bids.put(1, 80.0);
-		bids.put(2, 70.0);
-		bids.put(3, 60.0);
-		bids.put(4, 50.0);
-		bids.put(5, 40.0);
+		bids.put(1, 70.0);
+		bids.put(2, 60.0);
+		bids.put(3, 50.0);
+		bids.put(4, 40.0);
+		bids.put(5, 30.0);
 		
 		int maxEntryIndex = 5;
 		
@@ -325,8 +325,8 @@ public class SellerService {
 		bids.put(1, 80.0);
 		bids.put(2, 70.0);
 		bids.put(3, 60.0);
-		bids.put(4, 50.0);
-		bids.put(5, 40.0);
+		bids.put(4, -1.0);
+		bids.put(5, -1.0);
 		
 		int maxEntryIndex = 5;
 		
@@ -360,8 +360,8 @@ public class SellerService {
 		bids.put(1, 80.0);
 		bids.put(2, 70.0);
 		bids.put(3, 60.0);
-		bids.put(4, 50.0);
-		bids.put(5, 40.0);
+		bids.put(4, -1.0);
+		bids.put(5, -1.0);
 		
 		int maxEntryIndex = 5;
 		

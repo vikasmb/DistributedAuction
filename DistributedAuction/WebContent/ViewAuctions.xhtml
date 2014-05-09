@@ -137,8 +137,7 @@
 
 					<p:column sortBy="address" headerText="Website">
 						<h:outputLink value="#{remoteRow.address}" target="_blank">
-							<h:outputText
-								value="#{remoteRow.address}" />
+							<h:outputText value="#{remoteRow.address}" />
 						</h:outputLink>
 					</p:column>
 
@@ -159,8 +158,10 @@
 				</p:dataTable>
 				<p:commandButton style="float:left;"
 					actionListener="#{auctionViewer.claimSubscriptionAuction}"
-					update=":homeForm:messages" value="Subscribe" />			
-
+					update=":homeForm:messages" value="Subscribe" />
+				<p:commandButton style="float:right;height:20px; font-size:70%;"
+					actionListener="#{auctionViewer.clearResults}"
+					update="peerTable,remoteTable" value="Clear results" />
 			</p:layoutUnit>
 		</p:layout>
 	</h:form>

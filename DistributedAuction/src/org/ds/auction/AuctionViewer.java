@@ -356,4 +356,8 @@ public class AuctionViewer {
 	public void setAuctionDisplayHeaderKey(String auctionDisplayHeaderKey) {
 		this.auctionDisplayHeaderKey = auctionDisplayHeaderKey;
 	}
+	public void clearResults(){
+		localWinners.clear();
+		remoteWinners.clear();		
+	}
 }
