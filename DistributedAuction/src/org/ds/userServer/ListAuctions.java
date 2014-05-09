@@ -39,7 +39,6 @@ public class ListAuctions {
 	}
 
 	public static List<String> getUserAuctions(String userID) {
-		userID="123";
 		UserPersistance persistance = new UserPersistance(userID);
 		BasicDBList auctions = persistance.getAuctions();
 

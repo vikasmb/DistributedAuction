@@ -22,7 +22,6 @@ public class ListProducts {
 	}
 
 	public static List<String> getUserProducts(String userID) {
-		userID="123";
 		UserPersistance persistance = new UserPersistance(userID);
 		BasicDBList products = persistance.getProducts();
 

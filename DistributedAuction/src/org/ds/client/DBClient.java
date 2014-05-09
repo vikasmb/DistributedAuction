@@ -74,7 +74,7 @@ public class DBClient {
 			_instance = new DBClient();
 		}
 		long difference = System.currentTimeMillis() - startTime;
-		System.out.println("Connection open Latency: " + difference);
+		//System.out.println("Connection open Latency: " + difference);
 		return _instance;
 	}
 

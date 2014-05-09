@@ -31,7 +31,6 @@ public class ListSubscriptions {
 	}
 
 	public static List<String> getUserSubscriptions(String userID) {
-		userID = "123";
 		UserPersistance persistance = new UserPersistance(userID);
 		BasicDBList subscriptions = persistance.getSubscriptions();
 

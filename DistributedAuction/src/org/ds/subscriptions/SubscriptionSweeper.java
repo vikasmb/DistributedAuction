@@ -231,6 +231,8 @@ public class SubscriptionSweeper {
 				AuctionServer.STATUS_FINISHED)
 				.append(AuctionServerPersistance.FIELD_VIEWED_AT,
 						new BasicDBObject("$lte", viewedUntil))
+				.append(AuctionServerPersistance.FIELD_USER_ID,
+						new BasicDBObject("$ne", criteria.getBuyerID()))
 				.append(AuctionServerPersistance.FIELD_BUYER_CRITERIA + "."
 						+ BuyerCriteria.FIELD_CITY, criteria.getCity())
 				.append(AuctionServerPersistance.FIELD_BUYER_CRITERIA + "."
