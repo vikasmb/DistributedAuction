@@ -21,6 +21,7 @@ import org.ds.auction.ClientReadableBidderDetails;
 import org.ds.auction.LocalSellerDetails;
 import org.ds.auction.RemoteSellerDetails;
 import org.ds.auction.SellerDetails;
+import org.ds.auction.UserDetails;
 import org.ds.resources.SellerService;
 import org.ds.util.DateUtil;
 
@@ -40,6 +41,8 @@ public class AuctionClient {
 	
 	@ManagedProperty(value = "#{buyerCriteria}")
 	private BuyerCriteria buyerCriteria;
+	@ManagedProperty(value = "#{userDetails}")
+	private UserDetails userObj;
 	List<LocalSellerDetails> localBidders = new ArrayList<LocalSellerDetails>();
 	List<RemoteSellerDetails> remoteBidders = new ArrayList<RemoteSellerDetails>();
 	private boolean showSearchResults;
@@ -70,7 +73,8 @@ public class AuctionClient {
 
 	public String scheduleAuction() {
 		category = buyerCriteria.getCategory();
-		buyerCriteria.setBuyerID("123");
+		String userId = getUserObj().getName();
+		buyerCriteria.setBuyerID(userId);
 		ClientConfig config = new DefaultClientConfig();
 		Client remoteClient = Client.create(config);
 		DBClient dbClient = DBClient.getInstance();
@@ -102,7 +106,8 @@ public class AuctionClient {
 	public void search() {
 		category = buyerCriteria.getCategory();
 		System.out.println("category set to" + category);
-		buyerCriteria.setBuyerID("123");
+		String userId = getUserObj().getName();
+		buyerCriteria.setBuyerID(userId);
 		// JSON.parse(jsonAddr);
 		// FacesContext context = FacesContext.getCurrentInstance();
 		//
@@ -285,6 +290,14 @@ public class AuctionClient {
 	public void clearResults(){
 		localBidders.clear();
 		remoteBidders.clear();
+	}
+
+	public UserDetails getUserObj() {
+		return userObj;
+	}
+
+	public void setUserObj(UserDetails userObj) {
+		this.userObj = userObj;
 	}
 	
 }
