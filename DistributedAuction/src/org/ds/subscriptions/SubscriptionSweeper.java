@@ -62,12 +62,18 @@ public class SubscriptionSweeper {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		List<String> subscriptions = ListSubscriptions
-				.getUserSubscriptions("123");
-		Date viewedUntil = null;
-		for (String subscription : subscriptions) {
-			String auctionID = subscription.split(":")[1];
-			getSubscriptionResults(auctionID, viewedUntil);
+		for(int i=0; i < 1000; i++){
+			long startTime = System.currentTimeMillis();
+			List<String> subscriptions = ListSubscriptions
+					.getUserSubscriptions("456");
+			Date viewedUntil = null;
+			for (String subscription : subscriptions) {
+				String auctionID = subscription.split(":")[1];
+				//System.out.println(auctionID);
+				getSubscriptionResults(auctionID, viewedUntil);
+			}
+			long difference = System.currentTimeMillis() - startTime;
+			System.out.println(i + ", " + difference);
 		}
 	}
 
@@ -77,7 +83,7 @@ public class SubscriptionSweeper {
 		BasicDBObject criteriaBSON = (BasicDBObject) auctionData
 				.get(AuctionServerPersistance.FIELD_BUYER_CRITERIA);
 		BuyerCriteria criteria = new BuyerCriteria(criteriaBSON);
-		criteria.printCriteria();
+		//criteria.printCriteria();
 
 		return getSubscribedDeals(auctionID, criteria, viewedUntil);
 	}
@@ -183,15 +189,16 @@ public class SubscriptionSweeper {
 						criteria, winnerDetails));
 			}
 
-			System.out
+			/*System.out
 					.println("For auction: "
 							+ auction
 									.getString(AuctionServerPersistance.FIELD_AUCTION_ID));
-			/*
-			 * for(SubscriptionDetails deal:deals){ deal.printDetails(); }
-			 */
+		
+			 for(SubscriptionDeal deal:deals){ deal.printDetails(); }*/
+			 
 		}
-		System.out.println("Done");
+		//System.out.println(deals.size());
+		//System.out.println("Done");
 		return deals;
 	}
 
