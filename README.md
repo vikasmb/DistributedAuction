@@ -9,3 +9,4 @@ System Architecture <br/>
     2.RESTful communication pattern between each component<br/>
     3.MongoDB for persistent storage of nested document data model.<br/>
     4.Zookeeper for load balancing of failure tolerance duties.<br/>
+    5.Web interface for both buyer and seller functionality using Primefaces/JSF 2.0 
