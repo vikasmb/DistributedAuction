@@ -5,7 +5,7 @@ A distributed system application to cnduct auctions in real-time for determining
 car rental, hotel rental etc) or products.
 
 System Architecture 
-    Independent clusters for each type of service
-    RESTful communication pattern between each component
-    MongoDB for persistent storage of nested document data model.
-    Zookeeper for load balancing of failure tolerance duties.
+    Independent clusters for each type of service<br/>
+    RESTful communication pattern between each component<br/>
+    MongoDB for persistent storage of nested document data model.<br/>
+    Zookeeper for load balancing of failure tolerance duties.<br/>
