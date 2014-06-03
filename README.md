@@ -1,7 +1,7 @@
 DistributedAuction
 ==================
 
-A distributed system application to cnduct auctions in real-time for determining prices of services (like 
+A distributed system application to conduct auctions in real-time for determining prices of services (like 
 car rental, hotel rental etc) or products.
 
 System Architecture <br/>
